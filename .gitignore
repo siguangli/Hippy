@@ -13,7 +13,7 @@ layout/.settings
 examples/*/res/vendor-manifest.json
 android/sdk/src/main/jni/core
 android/sdk/maven-auth.properties
-android/sdk/libs/hippy.jar
+android/sdk/libs/*
 examples/android-demo/example/src/main/assets/
 examples/ios-demo/HippyDemo.xcodeproj/project.xcworkspace/xcuserdata/*
 examples/ios-demo/HippyDemo.xcodeproj/xcuserdata/*
