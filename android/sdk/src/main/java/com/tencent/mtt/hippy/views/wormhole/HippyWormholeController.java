@@ -8,8 +8,6 @@ import com.tencent.mtt.hippy.uimanager.HippyViewController;
 
 @HippyController(name = "Wormhole")
 public class HippyWormholeController extends HippyViewController<HippyWormholeView> {
-  private String bisinessId;
-
   @Override
   protected View createViewImpl(Context context) {
     return new HippyWormholeView(context);
@@ -17,13 +15,16 @@ public class HippyWormholeController extends HippyViewController<HippyWormholeVi
 
   @Override
   protected View createViewImpl(final Context context, HippyMap iniProps) {
-    return new HippyWormholeView(context);
+    String businessId = HippyWormholeManager.getInstance().getBusinessId(iniProps);
+    HippyWormholeView wormholeView = new HippyWormholeView(context);
+    wormholeView.setBusinessId(businessId);
+    return wormholeView;
   }
 
   @Override
-  public void onBatchComplete(HippyWormholeView view)
-  {
-
+  public void onBatchComplete(HippyWormholeView view) {
+    super.onBatchComplete(view);
+    HippyWormholeManager.getInstance().onServerBatchComplete(view);
   }
 
 }

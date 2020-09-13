@@ -115,7 +115,7 @@ public class HippyWormholeEngine
 						mHippyRootView = mHippyEngine.loadModule(loadParams, new HippyEngine.ModuleListener() {
 							public void onInitialized(int statusCode, String msg, HippyRootView hippyRootView) {
 								if (statusCode == HippyEngine.STATUS_OK) {
-									HippyWormholeManager.getInstance().setWormholeEngine(mHippyEngine);
+									HippyWormholeManager.getInstance().setServerEngine(mHippyEngine);
 								}
 							}
 

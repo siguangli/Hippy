@@ -11,7 +11,10 @@ import com.tencent.mtt.hippy.common.HippyArray;
 import com.tencent.mtt.hippy.common.HippyMap;
 import com.tencent.mtt.hippy.uimanager.ControllerManager;
 import com.tencent.mtt.hippy.uimanager.HippyViewController;
+import com.tencent.mtt.hippy.uimanager.HippyViewEvent;
 import com.tencent.mtt.hippy.uimanager.RenderNode;
+import com.tencent.mtt.hippy.utils.PixelUtil;
+
 import java.util.concurrent.ConcurrentHashMap;
 
 @HippyController(name = "TKDWormhole")
@@ -25,9 +28,9 @@ public class TKDWormholeController extends HippyViewController<TKDWormholeView> 
 
   @Override
   protected View createViewImpl(final Context context, HippyMap initProps) {
-    TKDWormholeView wormholeView = new TKDWormholeView(context);
-    mWormholeProxy.createWormholeView(initProps, wormholeView);
-    return wormholeView;
+    final TKDWormholeView tkdWormholeView = new TKDWormholeView(context);
+    mWormholeProxy.createWormhole(initProps, tkdWormholeView);
+    return tkdWormholeView;
   }
 
 }
