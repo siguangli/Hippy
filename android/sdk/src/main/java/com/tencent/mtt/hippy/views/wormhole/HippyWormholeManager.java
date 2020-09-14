@@ -17,6 +17,7 @@ import com.tencent.mtt.hippy.utils.LogUtils;
 import com.tencent.mtt.hippy.utils.PixelUtil;
 
 import java.util.ArrayList;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import org.json.JSONArray;
 
@@ -166,6 +167,26 @@ public class HippyWormholeManager implements HippyWormholeProxy {
     for (int i = 0; i < clientEngineList.size(); i++) {
       if (clientEngineList.get(i) != null) {
         clientEngineList.get(i).sendEvent(EVENT_DATARECEIVED, data);
+      }
+    }
+  }
+
+  public void deleteWormHoleDataById(String id, View view) {
+    if (!TextUtils.isEmpty(id)) {
+      mTkdWormholeMap.remove(id);
+      if (view.getParent() != null) {
+        ViewGroup parent = (ViewGroup) view.getParent();
+        parent.removeView(view);
+      }
+    } else if (view != null) {
+      //如果id为0的话再去判断下map里是否有存有相应的view吧，移除掉
+      for (Map.Entry<String, ViewGroup> mapEntry : mTkdWormholeMap.entrySet()) {
+        if (mapEntry.getValue().equals(view)) {
+          String tempId = mapEntry.getKey();
+          if (!TextUtils.isEmpty(tempId)) {
+            deleteWormHoleDataById(tempId, view);
+          }
+        }
       }
     }
   }

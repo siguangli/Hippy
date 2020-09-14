@@ -27,4 +27,8 @@ public class HippyWormholeController extends HippyViewController<HippyWormholeVi
     HippyWormholeManager.getInstance().onServerBatchComplete(view);
   }
 
+  public void onViewDestroy(HippyWormholeView wormHoleView) {
+    HippyWormholeManager.getInstance().deleteWormHoleDataById(wormHoleView.getBusinessId(), wormHoleView);
+  }
+
 }
