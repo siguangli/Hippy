@@ -12,6 +12,7 @@ import com.tencent.mtt.hippy.common.HippyJsException;
 import com.tencent.mtt.hippy.common.HippyMap;
 import com.tencent.mtt.hippy.example.adapter.MyImageLoader;
 import com.tencent.mtt.hippy.utils.LogUtils;
+import com.tencent.mtt.hippy.views.wormhole.HippyWormholeManager;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -127,6 +128,8 @@ public class MyActivity extends Activity
 						mHippyView = mHippyEngine.loadModule(loadParams);
 
 						setContentView(mHippyView);
+
+            HippyWormholeManager.getInstance().registerClientEngin(mHippyEngine);
 					}
 				}
 			});
@@ -139,6 +142,7 @@ public class MyActivity extends Activity
 		// 3/3. 摧毁hippy前端模块，摧毁hippy引擎
 		mHippyEngine.destroyModule(mHippyView);
 		mHippyEngine.destroyEngine();
+    HippyWormholeManager.getInstance().unRegisterClientEngin(mHippyEngine);
 		super.onDestroy();
 	}
 

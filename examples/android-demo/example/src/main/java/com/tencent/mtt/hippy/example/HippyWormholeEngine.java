@@ -17,6 +17,8 @@ import com.tencent.mtt.hippy.example.adapter.MyImageLoader;
 import com.tencent.mtt.hippy.utils.LogUtils;
 
 import com.tencent.mtt.hippy.views.wormhole.HippyWormholeManager;
+import com.tencent.mtt.hippy.views.wormhole.event.HippyEventObserverAdapter;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -43,6 +45,14 @@ public class HippyWormholeEngine
 			initParams.enableLog = true;
 			// 可选：debugMode = false 时必须设置coreJSAssetsPath或coreJSFilePath（debugMode = true时，所有jsbundle都是从debug server上下载）
 			initParams.coreJSAssetsPath = "vendor.android.js";
+      //虫洞引擎注册消息分发器
+      initParams.eventobserverAdapter = new HippyEventObserverAdapter() {
+        @Override
+        public void onClientMessageReceived(HippyMap data) {
+          //虫洞自己收到了这个数据之后需要广播给业务方
+          HippyWormholeManager.getInstance().sendMessageToAllClient(data);
+        }
+      };
 			// 可选：异常处理器
 			initParams.exceptionHandler = new HippyExceptionHandlerAdapter() {
 				// JavaScript执行异常
