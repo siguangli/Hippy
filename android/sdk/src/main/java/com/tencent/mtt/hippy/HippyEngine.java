@@ -48,9 +48,10 @@ import com.tencent.mtt.hippy.utils.LogUtils;
 import com.tencent.mtt.hippy.utils.UIThreadUtils;
 import com.tencent.mtt.hippy.adapter.thirdparty.HippyThirdPartyAdapter;
 import com.tencent.mtt.hippy.adapter.dtcollect.IHippyDtCollectAdapter;
+import com.tencent.mtt.hippy.views.wormhole.event.DefaultEventObserverAdapter;
+import com.tencent.mtt.hippy.views.wormhole.event.HippyEventObserverAdapter;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -200,7 +201,7 @@ public abstract class HippyEngine
 
 	/**
 	 * send event
-	 * 
+	 *
 	 * @param event
 	 * @param params
 	 */
@@ -309,6 +310,8 @@ public abstract class HippyEngine
 		public HippyDeviceAdapter deviceAdapter;
 		// dt数据收集上报
 		public IHippyDtCollectAdapter dtCollectAdapter;
+    // 可选参数 event adapter,目前虫洞用
+    public HippyEventObserverAdapter eventobserverAdapter;
 		// 设置Hippy引擎的组，同一组的HippyEngine，会共享C层的v8 引擎实例。 默认值为-1（无效组，即不属于任何group组）
 		public int groupId = -1;
 		// 可选参数 日志输出
@@ -341,6 +344,9 @@ public abstract class HippyEngine
 				deviceAdapter = new DefaultDeviceAdapter();
 			if (logAdapter == null)
 				logAdapter = new DefaultLogAdapter();
+      if (eventobserverAdapter == null){
+        eventobserverAdapter = new DefaultEventObserverAdapter();
+      }
 			if (providers == null)
 				providers = new ArrayList<>();
 			providers.add(0, new HippyCoreAPI());
@@ -420,7 +426,7 @@ public abstract class HippyEngine
 	public static final int STATUS_ERR_RUN_BUNDLE   = -600;
 	//重复加载同一JSBundle
 	public static final int STATUS_REPEAT_LOAD	    = -700;
-	
+
 	/**
 	 * Hippy引擎初始化结果listener
 	 */

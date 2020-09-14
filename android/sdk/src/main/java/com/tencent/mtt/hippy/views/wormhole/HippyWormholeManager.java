@@ -15,6 +15,8 @@ import com.tencent.mtt.hippy.uimanager.RenderManager;
 import com.tencent.mtt.hippy.uimanager.RenderNode;
 import com.tencent.mtt.hippy.utils.LogUtils;
 import com.tencent.mtt.hippy.utils.PixelUtil;
+
+import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
 import org.json.JSONArray;
 
@@ -26,10 +28,13 @@ public class HippyWormholeManager implements HippyWormholeProxy {
   public static final String WORMHOLE_TYPE                  = "type";
   public static final String WORMHOLE_CLIENT_DATA_RECEIVED  = "Wormhole.dataReceived";
   public static final String WORMHOLE_SERVER_BATCH_COMPLETE = "onServerBatchComplete";
+  public static final String EVENT_DATARECEIVED ="onClientMessageReceived";
 
   private static volatile HippyWormholeManager INSTANCE;
   private HippyEngine mWormholeEngine;
   private ConcurrentHashMap<String, ViewGroup> mTkdWormholeMap = new ConcurrentHashMap<String, ViewGroup>();
+  //存储业务方引擎
+  private ArrayList<HippyEngine> clientEngineList = new ArrayList<>();
 
   private HippyWormholeManager() {
 
@@ -134,6 +139,34 @@ public class HippyWormholeManager implements HippyWormholeProxy {
         mTkdWormholeMap.put(businessId, parent);
       }
       sendDataReceivedMessageToServer(initProps);
+    }
+  }
+
+  public void registerClientEngin(HippyEngine hippyEngine) {
+    if (!clientEngineList.contains(hippyEngine)) {
+      clientEngineList.add(hippyEngine);
+    }
+  }
+
+  public void unRegisterClientEngin(HippyEngine hippyEngine) {
+    if (!clientEngineList.contains(hippyEngine)) {
+      clientEngineList.remove(hippyEngine);
+    }
+  }
+
+  //如果是业务方收到了通知之后，应该要告知虫洞
+  public void sendMessageToWormHole(HippyMap data) {
+    if (mWormholeEngine != null && data != null) {
+      mWormholeEngine.sendEvent(EVENT_DATARECEIVED, data);
+    }
+  }
+
+  //如果是虫洞引擎收到了通知之后，应该要广播给所有的业务方
+  public void sendMessageToAllClient(HippyMap data) {
+    for (int i = 0; i < clientEngineList.size(); i++) {
+      if (clientEngineList.get(i) != null) {
+        clientEngineList.get(i).sendEvent(EVENT_DATARECEIVED, data);
+      }
     }
   }
 }

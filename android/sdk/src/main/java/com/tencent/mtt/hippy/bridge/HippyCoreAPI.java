@@ -58,6 +58,7 @@ import com.tencent.mtt.hippy.views.webview.HippyWebViewController;
 import com.tencent.mtt.hippy.views.wormhole.HippyWormholeContainerController;
 import com.tencent.mtt.hippy.views.wormhole.HippyWormholeController;
 import com.tencent.mtt.hippy.views.wormhole.TKDWormholeController;
+import com.tencent.mtt.hippy.views.wormhole.event.EventObserverModule;
 import com.tencent.mtt.tkd.views.scroll.TkdScrollViewController;
 import com.tencent.mtt.tkd.views.list.TkdListItemViewController;
 import com.tencent.mtt.tkd.views.list.TkdListViewController;
@@ -199,6 +200,12 @@ public class HippyCoreAPI implements HippyAPIProvider
                 return new AudioPlayerModule(context);
             }
         });
+    modules.put(EventObserverModule.class, new Provider<HippyNativeModuleBase>() {
+      @Override
+      public HippyNativeModuleBase get() {
+        return new EventObserverModule(context);
+      }
+    });
 		return modules;
 	}
 
