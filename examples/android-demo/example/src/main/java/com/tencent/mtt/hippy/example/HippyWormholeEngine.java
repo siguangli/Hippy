@@ -124,9 +124,11 @@ public class HippyWormholeEngine
 						// 加载Hippy前端模块
 						mHippyRootView = mHippyEngine.loadModule(loadParams, new HippyEngine.ModuleListener() {
 							public void onInitialized(int statusCode, String msg, HippyRootView hippyRootView) {
-								if (statusCode == HippyEngine.STATUS_OK) {
-									HippyWormholeManager.getInstance().setServerEngine(mHippyEngine);
-								}
+                if (statusCode == HippyEngine.STATUS_OK) {
+                  HippyWormholeManager.getInstance().setServerEngine(mHippyEngine);
+                } else {
+                  LogUtils.e(WORMHOLE_TAG, "Hippy: init worm engine failed statusCode:" + statusCode + ",msg:" + msg);
+                }
 							}
 
 							public boolean onJsException(HippyJsException exception) {

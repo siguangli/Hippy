@@ -15,7 +15,7 @@ public class HippyWormholeController extends HippyViewController<HippyWormholeVi
 
   @Override
   protected View createViewImpl(final Context context, HippyMap iniProps) {
-    String businessId = HippyWormholeManager.getInstance().getBusinessId(iniProps);
+    String businessId = HippyWormholeManager.getInstance().getWormHoleIdFromProps(iniProps);
     HippyWormholeView wormholeView = new HippyWormholeView(context);
     wormholeView.setBusinessId(businessId);
     return wormholeView;
