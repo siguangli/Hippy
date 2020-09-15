@@ -3,7 +3,6 @@ package com.tencent.mtt.hippy.views.wormhole;
 
 import android.content.Context;
 import android.text.TextUtils;
-import android.util.Size;
 import android.view.View;
 import android.view.ViewGroup;
 import com.tencent.mtt.hippy.HippyEngine;
@@ -13,7 +12,6 @@ import com.tencent.mtt.hippy.common.HippyMap;
 import com.tencent.mtt.hippy.uimanager.HippyViewEvent;
 import com.tencent.mtt.hippy.uimanager.RenderManager;
 import com.tencent.mtt.hippy.uimanager.RenderNode;
-import com.tencent.mtt.hippy.utils.LogUtils;
 import com.tencent.mtt.hippy.utils.PixelUtil;
 
 import java.util.ArrayList;
@@ -30,6 +28,7 @@ public class HippyWormholeManager implements HippyWormholeProxy {
   public static final String WORMHOLE_CLIENT_DATA_RECEIVED  = "Wormhole.dataReceived";
   public static final String WORMHOLE_SERVER_BATCH_COMPLETE = "onServerBatchComplete";
   public static final String EVENT_DATARECEIVED ="onClientMessageReceived";
+  private static int WORMHOLE_ID = 100000;
 
   private static volatile HippyWormholeManager INSTANCE;
   private HippyEngine mWormholeEngine;
@@ -70,11 +69,12 @@ public class HippyWormholeManager implements HippyWormholeProxy {
     return null;
   }
 
-  private void sendDataReceivedMessageToServer(HippyMap initProps) {
+  private void sendDataReceivedMessageToServer(String wormholeId,HippyMap initProps) {
     HippyMap paramsMap = initProps.getMap(WORMHOLE_PARAMS);
     if (paramsMap != null) {
       HippyMap bundle = paramsMap.copy();
       bundle.pushInt(WORMHOLE_TYPE, 1);
+      bundle.pushString(WORMHOLE_BUSINESS_ID,wormholeId);
       JSONArray jsonArray = new JSONArray();
       jsonArray.put(bundle);
       mWormholeEngine.sendEvent(WORMHOLE_CLIENT_DATA_RECEIVED, jsonArray);
@@ -114,7 +114,12 @@ public class HippyWormholeManager implements HippyWormholeProxy {
     }
   }
 
-  public String getBusinessId(HippyMap props) {
+  public String getWormHoleId() {
+    WORMHOLE_ID++;
+    return "" + WORMHOLE_ID;
+  }
+
+  public String getWormHoleIdFromProps(HippyMap props) {
     HippyMap paramsMap = props.getMap(WORMHOLE_PARAMS);
     if (paramsMap == null) {
       return null;
@@ -134,12 +139,12 @@ public class HippyWormholeManager implements HippyWormholeProxy {
       return;
     }
 
-    String businessId = getBusinessId(initProps);
-    if (!TextUtils.isEmpty(businessId)) {
-      if (!mTkdWormholeMap.contains(businessId)) {
-        mTkdWormholeMap.put(businessId, parent);
+    String wormholeId = getWormHoleId();
+    if (!TextUtils.isEmpty(wormholeId)) {
+      if (!mTkdWormholeMap.containsValue(parent)) {
+        mTkdWormholeMap.put(wormholeId, parent);
       }
-      sendDataReceivedMessageToServer(initProps);
+      sendDataReceivedMessageToServer(wormholeId,initProps);
     }
   }
 
