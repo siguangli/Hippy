@@ -5,6 +5,7 @@ import android.content.Context;
 import android.text.TextUtils;
 import android.view.View;
 import android.view.ViewGroup;
+
 import com.tencent.mtt.hippy.HippyEngine;
 import com.tencent.mtt.hippy.HippyEngineContext;
 import com.tencent.mtt.hippy.HippyInstanceContext;
@@ -14,20 +15,23 @@ import com.tencent.mtt.hippy.uimanager.RenderManager;
 import com.tencent.mtt.hippy.uimanager.RenderNode;
 import com.tencent.mtt.hippy.utils.PixelUtil;
 
+import org.json.JSONArray;
+
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import org.json.JSONArray;
 
 public class HippyWormholeManager implements HippyWormholeProxy {
   public static final String WORMHOLE_TAG                   = "hippy_wormhole";
 
   public static final String WORMHOLE_PARAMS                = "params";
-  public static final String WORMHOLE_BUSINESS_ID           = "businessId";
+  public static final String WORMHOLE_WORMHOLE_ID = "wormholeId";
   public static final String WORMHOLE_TYPE                  = "type";
   public static final String WORMHOLE_CLIENT_DATA_RECEIVED  = "Wormhole.dataReceived";
   public static final String WORMHOLE_SERVER_BATCH_COMPLETE = "onServerBatchComplete";
   public static final String EVENT_DATARECEIVED ="onClientMessageReceived";
+  public static final String FUNCTION_SENDEVENT_TO_WORMHOLEVIEW = "sendEventToWormholeView";
+  public static final String FUNCTION_ONCUSTOMEVENT = "onCustomEvent";
   private static int WORMHOLE_ID = 100000;
 
   private static volatile HippyWormholeManager INSTANCE;
@@ -74,7 +78,7 @@ public class HippyWormholeManager implements HippyWormholeProxy {
     if (paramsMap != null) {
       HippyMap bundle = paramsMap.copy();
       bundle.pushInt(WORMHOLE_TYPE, 1);
-      bundle.pushString(WORMHOLE_BUSINESS_ID,wormholeId);
+      bundle.pushString(WORMHOLE_WORMHOLE_ID,wormholeId);
       JSONArray jsonArray = new JSONArray();
       jsonArray.put(bundle);
       mWormholeEngine.sendEvent(WORMHOLE_CLIENT_DATA_RECEIVED, jsonArray);
@@ -125,7 +129,7 @@ public class HippyWormholeManager implements HippyWormholeProxy {
       return null;
     }
 
-    String businessId = paramsMap.getString(WORMHOLE_BUSINESS_ID);
+    String businessId = paramsMap.getString(WORMHOLE_WORMHOLE_ID);
     return businessId;
   }
 
