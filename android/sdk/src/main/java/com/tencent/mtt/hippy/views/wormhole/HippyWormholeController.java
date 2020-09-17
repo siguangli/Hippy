@@ -25,6 +25,7 @@ public class HippyWormholeController extends HippyViewController<HippyWormholeVi
   public void onBatchComplete(HippyWormholeView view) {
     super.onBatchComplete(view);
     HippyWormholeManager.getInstance().onServerBatchComplete(view);
+    //在这里隐藏nativeView
   }
 
   public void onViewDestroy(HippyWormholeView wormHoleView) {

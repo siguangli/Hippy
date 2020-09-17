@@ -6,6 +6,7 @@ import android.view.View;
 import com.tencent.mtt.hippy.annotation.HippyController;
 import com.tencent.mtt.hippy.common.HippyArray;
 import com.tencent.mtt.hippy.common.HippyMap;
+import com.tencent.mtt.hippy.dom.node.StyleNode;
 import com.tencent.mtt.hippy.uimanager.HippyViewController;
 import com.tencent.mtt.hippy.uimanager.HippyViewEvent;
 
@@ -38,6 +39,13 @@ public class TKDWormholeController extends HippyViewController<TKDWormholeView> 
         break;
       }
     }
+  }
+
+  @Override
+  protected StyleNode createNode(boolean virtual)
+  {
+    //在这里创建node节点
+    return super.createNode(virtual);
   }
 
 }
