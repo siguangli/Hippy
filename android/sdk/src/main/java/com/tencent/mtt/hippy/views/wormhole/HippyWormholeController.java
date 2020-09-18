@@ -15,7 +15,7 @@ public class HippyWormholeController extends HippyViewController<HippyWormholeVi
 
   @Override
   protected View createViewImpl(final Context context, HippyMap iniProps) {
-    String businessId = HippyWormholeManager.getInstance().getWormHoleIdFromProps(iniProps);
+    String businessId = HippyWormholeManager.getInstance().getWormholeIdFromProps(iniProps);
     HippyWormholeView wormholeView = new HippyWormholeView(context);
     wormholeView.setBusinessId(businessId);
     return wormholeView;
@@ -29,7 +29,7 @@ public class HippyWormholeController extends HippyViewController<HippyWormholeVi
   }
 
   public void onViewDestroy(HippyWormholeView wormHoleView) {
-    HippyWormholeManager.getInstance().deleteWormHoleDataById(wormHoleView.getBusinessId(), wormHoleView);
+    HippyWormholeManager.getInstance().onWormholeDestroy(wormHoleView.getBusinessId());
   }
 
 }

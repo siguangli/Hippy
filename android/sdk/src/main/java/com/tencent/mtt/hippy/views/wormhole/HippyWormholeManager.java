@@ -15,6 +15,7 @@ import com.tencent.mtt.hippy.uimanager.RenderManager;
 import com.tencent.mtt.hippy.uimanager.RenderNode;
 import com.tencent.mtt.hippy.utils.PixelUtil;
 
+import java.util.concurrent.atomic.AtomicInteger;
 import org.json.JSONArray;
 
 import java.util.ArrayList;
@@ -22,23 +23,22 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class HippyWormholeManager implements HippyWormholeProxy {
-  public static final String WORMHOLE_TAG                   = "hippy_wormhole";
+  public static final String WORMHOLE_TAG                       = "hippy_wormhole";
 
-  public static final String WORMHOLE_PARAMS                = "params";
-  public static final String WORMHOLE_WORMHOLE_ID = "wormholeId";
-  public static final String WORMHOLE_TYPE                  = "type";
-  public static final String WORMHOLE_CLIENT_DATA_RECEIVED  = "Wormhole.dataReceived";
-  public static final String WORMHOLE_SERVER_BATCH_COMPLETE = "onServerBatchComplete";
-  public static final String EVENT_DATARECEIVED ="onClientMessageReceived";
+  public static final String WORMHOLE_PARAMS                    = "params";
+  public static final String WORMHOLE_WORMHOLE_ID               = "wormholeId";
+  public static final String WORMHOLE_CLIENT_DATA_RECEIVED      = "Wormhole.dataReceived";
+  public static final String WORMHOLE_SERVER_BATCH_COMPLETE     = "onServerBatchComplete";
+  public static final String EVENT_DATARECEIVED                 = "onClientMessageReceived";
   public static final String FUNCTION_SENDEVENT_TO_WORMHOLEVIEW = "sendEventToWormholeView";
-  public static final String FUNCTION_ONCUSTOMEVENT = "onCustomEvent";
-  private static int WORMHOLE_ID = 100000;
+  public static final String FUNCTION_ONCUSTOMEVENT             = "onCustomEvent";
 
+  private static final AtomicInteger mWormholeIdCounter = new AtomicInteger(1000);
   private static volatile HippyWormholeManager INSTANCE;
   private HippyEngine mWormholeEngine;
   private ConcurrentHashMap<String, ViewGroup> mTkdWormholeMap = new ConcurrentHashMap<String, ViewGroup>();
   //存储业务方引擎
-  private ArrayList<HippyEngine> clientEngineList = new ArrayList<>();
+  private ArrayList<HippyEngine> mClientEngineList = new ArrayList<>();
 
   private HippyWormholeManager() {
 
@@ -73,12 +73,11 @@ public class HippyWormholeManager implements HippyWormholeProxy {
     return null;
   }
 
-  private void sendDataReceivedMessageToServer(String wormholeId,HippyMap initProps) {
+  private void sendDataReceivedMessageToServer(String wormholeId, HippyMap initProps) {
     HippyMap paramsMap = initProps.getMap(WORMHOLE_PARAMS);
     if (paramsMap != null) {
       HippyMap bundle = paramsMap.copy();
-      bundle.pushInt(WORMHOLE_TYPE, 1);
-      bundle.pushString(WORMHOLE_WORMHOLE_ID,wormholeId);
+      bundle.pushString(WORMHOLE_WORMHOLE_ID, wormholeId);
       JSONArray jsonArray = new JSONArray();
       jsonArray.put(bundle);
       mWormholeEngine.sendEvent(WORMHOLE_CLIENT_DATA_RECEIVED, jsonArray);
@@ -118,12 +117,12 @@ public class HippyWormholeManager implements HippyWormholeProxy {
     }
   }
 
-  public String getWormHoleId() {
-    WORMHOLE_ID++;
-    return "" + WORMHOLE_ID;
+  public String getWormholeId() {
+    int id = mWormholeIdCounter.getAndIncrement();
+    return "" + id;
   }
 
-  public String getWormHoleIdFromProps(HippyMap props) {
+  public String getWormholeIdFromProps(HippyMap props) {
     HippyMap paramsMap = props.getMap(WORMHOLE_PARAMS);
     if (paramsMap == null) {
       return null;
@@ -143,7 +142,7 @@ public class HippyWormholeManager implements HippyWormholeProxy {
       return;
     }
 
-    String wormholeId = getWormHoleId();
+    String wormholeId = getWormholeId();
     if (!TextUtils.isEmpty(wormholeId)) {
       if (!mTkdWormholeMap.containsValue(parent)) {
         mTkdWormholeMap.put(wormholeId, parent);
@@ -152,20 +151,20 @@ public class HippyWormholeManager implements HippyWormholeProxy {
     }
   }
 
-  public void registerClientEngin(HippyEngine hippyEngine) {
-    if (!clientEngineList.contains(hippyEngine)) {
-      clientEngineList.add(hippyEngine);
+  public void registerClientEngine(HippyEngine hippyEngine) {
+    if (!mClientEngineList.contains(hippyEngine)) {
+      mClientEngineList.add(hippyEngine);
     }
   }
 
-  public void unRegisterClientEngin(HippyEngine hippyEngine) {
-    if (!clientEngineList.contains(hippyEngine)) {
-      clientEngineList.remove(hippyEngine);
+  public void unRegisterClientEngine(HippyEngine hippyEngine) {
+    if (!mClientEngineList.contains(hippyEngine)) {
+      mClientEngineList.remove(hippyEngine);
     }
   }
 
   //如果是业务方收到了通知之后，应该要告知虫洞
-  public void sendMessageToWormHole(HippyMap data) {
+  public void sendMessageToWormhole(HippyMap data) {
     if (mWormholeEngine != null && data != null) {
       mWormholeEngine.sendEvent(EVENT_DATARECEIVED, data);
     }
@@ -173,30 +172,16 @@ public class HippyWormholeManager implements HippyWormholeProxy {
 
   //如果是虫洞引擎收到了通知之后，应该要广播给所有的业务方
   public void sendMessageToAllClient(HippyMap data) {
-    for (int i = 0; i < clientEngineList.size(); i++) {
-      if (clientEngineList.get(i) != null) {
-        clientEngineList.get(i).sendEvent(EVENT_DATARECEIVED, data);
+    for (int i = 0; i < mClientEngineList.size(); i++) {
+      if (mClientEngineList.get(i) != null) {
+        mClientEngineList.get(i).sendEvent(EVENT_DATARECEIVED, data);
       }
     }
   }
 
-  public void deleteWormHoleDataById(String id, View view) {
+  public void onWormholeDestroy(String id) {
     if (!TextUtils.isEmpty(id)) {
       mTkdWormholeMap.remove(id);
-      if (view.getParent() != null) {
-        ViewGroup parent = (ViewGroup) view.getParent();
-        parent.removeView(view);
-      }
-    } else if (view != null) {
-      //如果id为0的话再去判断下map里是否有存有相应的view吧，移除掉
-      for (Map.Entry<String, ViewGroup> mapEntry : mTkdWormholeMap.entrySet()) {
-        if (mapEntry.getValue().equals(view)) {
-          String tempId = mapEntry.getKey();
-          if (!TextUtils.isEmpty(tempId)) {
-            deleteWormHoleDataById(tempId, view);
-          }
-        }
-      }
     }
   }
 }

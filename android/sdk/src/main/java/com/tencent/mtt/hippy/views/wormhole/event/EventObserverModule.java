@@ -19,7 +19,7 @@ public class EventObserverModule extends HippyNativeModuleBase {
   public void postMessageToClient(HippyMap data) {
     if (mContext != null && mContext.getGlobalConfigs() != null) {
       //交给业务方自己去处理
-      mContext.getGlobalConfigs().getEventobserverAdapter().onClientMessageReceived(data);
+      mContext.getGlobalConfigs().getEventObserverAdapter().onClientMessageReceived(data);
     }
   }
 }

@@ -200,12 +200,12 @@ public class HippyCoreAPI implements HippyAPIProvider
                 return new AudioPlayerModule(context);
             }
         });
-    modules.put(EventObserverModule.class, new Provider<HippyNativeModuleBase>() {
-      @Override
-      public HippyNativeModuleBase get() {
-        return new EventObserverModule(context);
-      }
-    });
+		modules.put(EventObserverModule.class, new Provider<HippyNativeModuleBase>() {
+			@Override
+			public HippyNativeModuleBase get() {
+				return new EventObserverModule(context);
+			}
+		});
 		return modules;
 	}
 

@@ -31,10 +31,13 @@ public class TKDWormholeController extends HippyViewController<TKDWormholeView> 
     super.dispatchFunction(view, functionName, dataArray);
     switch (functionName) {
       case HippyWormholeManager.FUNCTION_SENDEVENT_TO_WORMHOLEVIEW: {
-        if (view != null && view.getChildAt(0) instanceof HippyWormholeView) {
-          //前端约定一个tkdWormhole下面只能有一个wormhole
-          HippyViewEvent event = new HippyViewEvent(HippyWormholeManager.FUNCTION_ONCUSTOMEVENT);
-          event.send(view.getChildAt(0), dataArray);
+        if (view != null && view.getChildCount() > 0) {
+          View child = view.getChildAt(0);
+          if (child != null && child instanceof HippyWormholeView) {
+            //前端约定一个tkdWormhole下面只能有一个wormhole
+            HippyViewEvent event = new HippyViewEvent(HippyWormholeManager.FUNCTION_ONCUSTOMEVENT);
+            event.send(child, dataArray);
+          }
         }
         break;
       }
