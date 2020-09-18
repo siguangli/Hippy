@@ -5,6 +5,7 @@ import android.view.View;
 import com.tencent.mtt.hippy.annotation.HippyController;
 import com.tencent.mtt.hippy.common.HippyMap;
 import com.tencent.mtt.hippy.uimanager.HippyViewController;
+import com.tencent.mtt.hippy.views.nativevue.NativeVueManager;
 
 @HippyController(name = "Wormhole")
 public class HippyWormholeController extends HippyViewController<HippyWormholeView> {
@@ -26,6 +27,7 @@ public class HippyWormholeController extends HippyViewController<HippyWormholeVi
     super.onBatchComplete(view);
     HippyWormholeManager.getInstance().onServerBatchComplete(view);
     //在这里隐藏nativeView
+    NativeVueManager.getInstance().hideNativeVueByWormholeId(view.getBusinessId());
   }
 
   public void onViewDestroy(HippyWormholeView wormHoleView) {

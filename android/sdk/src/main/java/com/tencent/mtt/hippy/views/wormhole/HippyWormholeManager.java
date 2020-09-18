@@ -133,7 +133,7 @@ public class HippyWormholeManager implements HippyWormholeProxy {
   }
 
   @Override
-  public void createWormhole(HippyMap initProps, ViewGroup parent) {
+  public void createWormhole(String wormholeId,HippyMap initProps, ViewGroup parent) {
     if (mWormholeEngine == null) {
       return;
     }
@@ -142,7 +142,6 @@ public class HippyWormholeManager implements HippyWormholeProxy {
       return;
     }
 
-    String wormholeId = getWormholeId();
     if (!TextUtils.isEmpty(wormholeId)) {
       if (!mTkdWormholeMap.containsValue(parent)) {
         mTkdWormholeMap.put(wormholeId, parent);

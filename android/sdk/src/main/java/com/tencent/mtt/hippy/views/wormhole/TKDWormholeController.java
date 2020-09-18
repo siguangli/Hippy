@@ -9,10 +9,13 @@ import com.tencent.mtt.hippy.common.HippyMap;
 import com.tencent.mtt.hippy.dom.node.StyleNode;
 import com.tencent.mtt.hippy.uimanager.HippyViewController;
 import com.tencent.mtt.hippy.uimanager.HippyViewEvent;
+import com.tencent.mtt.hippy.views.nativevue.NativeVueManager;
+import com.tencent.mtt.hippy.views.wormhole.node.TKDStyleNode;
 
 @HippyController(name = "TKDWormhole")
 public class TKDWormholeController extends HippyViewController<TKDWormholeView> {
   private HippyWormholeProxy mWormholeProxy = HippyWormholeManager.getInstance();
+  private String mWormholeId;
 
   @Override
   protected View createViewImpl(final Context context) {
@@ -22,7 +25,7 @@ public class TKDWormholeController extends HippyViewController<TKDWormholeView> 
   @Override
   protected View createViewImpl(final Context context, HippyMap initProps) {
     final TKDWormholeView tkdWormholeView = new TKDWormholeView(context);
-    mWormholeProxy.createWormhole(initProps, tkdWormholeView);
+    mWormholeProxy.createWormhole(mWormholeId,initProps, tkdWormholeView);
     return tkdWormholeView;
   }
 
@@ -48,7 +51,10 @@ public class TKDWormholeController extends HippyViewController<TKDWormholeView> 
   protected StyleNode createNode(boolean virtual)
   {
     //在这里创建node节点
-    return super.createNode(virtual);
+    TKDStyleNode tkdStyleNode = new TKDStyleNode(virtual);
+    mWormholeId = HippyWormholeManager.getInstance().getWormholeId();
+    NativeVueManager.getInstance().registerNodeByWormholeId(mWormholeId,tkdStyleNode);
+    return tkdStyleNode;
   }
 
 }
