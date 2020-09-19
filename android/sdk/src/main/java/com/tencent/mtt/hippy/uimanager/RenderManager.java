@@ -75,6 +75,20 @@ public class RenderManager
 		getControllerManager().destroy();
 	}
 
+	public RenderNode createNode(int id, String className, HippyMap props, HippyRootView rootView) {
+    boolean isLazy = mControllerManager.isControllerLazy(className);
+    RenderNode renderNode = mControllerManager.createRenderNode(id, props, className, rootView, isLazy);
+    mNodes.put(id, renderNode);
+    return renderNode;
+	}
+
+	public void removeNode(RenderNode renderNode) {
+	  if (renderNode == null) {
+	    return;
+    }
+	  mNodes.remove(renderNode.getId());
+  }
+
 	public void createNode(HippyRootView hippyRootView, int id, int pId, int childIndex, String className, HippyMap props)
 	{
 		LogUtils.d("RenderManager", "createNode ID " + id + " mParentId " + pId + " index " + childIndex + "className" + className);

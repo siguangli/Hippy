@@ -2,6 +2,7 @@ package com.tencent.mtt.hippy.views.wormhole;
 
 import android.content.Context;
 import android.view.View;
+import android.view.ViewGroup;
 
 import com.tencent.mtt.hippy.annotation.HippyController;
 import com.tencent.mtt.hippy.common.HippyArray;
@@ -9,13 +10,11 @@ import com.tencent.mtt.hippy.common.HippyMap;
 import com.tencent.mtt.hippy.dom.node.StyleNode;
 import com.tencent.mtt.hippy.uimanager.HippyViewController;
 import com.tencent.mtt.hippy.uimanager.HippyViewEvent;
-import com.tencent.mtt.hippy.views.nativevue.NativeVueManager;
 import com.tencent.mtt.hippy.views.wormhole.node.TKDStyleNode;
 
 @HippyController(name = "TKDWormhole")
 public class TKDWormholeController extends HippyViewController<TKDWormholeView> {
   private HippyWormholeProxy mWormholeProxy = HippyWormholeManager.getInstance();
-  private String mWormholeId;
 
   @Override
   protected View createViewImpl(final Context context) {
@@ -25,8 +24,16 @@ public class TKDWormholeController extends HippyViewController<TKDWormholeView> 
   @Override
   protected View createViewImpl(final Context context, HippyMap initProps) {
     final TKDWormholeView tkdWormholeView = new TKDWormholeView(context);
-    mWormholeProxy.createWormhole(mWormholeId,initProps, tkdWormholeView);
+    tryAddNVView(tkdWormholeView, initProps);
+    mWormholeProxy.createWormhole(TKDStyleNode.getWormholeId(initProps),initProps, tkdWormholeView);
     return tkdWormholeView;
+  }
+
+  private void tryAddNVView(ViewGroup parent, HippyMap props) {
+    View view = NativeVueManager.getInstance().getNVView(props);
+    if (view != null && view.getParent() == null) {
+      parent.addView(view);
+    }
   }
 
   @Override
@@ -48,13 +55,10 @@ public class TKDWormholeController extends HippyViewController<TKDWormholeView> 
   }
 
   @Override
-  protected StyleNode createNode(boolean virtual)
-  {
-    //在这里创建node节点
-    TKDStyleNode tkdStyleNode = new TKDStyleNode(virtual);
-    mWormholeId = HippyWormholeManager.getInstance().getWormholeId();
-    NativeVueManager.getInstance().registerNodeByWormholeId(mWormholeId,tkdStyleNode);
-    return tkdStyleNode;
+  protected StyleNode createNode(boolean virtual) {
+    HippyWormholeManager manager = HippyWormholeManager.getInstance();
+    String wormholeId = manager.getWormholeId();
+    return new TKDStyleNode(virtual, manager.getEngineContext(), manager.getHippyRootView(), wormholeId);
   }
 
 }

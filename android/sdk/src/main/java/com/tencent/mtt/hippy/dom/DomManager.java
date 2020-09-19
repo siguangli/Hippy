@@ -314,6 +314,40 @@ public class DomManager implements HippyInstanceLifecycleEventListener, HippyEng
     return node;
   }
 
+  public void addNode(DomNode domNode) {
+	  if (domNode == null) {
+	    return;
+    }
+	  mNodeRegistry.addNode(domNode);
+  }
+
+  public void removeNode(DomNode domNode) {
+	  if (domNode == null) {
+	    return;
+    }
+	  mNodeRegistry.removeNode(domNode.getId());
+  }
+
+  public void updateDomStyle(DomNode domNode) {
+	  if (domNode == null) {
+	    return;
+    }
+	  mDomStyleUpdateManager.updateStyle(domNode, domNode.getTotalProps());
+  }
+
+  public static boolean layoutOnly(DomNode domNode) {
+	  if (domNode == null) {
+	    return true;
+    }
+	  HippyMap props = domNode.getTotalProps();
+	  if (props == null) {
+	    return true;
+    }
+
+    return (NodeProps.VIEW_CLASS_NAME.equals(domNode.getViewClass())) && jsJustLayout((HippyMap) props.get(NodeProps.STYLE))
+      && !isTouchEvent(props) && HippyTag.jsJustLayout(props);
+  }
+
 	public void createNode(final HippyRootView hippyRootView, final int id, int pid, int index, final String className, HippyMap map)
 	{
 		//	assertThread();
@@ -411,7 +445,7 @@ public class DomManager implements HippyInstanceLifecycleEventListener, HippyEng
 
 	}
 
-	private boolean isTouchEvent(HippyMap props)
+	private static boolean isTouchEvent(HippyMap props)
 	{
 		if (props == null)
 		{
@@ -448,7 +482,7 @@ public class DomManager implements HippyInstanceLifecycleEventListener, HippyEng
 		mEnginePaused = true;
 	}
 
-	private ViewIndex findNativeViewIndex(DomNode nativeParentNode, DomNode node, int index)
+	public static ViewIndex findNativeViewIndex(DomNode nativeParentNode, DomNode node, int index)
 	{
 
 		for (int i = 0; i < nativeParentNode.getChildCount(); i++)
@@ -479,7 +513,7 @@ public class DomManager implements HippyInstanceLifecycleEventListener, HippyEng
 		return new ViewIndex(false, index);
 	}
 
-	DomNode findNativeViewParent(DomNode domNode)
+	public static DomNode findNativeViewParent(DomNode domNode)
 	{
 		DomNode nativeParent = domNode.getParent();
 		while (nativeParent.isJustLayout())
@@ -1045,7 +1079,7 @@ public class DomManager implements HippyInstanceLifecycleEventListener, HippyEng
 		});
 	}
 
-	class ViewIndex
+	public static class ViewIndex
 	{
 		public boolean	mResult;
 		public int		mIndex;

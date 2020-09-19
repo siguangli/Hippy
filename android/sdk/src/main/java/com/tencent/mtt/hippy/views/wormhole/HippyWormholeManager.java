@@ -9,18 +9,18 @@ import android.view.ViewGroup;
 import com.tencent.mtt.hippy.HippyEngine;
 import com.tencent.mtt.hippy.HippyEngineContext;
 import com.tencent.mtt.hippy.HippyInstanceContext;
+import com.tencent.mtt.hippy.HippyRootView;
 import com.tencent.mtt.hippy.common.HippyMap;
 import com.tencent.mtt.hippy.uimanager.HippyViewEvent;
 import com.tencent.mtt.hippy.uimanager.RenderManager;
 import com.tencent.mtt.hippy.uimanager.RenderNode;
 import com.tencent.mtt.hippy.utils.PixelUtil;
 
-import java.util.concurrent.atomic.AtomicInteger;
 import org.json.JSONArray;
 
 import java.util.ArrayList;
-import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class HippyWormholeManager implements HippyWormholeProxy {
   public static final String WORMHOLE_TAG                       = "hippy_wormhole";
@@ -36,6 +36,7 @@ public class HippyWormholeManager implements HippyWormholeProxy {
   private static final AtomicInteger mWormholeIdCounter = new AtomicInteger(1000);
   private static volatile HippyWormholeManager INSTANCE;
   private HippyEngine mWormholeEngine;
+  private HippyRootView mHippyRootView;
   private ConcurrentHashMap<String, ViewGroup> mTkdWormholeMap = new ConcurrentHashMap<String, ViewGroup>();
   //存储业务方引擎
   private ArrayList<HippyEngine> mClientEngineList = new ArrayList<>();
@@ -55,8 +56,17 @@ public class HippyWormholeManager implements HippyWormholeProxy {
     return INSTANCE;
   }
 
-  public void setServerEngine(HippyEngine engine) {
+  public void setServerEngine(HippyEngine engine, final HippyRootView hippyRootView) {
     mWormholeEngine = engine;
+    mHippyRootView = hippyRootView;
+  }
+
+  public HippyEngineContext getEngineContext() {
+    return mWormholeEngine != null ? mWormholeEngine.getEngineContext() : null;
+  }
+
+  public HippyRootView getHippyRootView() {
+    return mHippyRootView;
   }
 
   private RenderNode getWormholeNode(HippyWormholeView wormhole) {
@@ -108,7 +118,7 @@ public class HippyWormholeManager implements HippyWormholeProxy {
       ViewGroup oldParent = (ViewGroup)(wormholeView.getParent());
       if (oldParent != newParent) {
         oldParent.removeView(wormholeView);
-        newParent.addView(wormholeView);
+        newParent.addView(wormholeView, 0);
       }
 
       float width = node.getWidth();

@@ -22,6 +22,7 @@ import com.tencent.mtt.hippy.adapter.DefaultLogAdapter;
 import com.tencent.mtt.hippy.adapter.HippyLogAdapter;
 import com.tencent.mtt.hippy.adapter.device.DefaultDeviceAdapter;
 import com.tencent.mtt.hippy.adapter.device.HippyDeviceAdapter;
+import com.tencent.mtt.hippy.adapter.dtcollect.IHippyDtCollectAdapter;
 import com.tencent.mtt.hippy.adapter.exception.DefaultExceptionHandler;
 import com.tencent.mtt.hippy.adapter.exception.HippyExceptionHandlerAdapter;
 import com.tencent.mtt.hippy.adapter.executor.DefaultExecutorSupplierAdapter;
@@ -33,12 +34,14 @@ import com.tencent.mtt.hippy.adapter.http.HippyHttpAdapter;
 import com.tencent.mtt.hippy.adapter.image.HippyImageLoader;
 import com.tencent.mtt.hippy.adapter.monitor.DefaultEngineMonitorAdapter;
 import com.tencent.mtt.hippy.adapter.monitor.HippyEngineMonitorAdapter;
+import com.tencent.mtt.hippy.adapter.nv.NativeVueAdapter;
 import com.tencent.mtt.hippy.adapter.sharedpreferences.DefaultSharedPreferencesAdapter;
 import com.tencent.mtt.hippy.adapter.sharedpreferences.HippySharedPreferencesAdapter;
 import com.tencent.mtt.hippy.adapter.soloader.DefaultSoLoaderAdapter;
 import com.tencent.mtt.hippy.adapter.soloader.HippySoLoaderAdapter;
 import com.tencent.mtt.hippy.adapter.storage.DefaultStorageAdapter;
 import com.tencent.mtt.hippy.adapter.storage.HippyStorageAdapter;
+import com.tencent.mtt.hippy.adapter.thirdparty.HippyThirdPartyAdapter;
 import com.tencent.mtt.hippy.bridge.HippyCoreAPI;
 import com.tencent.mtt.hippy.bridge.bundleloader.HippyBundleLoader;
 import com.tencent.mtt.hippy.common.HippyJsException;
@@ -46,8 +49,6 @@ import com.tencent.mtt.hippy.common.HippyMap;
 import com.tencent.mtt.hippy.utils.ContextHolder;
 import com.tencent.mtt.hippy.utils.LogUtils;
 import com.tencent.mtt.hippy.utils.UIThreadUtils;
-import com.tencent.mtt.hippy.adapter.thirdparty.HippyThirdPartyAdapter;
-import com.tencent.mtt.hippy.adapter.dtcollect.IHippyDtCollectAdapter;
 import com.tencent.mtt.hippy.views.wormhole.event.DefaultEventObserverAdapter;
 import com.tencent.mtt.hippy.views.wormhole.event.HippyEventObserverAdapter;
 
@@ -317,6 +318,8 @@ public abstract class HippyEngine
 		// 可选参数 日志输出
 		@Deprecated
 		public HippyLogAdapter logAdapter;
+
+		public NativeVueAdapter nativeVueAdapter;
 
 		protected void check()
 		{

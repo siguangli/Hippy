@@ -36,11 +36,11 @@ public class UIManagerModule extends HippyNativeModuleBase
 	final String				OPTION_TYPE_UPDATE_NODE			= "updateNode";
 	final String				OPTION_TYPE_DELETE_NODE			= "deleteNode";
 	final String				OPTION_TYPE_PARAM				= "param";
-	final String				ID								= "id";
+	public static final String	ID								= "id";
 	final String				PID								= "pId";
 	final String				INDEX							= "index";
-	final String				NAME							= "name";
-	final String				PROPS							= "props";
+	public static final String	NAME							= "name";
+	public static final String	PROPS							= "props";
 
 	public UIManagerModule(HippyEngineContext context)
 	{

@@ -157,7 +157,7 @@ public class RenderNode
 		return mChildren.remove(uiNode);
 	}
 
-	void addChild(RenderNode uiNode, int index)
+	public void addChild(RenderNode uiNode, int index)
 	{
 		mChildren.add(index, uiNode);
 		uiNode.mParent = this;
