@@ -20,11 +20,11 @@ public class TKDStyleNode extends StyleNode {
   private NVViewModel nvViewModel;
   private String wormholeId;
 
-  public TKDStyleNode(boolean isVirtual, HippyEngineContext engineContext, HippyRootView hippyRootView, String wormholdId) {
+  public TKDStyleNode(boolean isVirtual, HippyEngineContext engineContext, HippyRootView hippyRootView, String wormholeId) {
     this.mIsVirtual = isVirtual;
     nvViewModel = new NVViewModel(engineContext, hippyRootView);
-    this.wormholeId = wormholdId;
-    NativeVueManager.getInstance().registerNodeByWormholeId(wormholdId, this);
+    this.wormholeId = wormholeId;
+    NativeVueManager.getInstance().registerNodeByWormholeId(wormholeId, this);
   }
 
   public boolean isVirtual() {
