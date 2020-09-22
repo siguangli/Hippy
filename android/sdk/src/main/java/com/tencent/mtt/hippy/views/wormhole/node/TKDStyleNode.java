@@ -20,11 +20,11 @@ public class TKDStyleNode extends StyleNode {
   private NVViewModel nvViewModel;
   private String wormholeId;
 
-  public TKDStyleNode(boolean isVirtual, HippyEngineContext engineContext, HippyRootView hippyRootView, String wormholdId) {
+  public TKDStyleNode(boolean isVirtual, HippyEngineContext engineContext, HippyRootView hippyRootView, String wormholeId) {
     this.mIsVirtual = isVirtual;
     nvViewModel = new NVViewModel(engineContext, hippyRootView);
-    this.wormholeId = wormholdId;
-    NativeVueManager.getInstance().registerNodeByWormholeId(wormholdId, this);
+    this.wormholeId = wormholeId;
+    NativeVueManager.getInstance().registerNodeByWormholeId(wormholeId, this);
   }
 
   public boolean isVirtual() {
@@ -42,9 +42,16 @@ public class TKDStyleNode extends StyleNode {
     HippyMap style = props.getMap(NodeProps.STYLE);
     if (style == null) {
       style = new HippyMap();
+      props.pushMap(NodeProps.STYLE, style);
     }
-    style.pushDouble(NodeProps.WIDTH, PixelUtil.px2dp(nvViewModel.getLayoutWidth()));
-    style.pushDouble(NodeProps.HEIGHT, PixelUtil.px2dp(nvViewModel.getLayoutHeight()));
+    float nvWidth = nvViewModel.getLayoutWidth();
+    float nvHeight = nvViewModel.getLayoutHeight();
+    if (nvWidth != 0) {
+      style.pushDouble(NodeProps.WIDTH, PixelUtil.px2dp(nvWidth));
+    }
+    if (nvHeight != 0) {
+      style.pushDouble(NodeProps.HEIGHT, PixelUtil.px2dp(nvHeight));
+    }
 
     props.pushString(HippyWormholeManager.WORMHOLE_WORMHOLE_ID, wormholeId);
   }
