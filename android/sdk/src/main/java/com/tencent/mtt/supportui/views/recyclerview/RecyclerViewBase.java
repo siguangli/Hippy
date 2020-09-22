@@ -3758,7 +3758,7 @@ public abstract class RecyclerViewBase extends ViewGroup
 				//				Log.e(TAG, "getViewFroPosition-->" + position + "-------------------------------------");
 				// Log.d(TAG, mRecycler.dump());
 			}
-			ViewHolder holder;
+			ViewHolder holder = null;
 			final int offsetPosition = findPositionOffset(position);
 			// if there is suspentionView(sticky = true), remove suspentionView first
 			if (getLayoutManager() instanceof BaseLayoutManager && !isRepeatableSuspensionMode())
@@ -3778,14 +3778,13 @@ public abstract class RecyclerViewBase extends ViewGroup
 					((BaseLayoutManager) getLayoutManager()).removeSuspentions();
 				}
 			}
-			if (mAdapter.hasCustomRecycler())
-			{
-				holder = mAdapter.findBestHolderForPosition(offsetPosition, this);
-			}
-			else
-			{
-				holder = getViewHolderForPosition(offsetPosition);
-			}
+      if (mAdapter.getItemViewType(position) != RecyclerViewBase.ViewHolder.TYPE_WORMHOLE) {
+        if (mAdapter.hasCustomRecycler()) {
+          holder = mAdapter.findBestHolderForPosition(offsetPosition, this);
+        } else {
+          holder = getViewHolderForPosition(offsetPosition);
+        }
+      }
 			if (holder == null)
 			{
 				if (offsetPosition < 0 || offsetPosition >= mAdapter.getItemCount())
@@ -6895,6 +6894,7 @@ public abstract class RecyclerViewBase extends ViewGroup
 		public static final int		TYPE_NORMAL			      = 3;
 		public static final int		TYPE_CUSTOM_HEADERE		= 4;
 		public static final int		TYPE_CUSTOM_FOOTER		= 5;
+		public static final int TYPE_WORMHOLE = 6;
 		public int					mViewType			= TYPE_NORMAL;
 		/**
 		 * This ViewHolder has been bound to a position; mPosition, mItemId and

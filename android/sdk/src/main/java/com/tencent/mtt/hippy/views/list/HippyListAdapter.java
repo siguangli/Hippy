@@ -28,6 +28,8 @@ import com.tencent.mtt.hippy.uimanager.RenderNode;
 import com.tencent.mtt.hippy.utils.LogUtils;
 import com.tencent.mtt.hippy.views.refresh.HippyPullFooterView;
 import com.tencent.mtt.hippy.views.refresh.HippyPullHeaderView;
+import com.tencent.mtt.hippy.views.wormhole.HippyWormholeManager;
+import com.tencent.mtt.hippy.views.wormhole.node.TKDRenderNode;
 import com.tencent.mtt.supportui.views.recyclerview.*;
 
 import java.util.ArrayList;
@@ -94,7 +96,12 @@ public class HippyListAdapter extends RecyclerAdapter implements IRecycleItemTyp
 		//LogUtils.d("HippyListView", "onCreateContentViewWithPos start position " + position);
 		RenderNode contentViewRenderNode = mHippyContext.getRenderManager().getRenderNode(mParentRecyclerView.getId()).getChildAt(position);
 		contentViewRenderNode.setLazy(false);
-		View view = contentViewRenderNode.createViewRecursive();
+    View view = null;
+    if (getItemViewType(position) == RecyclerViewBase.ViewHolder.TYPE_WORMHOLE) {
+      view = HippyWormholeManager.getInstance().createListItemView(mParentRecyclerView.getContext(), contentViewRenderNode);
+    } else {
+      view = contentViewRenderNode.createViewRecursive();
+    }
     contentHolder.mContentView = view;
     if (view != null && view instanceof HippyPullHeaderView) {
       ((HippyPullHeaderView)view).setParentView(mParentRecyclerView);
@@ -123,7 +130,12 @@ public class HippyListAdapter extends RecyclerAdapter implements IRecycleItemTyp
 			RenderNode parentNode = nodeHolder.mBindNode.getParent();
 			if (parentNode != null)
 			{
-				mHippyContext.getRenderManager().getControllerManager().deleteChild(parentNode.getId(), nodeHolder.mBindNode.getId());
+			  //todo 待优化，这里强制不让worm hole节点被删掉，否则会出现多次滚动后item空白的问题
+        if (nodeHolder.mBindNode.getChildAt(0) != null && nodeHolder.mBindNode.getChildAt(0).getChildAt(0) instanceof TKDRenderNode) {
+          //虫洞卡片不做任何处理，代码留空方便理解
+        } else {
+          mHippyContext.getRenderManager().getControllerManager().deleteChild(parentNode.getId(), nodeHolder.mBindNode.getId());
+        }
 			}
 			//LogUtils.d("HippyListView", "onViewAbandon end " + nodeHolder.mBindNode.toString());
 		}
@@ -573,6 +585,10 @@ public class HippyListAdapter extends RecyclerAdapter implements IRecycleItemTyp
 			RenderNode listItemNode = mHippyContext.getRenderManager().getRenderNode(mParentRecyclerView.getId()).getChildAt(index);
 			if (listItemNode != null)
 			{
+        if (listItemNode.getChildAt(0) != null && listItemNode.getChildAt(0).getChildAt(0) instanceof TKDRenderNode) {
+          return RecyclerViewBase.ViewHolder.TYPE_WORMHOLE;
+        }
+
 			  if (listItemNode instanceof PullFooterRenderNode) {
 			    return RecyclerViewBase.ViewHolder.TYPE_CUSTOM_FOOTER;
         }

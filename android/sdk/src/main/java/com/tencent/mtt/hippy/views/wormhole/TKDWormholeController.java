@@ -4,12 +4,16 @@ import android.content.Context;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.tencent.mtt.hippy.HippyRootView;
 import com.tencent.mtt.hippy.annotation.HippyController;
 import com.tencent.mtt.hippy.common.HippyArray;
 import com.tencent.mtt.hippy.common.HippyMap;
 import com.tencent.mtt.hippy.dom.node.StyleNode;
+import com.tencent.mtt.hippy.uimanager.ControllerManager;
 import com.tencent.mtt.hippy.uimanager.HippyViewController;
 import com.tencent.mtt.hippy.uimanager.HippyViewEvent;
+import com.tencent.mtt.hippy.uimanager.RenderNode;
+import com.tencent.mtt.hippy.views.wormhole.node.TKDRenderNode;
 import com.tencent.mtt.hippy.views.wormhole.node.TKDStyleNode;
 
 @HippyController(name = "TKDWormhole")
@@ -52,6 +56,11 @@ public class TKDWormholeController extends HippyViewController<TKDWormholeView> 
         break;
       }
     }
+  }
+
+  @Override
+  public RenderNode createRenderNode(int id, HippyMap props, String className, HippyRootView hippyRootView, ControllerManager controllerManager, boolean lazy) {
+    return new TKDRenderNode(id,  props, className, hippyRootView, controllerManager, lazy);
   }
 
   @Override

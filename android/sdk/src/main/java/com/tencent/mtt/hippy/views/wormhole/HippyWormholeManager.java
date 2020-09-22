@@ -15,6 +15,8 @@ import com.tencent.mtt.hippy.uimanager.HippyViewEvent;
 import com.tencent.mtt.hippy.uimanager.RenderManager;
 import com.tencent.mtt.hippy.uimanager.RenderNode;
 import com.tencent.mtt.hippy.utils.PixelUtil;
+import com.tencent.mtt.hippy.views.list.HippyListItemView;
+import com.tencent.mtt.hippy.views.wormhole.node.TKDStyleNode;
 
 import org.json.JSONArray;
 
@@ -38,6 +40,7 @@ public class HippyWormholeManager implements HippyWormholeProxy {
   private HippyEngine mWormholeEngine;
   private HippyRootView mHippyRootView;
   private ConcurrentHashMap<String, ViewGroup> mTkdWormholeMap = new ConcurrentHashMap<String, ViewGroup>();
+  private ConcurrentHashMap<String, ViewGroup> mTkdWormholeListitemMap = new ConcurrentHashMap<String, ViewGroup>();
   //存储业务方引擎
   private ArrayList<HippyEngine> mClientEngineList = new ArrayList<>();
 
@@ -114,18 +117,19 @@ public class HippyWormholeManager implements HippyWormholeProxy {
       if (newParent == null) {
         return;
       }
-
-      ViewGroup oldParent = (ViewGroup)(wormholeView.getParent());
+      ViewGroup oldParent = (ViewGroup) (wormholeView.getParent());
       if (oldParent != newParent) {
         oldParent.removeView(wormholeView);
         newParent.addView(wormholeView, 0);
+        //这里校验一下是否需要将创建出来的wormhole及其层级关系挪到WormParentFrameLayout下面
+        resetViewLevel(newParent, businessId);
       }
-
       float width = node.getWidth();
       float height = node.getHeight();
       sendBatchCompleteMessageToClient(width, height, newParent);
     }
   }
+
 
   public String getWormholeId() {
     int id = mWormholeIdCounter.getAndIncrement();
@@ -155,8 +159,8 @@ public class HippyWormholeManager implements HippyWormholeProxy {
     if (!TextUtils.isEmpty(wormholeId)) {
       if (!mTkdWormholeMap.containsValue(parent)) {
         mTkdWormholeMap.put(wormholeId, parent);
+        sendDataReceivedMessageToServer(wormholeId,initProps);
       }
-      sendDataReceivedMessageToServer(wormholeId,initProps);
     }
   }
 
@@ -191,6 +195,51 @@ public class HippyWormholeManager implements HippyWormholeProxy {
   public void onWormholeDestroy(String id) {
     if (!TextUtils.isEmpty(id)) {
       mTkdWormholeMap.remove(id);
+      mTkdWormholeListitemMap.remove(id);
+    }
+  }
+
+  public ViewGroup createListItemView(Context context, RenderNode targetNode) {
+    //由于listItem和tkdWormhole的位置关系是确定的，所以这里直接根据listItem取出tkdWormhole的props
+    String busid = TKDStyleNode.getWormholeId(targetNode.getChildAt(0).getChildAt(0).getProps());
+    if (mTkdWormholeListitemMap.containsKey(busid)) {
+      resetViewLevel(mTkdWormholeMap.get(busid),busid);
+      ViewGroup result = mTkdWormholeListitemMap.get(busid);
+      if (result.getChildCount() <= 0 || ((ViewGroup) result.getChildAt(0)).getChildCount() < 0) {
+        //如果该itemView下面没有挂载过tkdWormholeView，触发节点的createView方法创建tkdWormholeView
+        targetNode.createViewRecursive();
+      }
+      return result;
+    }
+    //如果引擎还在创建wormhole的话，这里先返回一个空viewGroup吧，等wormhole创建好了之后再将其add进来
+    WormParentFrameLayout frameLayout = new WormParentFrameLayout(context);
+    mTkdWormholeListitemMap.put(busid, frameLayout);
+    resetViewLevel(mTkdWormholeMap.get(busid),busid);
+    if (frameLayout.getChildCount() <= 0 || ((ViewGroup) frameLayout.getChildAt(0)).getChildCount() < 0) {
+      //如果该itemView下面没有挂载过tkdWormholeView，触发节点的createView方法创建tkdWormholeView
+      targetNode.createViewRecursive();
+    }
+    return frameLayout;
+  }
+
+  private void resetViewLevel(ViewGroup targetView, String busid) {
+    if (targetView == null) {
+      return;
+    }
+    //如果tkdWormHole及其child已经创建出来了，这里需要往上遍历找到HippyListItemView,将HippyListItemView都挪到WormParentFrameLayout下面
+    while (targetView.getParent() instanceof ViewGroup) {
+      if (targetView instanceof HippyListItemView) {
+        break;
+      }
+      targetView = (ViewGroup) targetView.getParent();
+    }
+    if (targetView instanceof HippyListItemView) {
+      if (targetView.getParent() != null && mTkdWormholeListitemMap.get(busid) != null) {
+        ((ViewGroup) targetView.getParent()).removeView(targetView);
+      }
+      if (mTkdWormholeListitemMap.get(busid) != null) {
+        mTkdWormholeListitemMap.get(busid).addView(targetView);
+      }
     }
   }
 }
