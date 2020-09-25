@@ -34,7 +34,7 @@ import com.tencent.mtt.hippy.adapter.http.HippyHttpAdapter;
 import com.tencent.mtt.hippy.adapter.image.HippyImageLoader;
 import com.tencent.mtt.hippy.adapter.monitor.DefaultEngineMonitorAdapter;
 import com.tencent.mtt.hippy.adapter.monitor.HippyEngineMonitorAdapter;
-import com.tencent.mtt.hippy.adapter.nv.NativeVueAdapter;
+import com.tencent.mtt.hippy.adapter.nv.HippyNativeVueAdapter;
 import com.tencent.mtt.hippy.adapter.sharedpreferences.DefaultSharedPreferencesAdapter;
 import com.tencent.mtt.hippy.adapter.sharedpreferences.HippySharedPreferencesAdapter;
 import com.tencent.mtt.hippy.adapter.soloader.DefaultSoLoaderAdapter;
@@ -319,7 +319,7 @@ public abstract class HippyEngine
 		@Deprecated
 		public HippyLogAdapter logAdapter;
 
-		public NativeVueAdapter nativeVueAdapter;
+		public HippyNativeVueAdapter hippyNativeVueAdapter;
 
 		protected void check()
 		{

@@ -7,4 +7,6 @@ public interface INVTemplateLoader {
 
   String getTemplate(String templateId);
 
+  boolean parseTemplates(String templates);
+
 }

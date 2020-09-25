@@ -1,5 +1,6 @@
 package com.tencent.mtt.hippy.views.wormhole.node;
 
+import android.text.TextUtils;
 import android.view.View;
 
 import com.tencent.mtt.hippy.HippyEngineContext;
@@ -9,16 +10,19 @@ import com.tencent.mtt.hippy.dom.node.NodeProps;
 import com.tencent.mtt.hippy.dom.node.StyleNode;
 import com.tencent.mtt.hippy.nv.NVViewModel;
 import com.tencent.mtt.hippy.utils.PixelUtil;
-import com.tencent.mtt.hippy.views.wormhole.NativeVueManager;
 import com.tencent.mtt.hippy.views.wormhole.HippyWormholeManager;
+import com.tencent.mtt.hippy.views.wormhole.NativeVueManager;
 
 public class TKDStyleNode extends StyleNode {
 
   private static final String TAG = "TKDStyleNode";
+  private static final String TEMPLATE_TYPE = "templateType";
+  private static final String DATA = "data";
 
   private final boolean mIsVirtual;
   private NVViewModel nvViewModel;
   private String wormholeId;
+  private boolean hasLayoutNv;
 
   public TKDStyleNode(boolean isVirtual, HippyEngineContext engineContext, HippyRootView hippyRootView, String wormholeId) {
     this.mIsVirtual = isVirtual;
@@ -34,12 +38,31 @@ public class TKDStyleNode extends StyleNode {
   @Override
   public void setProps(HippyMap props) {
     super.setProps(props);
+    HippyMap p = getTotalProps();
+    if (p == null) {
+      return;
+    }
+    p.pushString(HippyWormholeManager.WORMHOLE_WORMHOLE_ID, wormholeId);
+
+    if (hasLayoutNv) {
+      return;
+    }
 
     //build nv node tree and layout it
-    nvViewModel.buildNVNodeTreeSync(props);
+    HippyMap params = p.getMap(HippyWormholeManager.WORMHOLE_PARAMS);
+    String templateType = getTemplateType(params);
+    if (TextUtils.isEmpty(templateType)) {
+      return;
+    }
+    String template = NativeVueManager.getInstance().getTemplate(templateType);
+    if (TextUtils.isEmpty(template)) {
+      return;
+    }
+
+    nvViewModel.buildNVNodeTreeSync(template, params);
 
     //put layout width, height into style
-    HippyMap style = props.getMap(NodeProps.STYLE);
+    HippyMap style = p.getMap(NodeProps.STYLE);
     if (style == null) {
       style = new HippyMap();
       props.pushMap(NodeProps.STYLE, style);
@@ -52,8 +75,7 @@ public class TKDStyleNode extends StyleNode {
     if (nvHeight != 0) {
       style.pushDouble(NodeProps.HEIGHT, PixelUtil.px2dp(nvHeight));
     }
-
-    props.pushString(HippyWormholeManager.WORMHOLE_WORMHOLE_ID, wormholeId);
+    hasLayoutNv = true;
   }
 
   @Override
@@ -79,4 +101,14 @@ public class TKDStyleNode extends StyleNode {
     return props.getString(HippyWormholeManager.WORMHOLE_WORMHOLE_ID);
   }
 
+  public static String getTemplateType(HippyMap params) {
+    if (params == null) {
+      return null;
+    }
+    HippyMap data = params.getMap(DATA);
+    if (data == null) {
+      return null;
+    }
+    return data.getString(TEMPLATE_TYPE);
+  }
 }
