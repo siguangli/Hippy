@@ -8,8 +8,7 @@ import com.tencent.mtt.hippy.common.HippyMap;
 import com.tencent.mtt.hippy.uimanager.ControllerManager;
 import com.tencent.mtt.hippy.uimanager.HippyViewController;
 import com.tencent.mtt.hippy.uimanager.RenderNode;
-import com.tencent.mtt.hippy.views.wormhole.node.TKDWormholeRenderNode;
-import com.tencent.mtt.hippy.views.wormhole.node.WormholeRenderNode;
+import com.tencent.mtt.hippy.uimanager.WormholeRenderNode;
 
 @HippyController(name = "Wormhole")
 public class HippyWormholeController extends HippyViewController<HippyWormholeView> {
@@ -20,9 +19,8 @@ public class HippyWormholeController extends HippyViewController<HippyWormholeVi
 
   @Override
   protected View createViewImpl(final Context context, HippyMap iniProps) {
-    String businessId = HippyWormholeManager.getInstance().getWormholeIdFromProps(iniProps);
     HippyWormholeView wormholeView = new HippyWormholeView(context);
-    wormholeView.setBusinessId(businessId);
+    HippyWormholeManager.getInstance().onCreateWormholeView(wormholeView, iniProps);
     return wormholeView;
   }
 
@@ -37,11 +35,13 @@ public class HippyWormholeController extends HippyViewController<HippyWormholeVi
   @Override
   public void onBatchComplete(HippyWormholeView view) {
     super.onBatchComplete(view);
-    HippyWormholeManager.getInstance().onServerBatchComplete(view);
+    if (view != null) {
+      HippyWormholeManager.getInstance().onServerBatchComplete(view);
+    }
   }
 
   public void onViewDestroy(HippyWormholeView wormHoleView) {
-    HippyWormholeManager.getInstance().onWormholeDestroy(wormHoleView.getBusinessId());
+    //HippyWormholeManager.getInstance().onWormholeDestroy(wormHoleView.getBusinessId());
   }
 
 }

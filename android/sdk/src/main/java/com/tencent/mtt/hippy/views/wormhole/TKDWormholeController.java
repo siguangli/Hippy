@@ -11,7 +11,7 @@ import com.tencent.mtt.hippy.uimanager.ControllerManager;
 import com.tencent.mtt.hippy.uimanager.HippyViewController;
 import com.tencent.mtt.hippy.uimanager.HippyViewEvent;
 import com.tencent.mtt.hippy.uimanager.RenderNode;
-import com.tencent.mtt.hippy.views.wormhole.node.TKDWormholeRenderNode;
+import com.tencent.mtt.hippy.uimanager.TKDWormholeRenderNode;
 
 @HippyController(name = "TKDWormhole")
 public class TKDWormholeController extends HippyViewController<TKDWormholeView> {
@@ -25,6 +25,7 @@ public class TKDWormholeController extends HippyViewController<TKDWormholeView> 
   @Override
   protected View createViewImpl(final Context context, HippyMap initProps) {
     final TKDWormholeView tkdWormholeView = new TKDWormholeView(context);
+    HippyWormholeManager.getInstance().onCreateTKDWormholeView(tkdWormholeView, initProps);
     return tkdWormholeView;
   }
 
@@ -34,6 +35,11 @@ public class TKDWormholeController extends HippyViewController<TKDWormholeView> 
     TKDWormholeRenderNode node = new TKDWormholeRenderNode(id, props, className, hippyRootView, controllerManager, lazy);
     HippyWormholeManager.getInstance().onCreateTKDWormholeNode(props, node);
     return node;
+  }
+
+  @Override
+  public void onViewDestroy(TKDWormholeView tkdWormHoleView) {
+    HippyWormholeManager.getInstance().onTKDWormholeViewDestroy(tkdWormHoleView);
   }
 
   @Override
