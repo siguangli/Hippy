@@ -100,8 +100,10 @@ public class NVNodeTree {
         @Override
         public void onWalk(DomNode node) {
           domManager.removeNode(node);
-          RenderNode renderNode = renderManager.getRenderNode(node.getId());
+          int id = node.getId();
+          RenderNode renderNode = renderManager.getRenderNode(id);
           renderManager.removeNode(renderNode);
+          renderManager.getControllerManager().removeCacheView(id);
         }
       });
 
