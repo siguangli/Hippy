@@ -136,8 +136,6 @@ public class HippyWormholeEngine
 								return true;
 							}
 						});
-
-            HippyWormholeManager.getInstance().setServerRootView(mHippyRootView);
 					}
 				}
 			});

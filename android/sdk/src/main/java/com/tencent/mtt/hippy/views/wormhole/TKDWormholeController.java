@@ -3,19 +3,17 @@ package com.tencent.mtt.hippy.views.wormhole;
 import android.content.Context;
 import android.view.View;
 
-import com.tencent.mtt.hippy.HippyRootView;
 import com.tencent.mtt.hippy.annotation.HippyController;
 import com.tencent.mtt.hippy.common.HippyArray;
 import com.tencent.mtt.hippy.common.HippyMap;
-import com.tencent.mtt.hippy.uimanager.ControllerManager;
+import com.tencent.mtt.hippy.dom.node.StyleNode;
+import com.tencent.mtt.hippy.dom.node.TKDWormholeNode;
 import com.tencent.mtt.hippy.uimanager.HippyViewController;
 import com.tencent.mtt.hippy.uimanager.HippyViewEvent;
-import com.tencent.mtt.hippy.uimanager.RenderNode;
-import com.tencent.mtt.hippy.uimanager.TKDWormholeRenderNode;
 
 @HippyController(name = "TKDWormhole")
 public class TKDWormholeController extends HippyViewController<TKDWormholeView> {
-  private HippyWormholeProxy mWormholeProxy = HippyWormholeManager.getInstance();
+  //private HippyWormholeProxy mWormholeProxy = HippyWormholeManager.getInstance();
 
   @Override
   protected View createViewImpl(final Context context) {
@@ -24,17 +22,17 @@ public class TKDWormholeController extends HippyViewController<TKDWormholeView> 
 
   @Override
   protected View createViewImpl(final Context context, HippyMap initProps) {
-    final TKDWormholeView tkdWormholeView = new TKDWormholeView(context);
-    HippyWormholeManager.getInstance().onCreateTKDWormholeView(tkdWormholeView, initProps);
+    TKDWormholeView tkdWormholeView = new TKDWormholeView(context);
+    String wormholeId = HippyWormholeManager.getInstance().getWormholeIdFromProps(initProps);
+    tkdWormholeView.setWormholeId(wormholeId);
+    HippyWormholeManager.getInstance().onCreateTKDWormholeView(tkdWormholeView, wormholeId);
     return tkdWormholeView;
   }
 
   @Override
-  public RenderNode createRenderNode(int id, HippyMap props, String className,
-          HippyRootView hippyRootView, ControllerManager controllerManager, boolean lazy) {
-    TKDWormholeRenderNode node = new TKDWormholeRenderNode(id, props, className, hippyRootView, controllerManager, lazy);
-    HippyWormholeManager.getInstance().onCreateTKDWormholeNode(props, node);
-    return node;
+  protected StyleNode createNode(boolean virtual) {
+    String wormholeId = HippyWormholeManager.getInstance().generateWormholeId();
+    return new TKDWormholeNode(virtual, wormholeId);
   }
 
   @Override
