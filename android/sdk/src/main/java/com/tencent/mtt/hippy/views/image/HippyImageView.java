@@ -33,6 +33,9 @@ import com.tencent.mtt.hippy.adapter.image.HippyDrawable;
 import com.tencent.mtt.hippy.adapter.image.HippyImageLoader;
 import com.tencent.mtt.hippy.common.HippyMap;
 import com.tencent.mtt.hippy.dom.node.NodeProps;
+import com.tencent.mtt.hippy.nv.NVNodeTree;
+import com.tencent.mtt.hippy.nv.image.NVImageCacheCallback;
+import com.tencent.mtt.hippy.nv.image.NVImageCacheManager;
 import com.tencent.mtt.hippy.uimanager.HippyViewBase;
 import com.tencent.mtt.hippy.uimanager.HippyViewController;
 import com.tencent.mtt.hippy.uimanager.HippyViewEvent;
@@ -46,6 +49,7 @@ import com.tencent.mtt.supportui.adapters.image.IDrawableTarget;
 import com.tencent.mtt.supportui.views.asyncimage.AsyncImageView;
 import com.tencent.mtt.supportui.views.asyncimage.BackgroundDrawable;
 import com.tencent.mtt.supportui.views.asyncimage.ContentDrawable;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -54,8 +58,10 @@ import java.util.Map;
  * harryguo modified 2019/4/23 support gif
  */
 
-public class HippyImageView extends AsyncImageView implements CommonBorder, HippyViewBase, HippyRecycler
+public class HippyImageView extends AsyncImageView implements CommonBorder, HippyViewBase, HippyRecycler, NVImageCacheCallback
 {
+
+  public static final String TAG = "HippyImageView";
   public static final String IMAGE_TYPE_APNG  = "apng";
 
 	private HippyMap mIniProps = new HippyMap();
@@ -116,7 +122,29 @@ public class HippyImageView extends AsyncImageView implements CommonBorder, Hipp
 		mTintColor = 0;
 	}
 
-	enum ImageEvent
+  @Override
+  public void onGetCacheResult(String url, IDrawableTarget drawableTarget) {
+	  handleImageRequest(drawableTarget, getSourceType(url), null);
+  }
+
+  @Override
+  public IDrawableTarget getDrawableTarget(String url) {
+	  if (TextUtils.isEmpty(url))
+	  {
+	    return null;
+    }
+	  if (url.equals(mUrl))
+	  {
+	    return mSourceDrawable;
+    }
+	  if (url.equals(mDefaultSourceUrl))
+    {
+      return mDefaultSourceDrawable;
+    }
+	  return null;
+  }
+
+  enum ImageEvent
 	{
 		ONLOAD,
 		ONLOAD_START,
@@ -175,6 +203,7 @@ public class HippyImageView extends AsyncImageView implements CommonBorder, Hipp
 		mIniProps.pushBoolean(NodeProps.CUSTOM_PROP_ISGIF, iniProps.getBoolean(NodeProps.CUSTOM_PROP_ISGIF));
 		mIniProps.pushInt(NodeProps.WIDTH, width);
 		mIniProps.pushInt(NodeProps.HEIGHT, height);
+ 		mIniProps.pushBoolean(NVNodeTree.IMAGE_FROM_NV, iniProps.getBoolean(NVNodeTree.IMAGE_FROM_NV));
 	}
 
     /**
@@ -251,6 +280,12 @@ public class HippyImageView extends AsyncImageView implements CommonBorder, Hipp
 
 			// 这里不判断下是取背景图片还是取当前图片怎么行？
 			String url = sourceType == SOURCE_TYPE_SRC ? mUrl : mDefaultSourceUrl;
+
+			if (supportNativeVue() && tryGetNvImageResult(mUrl, mIniProps, this))
+      {
+        return;
+      }
+
 			mImageAdapter.fetchImage(url, new HippyImageLoader.Callback()
 			{
 				// 在此保存着fetchImage时的url，以备：在onRequestSuccess时，用这个mFetchUrl和HippyImageView里的mUrl做对比，
@@ -338,6 +373,11 @@ public class HippyImageView extends AsyncImageView implements CommonBorder, Hipp
 	protected void afterSetContent(String url)
 	{
 		restoreBackgroundColorAfterSetContent();
+
+		if (supportNativeVue())
+    {
+      dispatchNvImageResult(url);
+    }
 	}
 
 	@Override
@@ -546,7 +586,7 @@ public class HippyImageView extends AsyncImageView implements CommonBorder, Hipp
 		if (duration == 0) {
 			duration = 1000;
 		}
-		
+
 		long now = System.currentTimeMillis();
 
 		if (!isGifPaused)
@@ -617,19 +657,73 @@ public class HippyImageView extends AsyncImageView implements CommonBorder, Hipp
 	}
 
 	private boolean isGifPaused = false;
-	
+
 	public void startPlay()
 	{
 		isGifPaused = false;
 		invalidate();
 	}
-	
+
 	public void pause()
 	{
 		isGifPaused = true;
 		mGifLastPlayTime = -1;
 	}
-	
+
+	private boolean tryGetNvImageResult(String url, HippyMap iniProps, NVImageCacheCallback imageWaiter)
+  {
+    NVImageCacheManager nvImageCacheManager = getNVImageCacheManager();
+    if (nvImageCacheManager != null)
+    {
+      return nvImageCacheManager.tryGetImageResult(url, iniProps, imageWaiter);
+    }
+    return false;
+  }
+
+	private void dispatchNvImageResult(String url)
+  {
+    NVImageCacheManager nvImageCacheManager = getNVImageCacheManager();
+    if (nvImageCacheManager != null)
+    {
+      nvImageCacheManager.onGetFinalImage(url, mIniProps, this);
+    }
+  }
+
+	private boolean supportNativeVue()
+  {
+    HippyImageLoader imageLoader = getHippyImageLoader();
+    return imageLoader != null && imageLoader.supportNativeVue();
+  }
+
+	private HippyImageLoader getHippyImageLoader() {
+	  if (mImageAdapter instanceof HippyImageLoader)
+    {
+      return (HippyImageLoader) mImageAdapter;
+    }
+	  return null;
+  }
+
+	private NVImageCacheManager getNVImageCacheManager()
+  {
+    if (mImageAdapter instanceof HippyImageLoader) {
+      return ((HippyImageLoader) mImageAdapter).getNVImageCacheManager();
+    }
+    return null;
+  }
+
+  private int getSourceType(String url)
+  {
+    int sourceType = -1;
+    if (url.equals(mUrl))
+    {
+      sourceType = SOURCE_TYPE_SRC;
+    }
+    else if (url.equals(mDefaultSourceUrl))
+    {
+      sourceType = SOURCE_TYPE_DEFAULT_SRC;
+    }
+    return sourceType;
+  }
 
 	private OnLoadEvent getOnLoadEvent()
 	{

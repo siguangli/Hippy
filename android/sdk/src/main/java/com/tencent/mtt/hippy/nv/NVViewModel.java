@@ -14,6 +14,7 @@ import com.tencent.mtt.hippy.dom.node.DomNode;
  * TODO:
  * 5. 多线程校验
  * 8. 补充日志
+ * 9. 清除View引用
  */
 public class NVViewModel {
 

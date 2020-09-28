@@ -15,12 +15,6 @@
 
 package com.tencent.mtt.supportui.views.asyncimage;
 
-import com.tencent.mtt.supportui.adapters.image.IDrawableTarget;
-import com.tencent.mtt.supportui.adapters.image.IImageLoaderAdapter;
-import com.tencent.mtt.supportui.adapters.image.IImageRequestListener;
-import com.tencent.mtt.supportui.views.IBorder;
-import com.tencent.mtt.supportui.views.IShadow;
-
 import android.animation.Animator;
 import android.animation.IntEvaluator;
 import android.animation.ValueAnimator;
@@ -33,6 +27,12 @@ import android.text.TextUtils;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.tencent.mtt.supportui.adapters.image.IDrawableTarget;
+import com.tencent.mtt.supportui.adapters.image.IImageLoaderAdapter;
+import com.tencent.mtt.supportui.adapters.image.IImageRequestListener;
+import com.tencent.mtt.supportui.views.IBorder;
+import com.tencent.mtt.supportui.views.IShadow;
+
 /**
  * Created by leonardgong on 2017/12/7 0007.
  */
@@ -44,7 +44,7 @@ public class AsyncImageView extends ViewGroup implements Animator.AnimatorListen
 	protected static int			SOURCE_TYPE_SRC			= 1;
 	protected static int			SOURCE_TYPE_DEFAULT_SRC	= 2;
 	protected IDrawableTarget		mSourceDrawable;
-	private IDrawableTarget			mDefaultSourceDrawable;
+	protected IDrawableTarget			mDefaultSourceDrawable;
 
 	protected String				mUrl;
 	protected String				mDefaultSourceUrl;
@@ -389,7 +389,7 @@ public class AsyncImageView extends ViewGroup implements Animator.AnimatorListen
 		if (bitmap == null || bitmap.isRecycled() || !mIsUrlFetchSucceed) {
       shoudFetchImage = true;
     }
-		
+
 		if (mDefaultSourceDrawable != null && shoudFetchImage)
 		{
 			mDefaultSourceDrawable.onDrawableAttached();

@@ -29,6 +29,7 @@ import org.json.JSONObject;
 public class NVNodeTree {
 
   private static final String TAG = "NvNodeTree";
+  public static final String IMAGE_FROM_NV = "image_from_nv";
 
   private DomNode rootDomNode;
   private View view;
@@ -168,6 +169,9 @@ public class NVNodeTree {
 
   private DomNode doCreateDomNode(int id, String name, boolean isVirtual, boolean isLazy, boolean isRoot, HippyMap props) {
     DomNode node = renderManager.createStyleNode(name, isVirtual, id);
+    if (name.equals(NodeProps.IMAGE_CLASS_NAME)) {
+      props.pushBoolean(IMAGE_FROM_NV, true);
+    }
     node.setLazy(isLazy);
     node.setProps(props);
     node.updateProps(props);

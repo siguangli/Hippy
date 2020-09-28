@@ -16,6 +16,8 @@
 package com.tencent.mtt.hippy.adapter.image;
 
 import android.util.SparseArray;
+
+import com.tencent.mtt.hippy.nv.image.NVImageCacheManager;
 import com.tencent.mtt.supportui.adapters.image.IImageLoaderAdapter;
 import com.tencent.mtt.supportui.adapters.image.IImageRequestListener;
 
@@ -28,6 +30,9 @@ import java.lang.ref.WeakReference;
 public abstract class HippyImageLoader implements IImageLoaderAdapter<HippyImageLoader.Callback>
 {
 	private SparseArray<WeakReference<HippyDrawable>> mWeakImageCache = new SparseArray<>();
+
+	private NVImageCacheManager mNVImageCacheManager;
+
 	// 本地图片加载，同步获取
 	@Override
 	public HippyDrawable getImage(String source, Object param)
@@ -65,4 +70,18 @@ public abstract class HippyImageLoader implements IImageLoaderAdapter<HippyImage
 	public static interface Callback extends IImageRequestListener<HippyDrawable>
 	{
 	}
+
+	public boolean supportNativeVue()
+  {
+    return false;
+  }
+
+	public NVImageCacheManager getNVImageCacheManager()
+  {
+	  if (mNVImageCacheManager == null)
+	  {
+	    mNVImageCacheManager = new NVImageCacheManager();
+    }
+	  return mNVImageCacheManager;
+  }
 }
