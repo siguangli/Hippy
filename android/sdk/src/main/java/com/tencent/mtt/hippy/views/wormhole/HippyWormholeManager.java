@@ -75,17 +75,6 @@ public class HippyWormholeManager {
     mWormholeEngine.sendEvent(WORMHOLE_CLIENT_DATA_RECEIVED, jsonArray);
   }
 
-  private void sendDataReceivedMessageToServer(String wormholeId, HippyMap initProps) {
-    HippyMap paramsMap = initProps.getMap(WORMHOLE_PARAMS);
-    if (paramsMap != null) {
-      HippyMap bundle = paramsMap.copy();
-      bundle.pushString(WORMHOLE_WORMHOLE_ID, wormholeId);
-      JSONArray jsonArray = new JSONArray();
-      jsonArray.put(bundle);
-      mWormholeEngine.sendEvent(WORMHOLE_CLIENT_DATA_RECEIVED, jsonArray);
-    }
-  }
-
   public void onServerBatchComplete(HippyWormholeView wormholeView) {
     if (wormholeView == null) {
       return;
