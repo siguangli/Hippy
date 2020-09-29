@@ -96,12 +96,7 @@ public class HippyListAdapter extends RecyclerAdapter implements IRecycleItemTyp
 		//LogUtils.d("HippyListView", "onCreateContentViewWithPos start position " + position);
 		RenderNode contentViewRenderNode = mHippyContext.getRenderManager().getRenderNode(mParentRecyclerView.getId()).getChildAt(position);
 		contentViewRenderNode.setLazy(false);
-    View view = null;
-    if (getItemViewType(position) == RecyclerViewBase.ViewHolder.TYPE_WORMHOLE) {
-      view = HippyWormholeManager.getInstance().createListItemView(mParentRecyclerView.getContext(), contentViewRenderNode);
-    } else {
-      view = contentViewRenderNode.createViewRecursive();
-    }
+    View view = contentViewRenderNode.createViewRecursive();
     contentHolder.mContentView = view;
     if (view != null && view instanceof HippyPullHeaderView) {
       ((HippyPullHeaderView)view).setParentView(mParentRecyclerView);
@@ -130,12 +125,7 @@ public class HippyListAdapter extends RecyclerAdapter implements IRecycleItemTyp
 			RenderNode parentNode = nodeHolder.mBindNode.getParent();
 			if (parentNode != null)
 			{
-			  //todo 待优化，这里强制不让worm hole节点被删掉，否则会出现多次滚动后item空白的问题
-        if (nodeHolder.mBindNode.getChildAt(0) != null && nodeHolder.mBindNode.getChildAt(0).getChildAt(0) instanceof TKDRenderNode) {
-          //虫洞卡片不做任何处理，代码留空方便理解
-        } else {
-          mHippyContext.getRenderManager().getControllerManager().deleteChild(parentNode.getId(), nodeHolder.mBindNode.getId());
-        }
+			  mHippyContext.getRenderManager().getControllerManager().deleteChild(parentNode.getId(), nodeHolder.mBindNode.getId());
 			}
 			//LogUtils.d("HippyListView", "onViewAbandon end " + nodeHolder.mBindNode.toString());
 		}

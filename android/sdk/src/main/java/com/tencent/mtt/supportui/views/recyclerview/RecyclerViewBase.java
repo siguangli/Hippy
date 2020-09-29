@@ -3778,13 +3778,13 @@ public abstract class RecyclerViewBase extends ViewGroup
 					((BaseLayoutManager) getLayoutManager()).removeSuspentions();
 				}
 			}
-      if (mAdapter.getItemViewType(position) != RecyclerViewBase.ViewHolder.TYPE_WORMHOLE) {
-        if (mAdapter.hasCustomRecycler()) {
-          holder = mAdapter.findBestHolderForPosition(offsetPosition, this);
-        } else {
-          holder = getViewHolderForPosition(offsetPosition);
-        }
+
+      if (mAdapter.hasCustomRecycler()) {
+        holder = mAdapter.findBestHolderForPosition(offsetPosition, this);
+      } else {
+        holder = getViewHolderForPosition(offsetPosition);
       }
+
 			if (holder == null)
 			{
 				if (offsetPosition < 0 || offsetPosition >= mAdapter.getItemCount())
