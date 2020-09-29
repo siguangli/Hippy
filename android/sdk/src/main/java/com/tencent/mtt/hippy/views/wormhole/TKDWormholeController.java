@@ -18,7 +18,6 @@ import com.tencent.mtt.hippy.views.wormhole.node.TKDStyleNode;
 
 @HippyController(name = "TKDWormhole")
 public class TKDWormholeController extends HippyViewController<TKDWormholeView> {
-  //private HippyWormholeProxy mWormholeProxy = HippyWormholeManager.getInstance();
 
   @Override
   protected View createViewImpl(final Context context) {

@@ -8,7 +8,6 @@ import com.tencent.mtt.hippy.dom.node.StyleNode;
 import com.tencent.mtt.hippy.dom.node.WormholeNode;
 import com.tencent.mtt.hippy.uimanager.HippyViewController;
 
-
 @HippyController(name = "Wormhole")
 public class HippyWormholeController extends HippyViewController<HippyWormholeView> {
   @Override
@@ -34,11 +33,7 @@ public class HippyWormholeController extends HippyViewController<HippyWormholeVi
     super.onBatchComplete(view);
     HippyWormholeManager.getInstance().onServerBatchComplete(view);
     //TODO: 考虑复用的时候，要维护好BusinessId
-    NativeVueManager.getInstance().hideNativeVueByWormholeId(view.getBusinessId());
-  }
-
-  public void onViewDestroy(HippyWormholeView wormHoleView) {
-    //HippyWormholeManager.getInstance().onWormholeDestroy(wormHoleView.getBusinessId());
+    NativeVueManager.getInstance().hideNativeVueByWormholeId(view.getWormholeId());
   }
 
 }

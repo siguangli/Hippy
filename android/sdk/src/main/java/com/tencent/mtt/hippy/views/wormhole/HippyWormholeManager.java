@@ -108,6 +108,21 @@ public class HippyWormholeManager implements HippyWormholeProxy {
     }
   }
 
+  public void onServerBatchComplete(HippyWormholeView wormholeView) {
+    if (wormholeView == null) {
+      return;
+    }
+
+    String wormholeId = wormholeView.getWormholeId();
+    if (mTkdWormholeViewMap.containsKey(wormholeId)) {
+      View parent = mTkdWormholeViewMap.get(wormholeId);
+      if (parent != null) {
+        addWormholeToParent(wormholeView, parent);
+        sendBatchCompleteMessageToClient(wormholeId, parent);
+      }
+    }
+  }
+
   private void sendBatchCompleteMessageToClient(String wormholeId, View view) {
     int id = mWormholeNodeMap.get(wormholeId);
     HippyEngineContext engineContext = mWormholeEngine.getEngineContext();
@@ -128,39 +143,6 @@ public class HippyWormholeManager implements HippyWormholeProxy {
     }
   }
 
-  private void sendBatchCompleteMessageToClient(float width, float height, View view) {
-    HippyMap layoutMeasurement = new HippyMap();
-    layoutMeasurement.pushDouble("width", PixelUtil.px2dp(width));
-    layoutMeasurement.pushDouble("height", PixelUtil.px2dp(height));
-    HippyViewEvent event = new HippyViewEvent(WORMHOLE_SERVER_BATCH_COMPLETE);
-    event.send(view, layoutMeasurement);
-  }
-
-  public void onServerBatchComplete(HippyWormholeView wormholeView) {
-    if (wormholeView == null) {
-      return;
-    }
-
-    RenderNode node = getWormholeNode(wormholeView);
-    if (node != null) {
-      String businessId = wormholeView.getBusinessId();
-      ViewGroup newParent = mTkdWormholeMap.get(businessId);
-      if (newParent == null) {
-        return;
-      }
-
-      ViewGroup oldParent = (ViewGroup)(wormholeView.getParent());
-      if (oldParent != newParent) {
-        oldParent.removeView(wormholeView);
-        newParent.addView(wormholeView);
-      }
-
-      float width = node.getWidth();
-      float height = node.getHeight();
-      sendBatchCompleteMessageToClient(width, height, newParent);
-    }
-  }
-
   private void addWormholeToParent(View wormholeView, View newParent) {
     if (newParent == null || !(newParent instanceof ViewGroup)) {
       return;
@@ -174,18 +156,6 @@ public class HippyWormholeManager implements HippyWormholeProxy {
       ((ViewGroup)newParent).addView(wormholeView);
     }
   }
-
-  public void onServerBatchComplete(HippyWormholeView wormholeView) {
-    String wormholeId = wormholeView.getWormholeId();
-    if (mTkdWormholeViewMap.containsKey(wormholeId)) {
-      View parent = mTkdWormholeViewMap.get(wormholeId);
-      if (parent != null) {
-        addWormholeToParent(wormholeView, parent);
-        sendBatchCompleteMessageToClient(wormholeId, parent);
-      }
-    }
-  }
-
 
   public String onWormholeNodeSetProps(HippyMap initProps, Integer id) {
     String wormholeId = getWormholeIdFromProps(initProps);
@@ -311,12 +281,6 @@ public class HippyWormholeManager implements HippyWormholeProxy {
     }
   }
 
-  public void onWormholeDestroy(String id) {
-    if (!TextUtils.isEmpty(id)) {
-
-    }
-  }
-
   public ViewGroup createListItemView(Context context, RenderNode targetNode) {
     //由于listItem和tkdWormhole的位置关系是确定的，所以这里直接根据listItem取出tkdWormhole的props
     String busid = TKDStyleNode.getWormholeId(targetNode.getChildAt(0).getChildAt(0).getProps());
@@ -358,6 +322,13 @@ public class HippyWormholeManager implements HippyWormholeProxy {
       if (mTkdWormholeListitemMap.get(busid) != null) {
         mTkdWormholeListitemMap.get(busid).addView(targetView);
       }
+    }
+  }
+
+  public void onTKDWormholeViewDestroy(TKDWormholeView tkdWormholeView) {
+    String wormholeId = tkdWormholeView.getWormholeId();
+    if (!TextUtils.isEmpty(wormholeId)) {
+      mTkdWormholeViewMap.remove(wormholeId);
     }
   }
 }
