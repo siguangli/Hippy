@@ -68,15 +68,10 @@ public class TKDWormholeController extends HippyViewController<TKDWormholeView> 
   @Override
   protected StyleNode createNode(boolean virtual) {
     HippyWormholeManager manager = HippyWormholeManager.getInstance();
-    String wormholeId = manager.getWormholeId();
+    String wormholeId = manager.generateWormholeId();
     return new TKDStyleNode(virtual, manager.getEngineContext(), manager.getHippyRootView(), wormholeId);
   }
 
-  @Override
-  protected StyleNode createNode(boolean virtual) {
-    String wormholeId = HippyWormholeManager.getInstance().generateWormholeId();
-    return new TKDWormholeNode(virtual, wormholeId);
-  }
 
   @Override
   public void onViewDestroy(TKDWormholeView tkdWormHoleView) {

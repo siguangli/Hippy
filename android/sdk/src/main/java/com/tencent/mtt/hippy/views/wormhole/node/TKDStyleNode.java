@@ -12,6 +12,9 @@ import com.tencent.mtt.hippy.utils.PixelUtil;
 import com.tencent.mtt.hippy.views.wormhole.NativeVueManager;
 import com.tencent.mtt.hippy.views.wormhole.HippyWormholeManager;
 
+import static com.tencent.mtt.hippy.views.wormhole.HippyWormholeManager.WORMHOLE_PARAMS;
+import static com.tencent.mtt.hippy.views.wormhole.HippyWormholeManager.WORMHOLE_WORMHOLE_ID;
+
 public class TKDStyleNode extends StyleNode {
 
   private static final String TAG = "TKDStyleNode";
@@ -54,7 +57,16 @@ public class TKDStyleNode extends StyleNode {
     }
 
     props.pushString(HippyWormholeManager.WORMHOLE_WORMHOLE_ID, wormholeId);
+
+    //todo 新增逻辑开始
+    HippyMap paramsMap = props.getMap(WORMHOLE_PARAMS);
+    if (paramsMap != null) {
+      paramsMap.pushString(WORMHOLE_WORMHOLE_ID, wormholeId);
+      HippyWormholeManager.getInstance().onTkdWormholeNodeSetProps(paramsMap, wormholeId, getId());
+    }
+    //todo 新增逻辑结束
   }
+
 
   @Override
   public void layoutBefore(HippyEngineContext context) {

@@ -216,7 +216,7 @@ public class HippyWormholeManager implements HippyWormholeProxy {
     return view;
   }
 
-  public String getWormholeId() {
+  public String generateWormholeId() {
     int id = mWormholeIdCounter.getAndIncrement();
     return "" + id;
   }
