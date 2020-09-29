@@ -33,7 +33,7 @@ import com.tencent.mtt.hippy.adapter.http.HippyHttpAdapter;
 import com.tencent.mtt.hippy.adapter.image.HippyImageLoader;
 import com.tencent.mtt.hippy.adapter.monitor.DefaultEngineMonitorAdapter;
 import com.tencent.mtt.hippy.adapter.monitor.HippyEngineMonitorAdapter;
-import com.tencent.mtt.hippy.adapter.nv.NativeVueAdapter;
+import com.tencent.mtt.hippy.adapter.nv.HippyNativeVueAdapter;
 import com.tencent.mtt.hippy.adapter.sharedpreferences.DefaultSharedPreferencesAdapter;
 import com.tencent.mtt.hippy.adapter.sharedpreferences.HippySharedPreferencesAdapter;
 import com.tencent.mtt.hippy.adapter.soloader.DefaultSoLoaderAdapter;
@@ -107,7 +107,7 @@ public class HippyGlobalConfigs
 
 	private HippyEventObserverAdapter       mEventObserverAdapter;
 
-	private NativeVueAdapter        mNativeVueAdapter;
+	private HippyNativeVueAdapter mHippyNativeVueAdapter;
 
 	public HippyGlobalConfigs(HippyEngine.EngineInitParams params)
 	{
@@ -125,7 +125,7 @@ public class HippyGlobalConfigs
 		this.mLogAdapter = params.logAdapter;
 		this.mDtCollectAdapter = params.dtCollectAdapter;
 		this.mEventObserverAdapter = params.eventObserverAdapter;
-		this.mNativeVueAdapter = params.nativeVueAdapter;
+		this.mHippyNativeVueAdapter = params.hippyNativeVueAdapter;
 	}
 
 	private HippyGlobalConfigs(Context context,  HippySharedPreferencesAdapter sharedPreferencesAdapter,
@@ -248,8 +248,8 @@ public class HippyGlobalConfigs
 		return mEventObserverAdapter;
 	}
 
-	public NativeVueAdapter getNativeVueAdapter() {
-	  return mNativeVueAdapter;
+	public HippyNativeVueAdapter getNativeVueAdapter() {
+	  return mHippyNativeVueAdapter;
   }
 
 	@Deprecated
@@ -268,7 +268,7 @@ public class HippyGlobalConfigs
 		params.deviceAdapter = mDeviceAdapter;
 		params.logAdapter = mLogAdapter;
 		params.dtCollectAdapter = mDtCollectAdapter;
-		params.nativeVueAdapter = mNativeVueAdapter;
+		params.hippyNativeVueAdapter = mHippyNativeVueAdapter;
 	}
 
 	public static class Builder

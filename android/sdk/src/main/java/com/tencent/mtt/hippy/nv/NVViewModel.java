@@ -5,30 +5,28 @@ import android.view.View;
 
 import com.tencent.mtt.hippy.HippyEngineContext;
 import com.tencent.mtt.hippy.HippyRootView;
-import com.tencent.mtt.hippy.adapter.nv.NativeVueAdapter;
+import com.tencent.mtt.hippy.adapter.nv.HippyNativeVueAdapter;
 import com.tencent.mtt.hippy.common.HippyMap;
 import com.tencent.mtt.hippy.dom.node.DomNode;
 
 /**
  * Created by kamlin on 2020/9/17.
  * TODO:
- * 3. 实现TemplateLoader
  * 5. 多线程校验
- * 7. 复用逻辑处理
  * 8. 补充日志
+ * 9. 清除View引用
  */
 public class NVViewModel {
 
   private NVNodeTree nvNodeTree;
-  private NativeVueAdapter nativeVueAdapter;
-  private INVTemplateLoader templateLoader;
+  private HippyNativeVueAdapter hippyNativeVueAdapter;
 
   public NVViewModel(HippyEngineContext engine, HippyRootView hippyRootView) {
     nvNodeTree = new NVNodeTree(engine, hippyRootView);
-    nativeVueAdapter = engine.getGlobalConfigs().getNativeVueAdapter();
+    hippyNativeVueAdapter = engine.getGlobalConfigs().getNativeVueAdapter();
   }
 
-  public void buildNVNodeTreeSync(HippyMap props) {
+  public void buildNVNodeTreeSync(String template, HippyMap props) {
     if (props == null) {
       return;
     }
@@ -37,16 +35,14 @@ public class NVViewModel {
       return;
     }
 
-    String templateId = props.getString("templateId");
-    buildNVNodeTreeSync(templateId, JSONConvertUtils.toJSONObject(props).toString());
+    buildNVNodeTreeSync(template, props.toJSONObject().toString());
   }
 
-  private void buildNVNodeTreeSync(String templateId, String data) {
-    if (nativeVueAdapter == null) {
+  private void buildNVNodeTreeSync(String template, String data) {
+    if (hippyNativeVueAdapter == null) {
       return;
     }
-
-    nativeVueAdapter.createVDom("", data, new NativeVueAdapter.OnGetVDomResult() {
+    hippyNativeVueAdapter.createVDom(template, data, new HippyNativeVueAdapter.OnGetVDomResult() {
       @Override
       public void onResult(String vdom) {
         if (TextUtils.isEmpty(vdom)) {

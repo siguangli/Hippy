@@ -13,6 +13,7 @@ import com.tencent.mtt.hippy.dom.node.NodeProps;
 import com.tencent.mtt.hippy.dom.node.TextExtra;
 import com.tencent.mtt.hippy.dom.node.TextNode;
 import com.tencent.mtt.hippy.modules.nativemodules.uimanager.UIManagerModule;
+import com.tencent.mtt.hippy.nv.converter.NVConverter;
 import com.tencent.mtt.hippy.uimanager.RenderManager;
 import com.tencent.mtt.hippy.uimanager.RenderNode;
 import com.tencent.mtt.hippy.utils.LogUtils;
@@ -28,6 +29,7 @@ import org.json.JSONObject;
 public class NVNodeTree {
 
   private static final String TAG = "NvNodeTree";
+  public static final String IMAGE_FROM_NV = "image_from_nv";
 
   private DomNode rootDomNode;
   private View view;
@@ -98,8 +100,10 @@ public class NVNodeTree {
         @Override
         public void onWalk(DomNode node) {
           domManager.removeNode(node);
-          RenderNode renderNode = renderManager.getRenderNode(node.getId());
+          int id = node.getId();
+          RenderNode renderNode = renderManager.getRenderNode(id);
           renderManager.removeNode(renderNode);
+          renderManager.getControllerManager().removeCacheView(id);
         }
       });
 
@@ -137,9 +141,8 @@ public class NVNodeTree {
   }
 
   private DomNode createDomNode(JSONObject vdomJson, int index, DomNode parentNode, boolean isRoot, DomNodeWalker walker) {
-    int id = vdomJson.optInt("id");
-    id = (int) (-id * System.currentTimeMillis());
-    String name = vdomJson.optString("name");
+    int id = vdomJson.optInt(NVConverter.convertKey(UIManagerModule.ID));
+    String name = vdomJson.optString(NVConverter.convertKey(UIManagerModule.NAME));
     HippyMap props = createProps(vdomJson);
 
     boolean isVirtual = false;
@@ -156,7 +159,7 @@ public class NVNodeTree {
 
     walker.onWalk(domNode);
 
-    JSONArray jsonArray = vdomJson.optJSONArray("children");
+    JSONArray jsonArray = vdomJson.optJSONArray(NVConverter.CHILDREN);
     if (jsonArray != null) {
       for (int i = 0; i < jsonArray.length(); i++) {
         JSONObject child = jsonArray.optJSONObject(i);
@@ -168,6 +171,9 @@ public class NVNodeTree {
 
   private DomNode doCreateDomNode(int id, String name, boolean isVirtual, boolean isLazy, boolean isRoot, HippyMap props) {
     DomNode node = renderManager.createStyleNode(name, isVirtual, id);
+    if (name.equals(NodeProps.IMAGE_CLASS_NAME)) {
+      props.pushBoolean(IMAGE_FROM_NV, true);
+    }
     node.setLazy(isLazy);
     node.setProps(props);
     node.updateProps(props);
@@ -183,13 +189,7 @@ public class NVNodeTree {
   }
 
   private static HippyMap createProps(JSONObject jsonObject) {
-    if (jsonObject == null) {
-      return new HippyMap();
-    }
-    JSONObject propsJson = jsonObject.optJSONObject(UIManagerModule.PROPS);
-    HippyMap props = JSONConvertUtils.toHippyMap(propsJson);
-//    props.pushObject(NodeProps.STYLE, JSONConvertUtils.toHippyMap(propsJson));
-    return props;
+    return NVConverter.convertProps(jsonObject);
   }
 
   private void layout(DomNode domNode) {

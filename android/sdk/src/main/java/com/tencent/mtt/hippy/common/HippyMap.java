@@ -15,6 +15,8 @@
  */
 package com.tencent.mtt.hippy.common;
 
+import com.tencent.mtt.hippy.utils.LogUtils;
+
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -31,10 +33,12 @@ import java.util.Set;
 public class HippyMap
 {
 
+  private static final String TAG = "HippyMap";
+
 	private final HashMap<String, Object>	mDatas;
 
 	@Override
-	public String toString() 
+	public String toString()
 	{
 		return mDatas == null ? "null" : mDatas.toString();
 	}
@@ -83,25 +87,94 @@ public class HippyMap
 	public double getDouble(String key)
 	{
 		Object value = mDatas.get(key);
-		return value instanceof Number ? ((Number) value).doubleValue() : 0;
+		if (value instanceof Number)
+		{
+		  return ((Number) value).doubleValue();
+    }
+		else if (value instanceof String)
+		{
+		  try
+      {
+		    return Double.parseDouble(value.toString());
+      }
+		  catch (NumberFormatException e)
+      {
+        LogUtils.e(TAG, e.getMessage());
+      }
+    }
+		return 0;
 	}
 
 	public int getInt(String key)
 	{
 		Object value = mDatas.get(key);
-		return value instanceof Number ? ((Number) value).intValue() : 0;
+    if (value instanceof Number)
+    {
+      return ((Number) value).intValue();
+    }
+    else if (value instanceof String)
+    {
+      try
+      {
+        return Integer.parseInt(value.toString());
+      }
+      catch (NumberFormatException e)
+      {
+        LogUtils.e(TAG, e.getMessage());
+      }
+    }
+    return 0;
 	}
 
 	public boolean getBoolean(String key)
 	{
 		Object value = mDatas.get(key);
+		if (value instanceof Boolean)
+		{
+		  return (boolean) value;
+    }
+		else if (value instanceof String)
+		{
+		  return !"0".equals(value.toString());
+    }
+		else if (value instanceof Integer)
+		{
+		  return !(0 == (Integer) value);
+    }
+		else if (value instanceof Long)
+    {
+      return !(0 == (Long) value);
+    }
+		else if (value instanceof Float)
+    {
+      return !(0 == (Float) value);
+    }
+    else if (value instanceof Double)
+    {
+      return !(0 == (Double) value);
+    }
 		return value != null && (boolean) value;
 	}
 
 	public long getLong(String key)
 	{
 		Object value = mDatas.get(key);
-		return value instanceof Number ? ((Number) value).longValue() : 0;
+    if (value instanceof Number)
+    {
+      return ((Number) value).longValue();
+    }
+    else if (value instanceof String)
+    {
+      try
+      {
+        return Long.parseLong(value.toString());
+      }
+      catch (NumberFormatException e)
+      {
+        LogUtils.e(TAG, e.getMessage());
+      }
+    }
+    return 0;
 	}
 
 	public HippyMap getMap(String key)

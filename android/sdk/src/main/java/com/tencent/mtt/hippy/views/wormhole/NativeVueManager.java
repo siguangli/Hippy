@@ -5,9 +5,16 @@ import android.animation.AnimatorListenerAdapter;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.tencent.mtt.hippy.HippyEngine;
+import com.tencent.mtt.hippy.bridge.HippyBridgeManagerImpl;
 import com.tencent.mtt.hippy.common.HippyMap;
+import com.tencent.mtt.hippy.nv.INVTemplateLoader;
+import com.tencent.mtt.hippy.nv.NVTemplateLoader;
+import com.tencent.mtt.hippy.nv.converter.NVConverter;
 import com.tencent.mtt.hippy.utils.LogUtils;
 import com.tencent.mtt.hippy.views.wormhole.node.TKDStyleNode;
+
+import org.json.JSONObject;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -18,8 +25,10 @@ public class NativeVueManager {
 
   private static volatile NativeVueManager INSTANCE;
   private Map<String, TKDStyleNode> mTkdStyleNodeMap = new ConcurrentHashMap<>();
+  private INVTemplateLoader mTemplateLoader;
 
   private NativeVueManager() {
+    mTemplateLoader = new NVTemplateLoader();
   }
 
   public static NativeVueManager getInstance() {
@@ -31,6 +40,11 @@ public class NativeVueManager {
       }
     }
     return INSTANCE;
+  }
+
+  public JSONObject getNVConfig(HippyEngine engine) {
+    HippyBridgeManagerImpl hippyBridgeManager = (HippyBridgeManagerImpl) engine.getEngineContext().getBridgeManager();
+    return NVConverter.convertNVConfig(hippyBridgeManager.getGlobalConfigs());
   }
 
   public void registerNodeByWormholeId(String wormholeId, TKDStyleNode node) {
@@ -59,6 +73,15 @@ public class NativeVueManager {
     }
     return styleNode.getNVView();
   }
+
+  public boolean parseTemplates(String templates) {
+    return mTemplateLoader.parseTemplates(templates);
+  }
+
+  public String getTemplate(String templateId) {
+    return mTemplateLoader.getTemplate(templateId);
+  }
+
 
   public void hideNativeVueByWormholeId(String wormholeId){
     final TKDStyleNode styleNode = mTkdStyleNodeMap.remove(wormholeId);
