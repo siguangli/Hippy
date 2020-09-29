@@ -1,6 +1,7 @@
 package com.tencent.mtt.hippy.views.wormhole;
 
 import android.content.Context;
+import android.text.TextUtils;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -25,8 +26,10 @@ public class TKDWormholeController extends HippyViewController<TKDWormholeView> 
     final TKDWormholeView tkdWormholeView = new TKDWormholeView(context);
     tryAddNVView(tkdWormholeView, initProps);
     String wormholeId = HippyWormholeManager.getInstance().getWormholeIdFromProps(initProps);
-    tkdWormholeView.setWormholeId(wormholeId);
-    HippyWormholeManager.getInstance().onCreateTKDWormholeView(tkdWormholeView, wormholeId);
+    if(!TextUtils.isEmpty(wormholeId)){
+      tkdWormholeView.setWormholeId(wormholeId);
+      HippyWormholeManager.getInstance().onCreateTKDWormholeView(tkdWormholeView, wormholeId);
+    }
     return tkdWormholeView;
   }
 

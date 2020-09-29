@@ -81,7 +81,7 @@ public class HippyWormholeManager {
     }
 
     String wormholeId = wormholeView.getWormholeId();
-    if (mTkdWormholeViewMap.containsKey(wormholeId)) {
+    if (!TextUtils.isEmpty(wormholeId) && mTkdWormholeViewMap.containsKey(wormholeId)) {
       View parent = mTkdWormholeViewMap.get(wormholeId);
       if (parent != null) {
         addWormholeToParent(wormholeView, parent);
