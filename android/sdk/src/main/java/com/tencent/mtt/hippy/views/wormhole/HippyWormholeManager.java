@@ -159,6 +159,9 @@ public class HippyWormholeManager {
   }
 
   public String getWormholeIdFromProps(HippyMap props) {
+    if(props.containsKey(WORMHOLE_WORMHOLE_ID)){
+      return props.getString(WORMHOLE_WORMHOLE_ID);
+    }
     HippyMap paramsMap = props.getMap(WORMHOLE_PARAMS);
     if (paramsMap == null) {
       return null;
