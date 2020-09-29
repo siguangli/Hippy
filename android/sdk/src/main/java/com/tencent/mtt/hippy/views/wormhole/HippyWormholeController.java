@@ -4,7 +4,10 @@ import android.content.Context;
 import android.view.View;
 import com.tencent.mtt.hippy.annotation.HippyController;
 import com.tencent.mtt.hippy.common.HippyMap;
+import com.tencent.mtt.hippy.dom.node.StyleNode;
+import com.tencent.mtt.hippy.dom.node.WormholeNode;
 import com.tencent.mtt.hippy.uimanager.HippyViewController;
+
 
 @HippyController(name = "Wormhole")
 public class HippyWormholeController extends HippyViewController<HippyWormholeView> {
@@ -15,10 +18,15 @@ public class HippyWormholeController extends HippyViewController<HippyWormholeVi
 
   @Override
   protected View createViewImpl(final Context context, HippyMap iniProps) {
-    String businessId = HippyWormholeManager.getInstance().getWormholeIdFromProps(iniProps);
     HippyWormholeView wormholeView = new HippyWormholeView(context);
-    wormholeView.setBusinessId(businessId);
+    String wormholeId = HippyWormholeManager.getInstance().getWormholeIdFromProps(iniProps);
+    wormholeView.setWormholeId(wormholeId);
     return wormholeView;
+  }
+
+  @Override
+  protected StyleNode createNode(boolean virtual) {
+    return new WormholeNode(virtual);
   }
 
   @Override
@@ -29,9 +37,8 @@ public class HippyWormholeController extends HippyViewController<HippyWormholeVi
     NativeVueManager.getInstance().hideNativeVueByWormholeId(view.getBusinessId());
   }
 
-  @Override
   public void onViewDestroy(HippyWormholeView wormHoleView) {
-    HippyWormholeManager.getInstance().onWormholeDestroy(wormHoleView.getBusinessId());
+    //HippyWormholeManager.getInstance().onWormholeDestroy(wormHoleView.getBusinessId());
   }
 
 }
