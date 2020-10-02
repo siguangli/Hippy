@@ -6,18 +6,32 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.tencent.mtt.hippy.HippyEngine;
+import com.tencent.mtt.hippy.HippyGlobalConfigs;
 import com.tencent.mtt.hippy.bridge.HippyBridgeManagerImpl;
 import com.tencent.mtt.hippy.common.HippyMap;
+import com.tencent.mtt.hippy.devsupport.BundleFetchCallBack;
+import com.tencent.mtt.hippy.devsupport.DevServerConfig;
+import com.tencent.mtt.hippy.devsupport.DevServerHelper;
 import com.tencent.mtt.hippy.nv.INVTemplateLoader;
 import com.tencent.mtt.hippy.nv.NVTemplateLoader;
 import com.tencent.mtt.hippy.nv.converter.NVConverter;
+import com.tencent.mtt.hippy.utils.ContextHolder;
+import com.tencent.mtt.hippy.utils.FileUtils;
 import com.tencent.mtt.hippy.utils.LogUtils;
 import com.tencent.mtt.hippy.views.wormhole.node.TKDStyleNode;
 
 import org.json.JSONObject;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+
+import static com.tencent.mtt.hippy.views.wormhole.HippyWormholeManager.WORMHOLE_TAG;
 
 public class NativeVueManager {
 
@@ -124,5 +138,63 @@ public class NativeVueManager {
     if (styleNode != null) {
       styleNode.destroyNV();
     }
+  }
+
+  public void loadNativeVueJS(final OnLoadNativeVueJSListener onLoadNativeVueJSListener,HippyEngine.EngineInitParams params,String nvUrl){
+    if(nvUrl.startsWith("http")){
+      HippyGlobalConfigs configs = new HippyGlobalConfigs(params);
+      DevServerHelper devServerHelper = new DevServerHelper(configs,params.debugServerHost);
+      devServerHelper.dealfetchBundleFromURL(new BundleFetchCallBack()
+      {
+        @Override
+        public void onSuccess(File file)
+        {
+          String template = FileUtils.readFile(file);
+          onLoadNativeVueJSListener.onLoadSucess(template);
+        }
+
+        @Override
+        public void onFail(Exception exception) {
+          onLoadNativeVueJSListener.onLoadFailed(exception);
+          LogUtils.e(TAG, "loadNativeVueJS exception:" + exception.getMessage());
+        }
+      },nvUrl, new File(ContextHolder.getAppContext().getFilesDir(), DevServerConfig.NATIVE_VUE_BUNDLE_FILE_NAME));
+    }else {
+      //认为是直接打开在asset下面的文件，直接读出来即可
+      InputStream inputStream = null;
+      try {
+        inputStream = ContextHolder.getAppContext().getAssets().open("nativevue.json");
+      } catch (IOException e) {
+        LogUtils.e(TAG, "loadNativeVueJS io exception:" + e.getMessage());
+      }
+      String template = getString(inputStream);
+      onLoadNativeVueJSListener.onLoadSucess(template);
+    }
+  }
+
+  public interface OnLoadNativeVueJSListener {
+    void onLoadSucess(String result);
+    void onLoadFailed(Exception exception);
+  }
+
+  public static String getString(InputStream inputStream) {
+    InputStreamReader inputStreamReader = null;
+    try {
+      inputStreamReader = new InputStreamReader(inputStream, "UTF-8");
+    } catch (UnsupportedEncodingException e1) {
+      e1.printStackTrace();
+    }
+    BufferedReader reader = new BufferedReader(inputStreamReader);
+    StringBuffer sb = new StringBuffer("");
+    String line;
+    try {
+      while ((line = reader.readLine()) != null) {
+        sb.append(line);
+        sb.append("\n");
+      }
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+    return sb.toString();
   }
 }

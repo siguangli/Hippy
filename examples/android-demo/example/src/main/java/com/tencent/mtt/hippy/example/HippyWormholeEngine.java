@@ -38,7 +38,7 @@ public class HippyWormholeEngine
 	public void init(final Context context) {
 		// 1/3. 初始化hippy引擎
 		{
-			HippyEngine.EngineInitParams initParams = new HippyEngine.EngineInitParams();
+			final HippyEngine.EngineInitParams initParams = new HippyEngine.EngineInitParams();
 			// 必须：宿主（Hippy的使用者）的Context
 			// 若存在多个Activity加载多个业务jsbundle的情况，则这里初始化引擎时建议使用Application的Context
 			initParams.context = context;
@@ -133,7 +133,19 @@ public class HippyWormholeEngine
 						mHippyRootView = mHippyEngine.loadModule(loadParams, new HippyEngine.ModuleListener() {
 							public void onInitialized(int statusCode, String msg, HippyRootView hippyRootView) {
 								if (statusCode == HippyEngine.STATUS_OK) {
-								  initNV(mHippyEngine);
+//                  loadNVJSAndInit(initParams,mHippyEngine,"https://kdweb-75176.gzc.vod.tencent-cloud.com/viola/nativevue/nativevue.json");
+//                  loadNVJSAndInit(initParams,mHippyEngine,"nativevue.json");
+                  NativeVueManager.getInstance().loadNativeVueJS(new NativeVueManager.OnLoadNativeVueJSListener() {
+                    @Override
+                    public void onLoadSucess(String result) {
+                      initNV(mHippyEngine, result);
+                    }
+
+                    @Override
+                    public void onLoadFailed(Exception exception) {
+                      LogUtils.e(WORMHOLE_TAG, "loadNVJSAndInit onLoadFailed exception:" + exception.getMessage());
+                    }
+                  },initParams,"nativevue.json");
 									HippyWormholeManager.getInstance().setServerEngine(mHippyEngine, hippyRootView);
 								} else {
 									LogUtils.e(WORMHOLE_TAG, "Hippy: init worm engine failed statusCode:" + statusCode + ",msg:" + msg);
@@ -151,9 +163,8 @@ public class HippyWormholeEngine
 		}
 	}
 
-	private void initNV(HippyEngine engine) {
+	private void initNV(HippyEngine engine,String template) {
     NativeVueEngine.Builder builder = new NativeVueEngine.Builder();
-
     JSONObject config = NativeVueManager.getInstance().getNVConfig(engine);
     Iterator<String> iterator = config.keys();
     while (iterator.hasNext()) {
@@ -186,12 +197,8 @@ public class HippyWormholeEngine
       }
     });
     NativeVueEngine.getInstance().init(builder);
+    LogUtils.e(WORMHOLE_TAG, "loadNVJSAndInit onSuccess length:"+template.length());
     NativeVueManager.getInstance().parseTemplates(template); //TODO：挪动到sdk里面
   }
 
-	String template = "{\n" +
-    "    \"1\":\"{\\n  \\\"data\\\" : \\\"{\\\\n\\\\n\\\\n      }\\\",\\n  \\\"initData\\\" : \\\"{\\\\n     }\\\",\\n  \\\"preData\\\" : \\\"{\\\\n\\\\n    }\\\",\\n  \\\"template\\\" : \\\"{\\\\\\\"type\\\\\\\":\\\\\\\"Wormhole\\\\\\\",\\\\\\\"style\\\\\\\":{\\\\\\\"height\\\\\\\":\\\\\\\"118\\\\\\\",\\\\\\\"position\\\\\\\":\\\\\\\"absolute\\\\\\\",\\\\\\\"left\\\\\\\":\\\\\\\"0\\\\\\\",\\\\\\\"right\\\\\\\":\\\\\\\"0\\\\\\\"},\\\\\\\"styleBind\\\\\\\":{\\\\\\\"width\\\\\\\":\\\\\\\"Dimensions.window.width-12 * 2 \\\\\\\"},\\\\\\\"children\\\\\\\":[{\\\\\\\"type\\\\\\\":\\\\\\\"Text\\\\\\\",\\\\\\\"attr\\\\\\\":{\\\\\\\"text\\\\\\\":\\\\\\\"广告\\\\\\\"},\\\\\\\"style\\\\\\\":{\\\\\\\"position\\\\\\\":\\\\\\\"absolute\\\\\\\",\\\\\\\"fontSize\\\\\\\":\\\\\\\"12\\\\\\\",\\\\\\\"lineHeight\\\\\\\":\\\\\\\"16\\\\\\\",\\\\\\\"top\\\\\\\":\\\\\\\"2\\\\\\\",\\\\\\\"right\\\\\\\":\\\\\\\"2\\\\\\\",\\\\\\\"color\\\\\\\":\\\\\\\"#6b6c70\\\\\\\",\\\\\\\"backgroundColor\\\\\\\":\\\\\\\"#38cfd1d4\\\\\\\"}},{\\\\\\\"type\\\\\\\":\\\\\\\"Text\\\\\\\",\\\\\\\"attrBind\\\\\\\":{\\\\\\\"text\\\\\\\":\\\\\\\"'Foo Card! #'+data.title\\\\\\\"},\\\\\\\"style\\\\\\\":{\\\\\\\"height\\\\\\\":\\\\\\\"30\\\\\\\",\\\\\\\"marginHorizontal\\\\\\\":\\\\\\\"12\\\\\\\",\\\\\\\"marginTop\\\\\\\":\\\\\\\"12\\\\\\\",\\\\\\\"color\\\\\\\":\\\\\\\"rgb(228,61,36)\\\\\\\",\\\\\\\"fontSize\\\\\\\":\\\\\\\"16\\\\\\\",\\\\\\\"fontWeight\\\\\\\":\\\\\\\"bold\\\\\\\"}},{\\\\\\\"type\\\\\\\":\\\\\\\"Image\\\\\\\",\\\\\\\"attrBind\\\\\\\":{\\\\\\\"source\\\\\\\":\\\\\\\"data.coverUrl\\\\\\\"},\\\\\\\"style\\\\\\\":{\\\\\\\"backgroundColor\\\\\\\":\\\\\\\"#d3d3d3\\\\\\\",\\\\\\\"height\\\\\\\":\\\\\\\"70\\\\\\\",\\\\\\\"width\\\\\\\":\\\\\\\"117\\\\\\\",\\\\\\\"marginLeft\\\\\\\":\\\\\\\"12\\\\\\\",\\\\\\\"marginBottom\\\\\\\":\\\\\\\"6\\\\\\\"}}]}\\\"\\n}\",\n" +
-    "    \"2\":\"{\\n  \\\"data\\\" : \\\"{\\\\n\\\\n\\\\n      }\\\",\\n  \\\"initData\\\" : \\\"{\\\\n     }\\\",\\n  \\\"preData\\\" : \\\"{\\\\n\\\\n    }\\\",\\n  \\\"template\\\" : \\\"{\\\\\\\"type\\\\\\\":\\\\\\\"Wormhole\\\\\\\",\\\\\\\"style\\\\\\\":{\\\\\\\"height\\\\\\\":\\\\\\\"118\\\\\\\",\\\\\\\"position\\\\\\\":\\\\\\\"absolute\\\\\\\",\\\\\\\"left\\\\\\\":\\\\\\\"0\\\\\\\",\\\\\\\"right\\\\\\\":\\\\\\\"0\\\\\\\"},\\\\\\\"styleBind\\\\\\\":{\\\\\\\"width\\\\\\\":\\\\\\\"Dimensions.window.width-12 * 2 \\\\\\\"},\\\\\\\"children\\\\\\\":[{\\\\\\\"type\\\\\\\":\\\\\\\"Text\\\\\\\",\\\\\\\"attr\\\\\\\":{\\\\\\\"text\\\\\\\":\\\\\\\"广告\\\\\\\"},\\\\\\\"style\\\\\\\":{\\\\\\\"position\\\\\\\":\\\\\\\"absolute\\\\\\\",\\\\\\\"fontSize\\\\\\\":\\\\\\\"12\\\\\\\",\\\\\\\"lineHeight\\\\\\\":\\\\\\\"16\\\\\\\",\\\\\\\"top\\\\\\\":\\\\\\\"2\\\\\\\",\\\\\\\"right\\\\\\\":\\\\\\\"2\\\\\\\",\\\\\\\"color\\\\\\\":\\\\\\\"#6b6c70\\\\\\\",\\\\\\\"backgroundColor\\\\\\\":\\\\\\\"#38cfd1d4\\\\\\\"}},{\\\\\\\"type\\\\\\\":\\\\\\\"Text\\\\\\\",\\\\\\\"attrBind\\\\\\\":{\\\\\\\"text\\\\\\\":\\\\\\\"'Bar Card! #'+data.title\\\\\\\"},\\\\\\\"style\\\\\\\":{\\\\\\\"height\\\\\\\":\\\\\\\"30\\\\\\\",\\\\\\\"marginHorizontal\\\\\\\":\\\\\\\"12\\\\\\\",\\\\\\\"marginTop\\\\\\\":\\\\\\\"12\\\\\\\",\\\\\\\"color\\\\\\\":\\\\\\\"rgb(228,61,36)\\\\\\\",\\\\\\\"fontSize\\\\\\\":\\\\\\\"16\\\\\\\",\\\\\\\"fontWeight\\\\\\\":\\\\\\\"bold\\\\\\\"}},{\\\\\\\"type\\\\\\\":\\\\\\\"Image\\\\\\\",\\\\\\\"attrBind\\\\\\\":{\\\\\\\"source\\\\\\\":\\\\\\\"data.coverUrl\\\\\\\"},\\\\\\\"style\\\\\\\":{\\\\\\\"backgroundColor\\\\\\\":\\\\\\\"#d3d3d3\\\\\\\",\\\\\\\"height\\\\\\\":\\\\\\\"70\\\\\\\",\\\\\\\"width\\\\\\\":\\\\\\\"117\\\\\\\",\\\\\\\"marginLeft\\\\\\\":\\\\\\\"12\\\\\\\",\\\\\\\"marginBottom\\\\\\\":\\\\\\\"6\\\\\\\"}}]}\\\"\\n}\",\n" +
-    "    \"3\":\"{\\n  \\\"data\\\" : \\\"{\\\\n\\\\n\\\\n      }\\\",\\n  \\\"initData\\\" : \\\"{\\\\n     }\\\",\\n  \\\"preData\\\" : \\\"{\\\\n\\\\n    }\\\",\\n  \\\"template\\\" : \\\"{\\\\\\\"type\\\\\\\":\\\\\\\"Wormhole\\\\\\\",\\\\\\\"style\\\\\\\":{\\\\\\\"height\\\\\\\":\\\\\\\"118\\\\\\\",\\\\\\\"position\\\\\\\":\\\\\\\"absolute\\\\\\\",\\\\\\\"left\\\\\\\":\\\\\\\"0\\\\\\\",\\\\\\\"right\\\\\\\":\\\\\\\"0\\\\\\\"},\\\\\\\"styleBind\\\\\\\":{\\\\\\\"width\\\\\\\":\\\\\\\"Dimensions.window.width-12 * 2 \\\\\\\"},\\\\\\\"children\\\\\\\":[{\\\\\\\"type\\\\\\\":\\\\\\\"Text\\\\\\\",\\\\\\\"attr\\\\\\\":{\\\\\\\"text\\\\\\\":\\\\\\\"广告\\\\\\\"},\\\\\\\"style\\\\\\\":{\\\\\\\"position\\\\\\\":\\\\\\\"absolute\\\\\\\",\\\\\\\"fontSize\\\\\\\":\\\\\\\"12\\\\\\\",\\\\\\\"lineHeight\\\\\\\":\\\\\\\"16\\\\\\\",\\\\\\\"top\\\\\\\":\\\\\\\"2\\\\\\\",\\\\\\\"right\\\\\\\":\\\\\\\"2\\\\\\\",\\\\\\\"color\\\\\\\":\\\\\\\"#6b6c70\\\\\\\",\\\\\\\"backgroundColor\\\\\\\":\\\\\\\"#38cfd1d4\\\\\\\"}},{\\\\\\\"type\\\\\\\":\\\\\\\"Text\\\\\\\",\\\\\\\"attrBind\\\\\\\":{\\\\\\\"text\\\\\\\":\\\\\\\"'Bar Card! #'+data.title\\\\\\\"},\\\\\\\"style\\\\\\\":{\\\\\\\"height\\\\\\\":\\\\\\\"30\\\\\\\",\\\\\\\"marginHorizontal\\\\\\\":\\\\\\\"12\\\\\\\",\\\\\\\"marginTop\\\\\\\":\\\\\\\"12\\\\\\\",\\\\\\\"color\\\\\\\":\\\\\\\"rgb(228,61,36)\\\\\\\",\\\\\\\"fontSize\\\\\\\":\\\\\\\"16\\\\\\\",\\\\\\\"fontWeight\\\\\\\":\\\\\\\"bold\\\\\\\"}},{\\\\\\\"type\\\\\\\":\\\\\\\"Image\\\\\\\",\\\\\\\"attrBind\\\\\\\":{\\\\\\\"source\\\\\\\":\\\\\\\"data.coverUrl\\\\\\\"},\\\\\\\"style\\\\\\\":{\\\\\\\"backgroundColor\\\\\\\":\\\\\\\"#d3d3d3\\\\\\\",\\\\\\\"height\\\\\\\":\\\\\\\"70\\\\\\\",\\\\\\\"width\\\\\\\":\\\\\\\"117\\\\\\\",\\\\\\\"marginLeft\\\\\\\":\\\\\\\"12\\\\\\\",\\\\\\\"marginBottom\\\\\\\":\\\\\\\"6\\\\\\\"}}]}\\\"\\n}\"\n" +
-    "}\n";
 }
