@@ -31,6 +31,7 @@ public class HippyWormholeManager implements HippyWormholeProxy {
   private static final AtomicInteger mWormholeIdCounter = new AtomicInteger(1000);
   private static volatile HippyWormholeManager INSTANCE;
   private HippyEngine mWormholeEngine;
+  private HippyWormholeContainer mWormholeContainer;
   private ConcurrentHashMap<String, Integer> mTkdWormholeNodeMap = new ConcurrentHashMap<String, Integer>();
   private ConcurrentHashMap<String, Integer> mWormholeNodeMap = new ConcurrentHashMap<String, Integer>();
   private ConcurrentHashMap<String, TKDWormholeView> mTkdWormholeViewMap = new ConcurrentHashMap<String, TKDWormholeView>();
@@ -55,6 +56,10 @@ public class HippyWormholeManager implements HippyWormholeProxy {
 
   public void setServerEngine(HippyEngine engine) {
     mWormholeEngine = engine;
+  }
+
+  public void setWormholeContainer(HippyWormholeContainer container) {
+    mWormholeContainer = container;
   }
 
   private void sendDataReceivedMessageToServer(HippyMap bundle) {
@@ -153,6 +158,18 @@ public class HippyWormholeManager implements HippyWormholeProxy {
   }
 
   public void onTKDWormholeViewDestroy(TKDWormholeView tkdWormholeView) {
+    if(tkdWormholeView.getChildCount() > 0) {
+      View child = tkdWormholeView.getChildAt(0);
+      if (child instanceof HippyWormholeView) {
+        tkdWormholeView.removeView(child);
+        mWormholeContainer.addView(child);
+        HippyEngineContext engineContext = mWormholeEngine.getEngineContext();
+        if (engineContext != null) {
+          engineContext.getRenderManager().getControllerManager().deleteChild(mWormholeContainer.getId(), child.getId());
+        }
+      }
+    }
+
     String wormholeId = tkdWormholeView.getWormholeId();
     if (!TextUtils.isEmpty(wormholeId)) {
       mTkdWormholeViewMap.remove(wormholeId);
@@ -221,9 +238,4 @@ public class HippyWormholeManager implements HippyWormholeProxy {
     }
   }
 
-  public void onWormholeDestroy(String id) {
-    if (!TextUtils.isEmpty(id)) {
-
-    }
-  }
 }
