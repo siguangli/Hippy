@@ -27,6 +27,11 @@ public class JSONConvertUtils {
         value = toHippyArray((JSONArray) value);
       } else if (value instanceof JSONObject) {
         value = toHippyMap((JSONObject) value);
+      } else if (value instanceof String) {
+        Object v = parseDigits((String) value);
+        if (v != null) {
+          value = v;
+        }
       }
       hippyArray.pushObject(value);
     }
@@ -46,9 +51,28 @@ public class JSONConvertUtils {
         value = toHippyArray((JSONArray) value);
       } else if (value instanceof JSONObject) {
         value = toHippyMap((JSONObject) value);
+      } else if (value instanceof String) {
+        Object v = parseDigits((String) value);
+        if (v != null) {
+          value = v;
+        }
       }
       map.pushObject(key, value);
     }
     return map;
+  }
+
+
+  private static Object parseDigits(String value) {
+    try {
+      return Integer.parseInt(value);
+    } catch (NumberFormatException e) {
+      try {
+        return Double.parseDouble(value);
+      } catch (NumberFormatException exx) {
+        //do nothing
+      }
+    }
+    return null;
   }
 }
