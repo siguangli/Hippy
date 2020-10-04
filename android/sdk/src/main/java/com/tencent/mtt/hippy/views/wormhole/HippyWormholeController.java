@@ -36,8 +36,7 @@ public class HippyWormholeController extends HippyViewController<HippyWormholeVi
     super.onBatchComplete(view);
     if (view != null) {
       HippyWormholeManager.getInstance().onServerBatchComplete(view);
-      //TODO: 考虑复用的时候，要维护好BusinessId
-      NativeVueManager.getInstance().hideNativeVueByWormholeId(view.getWormholeId());
+      NativeVueManager.getInstance().hideNVView(view.getWormholeId());
     }
   }
 

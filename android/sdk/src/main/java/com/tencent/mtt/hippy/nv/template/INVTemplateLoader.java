@@ -1,4 +1,4 @@
-package com.tencent.mtt.hippy.nv;
+package com.tencent.mtt.hippy.nv.template;
 
 /**
  * Created by kamlin on 2020/9/17.

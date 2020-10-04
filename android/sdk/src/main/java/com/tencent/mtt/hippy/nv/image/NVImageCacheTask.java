@@ -33,7 +33,6 @@ public class NVImageCacheTask {
       imageReadyMap.put(entry, callback);
     } else {
       dispatchImageResult(entry, callback);
-      waitingList.clear();
     }
   }
 
@@ -42,6 +41,7 @@ public class NVImageCacheTask {
       String url = entry.getUrl();
       imageWaiter.onGetCacheResult(url, callback.getDrawableTarget(url));
     }
+    waitingList.clear();
   }
 
 }

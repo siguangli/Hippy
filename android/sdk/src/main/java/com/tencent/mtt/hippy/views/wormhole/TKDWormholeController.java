@@ -24,19 +24,22 @@ public class TKDWormholeController extends HippyViewController<TKDWormholeView> 
   @Override
   protected View createViewImpl(final Context context, HippyMap initProps) {
     final TKDWormholeView tkdWormholeView = new TKDWormholeView(context);
-    tryAddNVView(tkdWormholeView, initProps);
     String wormholeId = HippyWormholeManager.getInstance().getWormholeIdFromProps(initProps);
-    if(!TextUtils.isEmpty(wormholeId)){
+    if(!TextUtils.isEmpty(wormholeId)) {
       tkdWormholeView.setWormholeId(wormholeId);
-      HippyWormholeManager.getInstance().onCreateTKDWormholeView(tkdWormholeView, wormholeId);
+      boolean hasView = HippyWormholeManager.getInstance().onCreateTKDWormholeView(tkdWormholeView, wormholeId);
+      if (!hasView) {
+        addNVView(wormholeId, tkdWormholeView, initProps);
+      }
     }
     return tkdWormholeView;
   }
 
-  private void tryAddNVView(ViewGroup parent, HippyMap props) {
+  private void addNVView(String id, ViewGroup parent, HippyMap props) {
     View view = NativeVueManager.getInstance().getNVView(props);
     if (view != null && view.getParent() == null) {
       parent.addView(view);
+      NativeVueManager.getInstance().markAddNVView(id);
     }
   }
 

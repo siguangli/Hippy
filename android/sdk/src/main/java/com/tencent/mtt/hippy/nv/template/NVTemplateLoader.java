@@ -1,4 +1,4 @@
-package com.tencent.mtt.hippy.nv;
+package com.tencent.mtt.hippy.nv.template;
 
 import com.tencent.mtt.hippy.utils.LogUtils;
 

@@ -18,6 +18,7 @@ package com.tencent.mtt.hippy.uimanager;
 import android.text.TextUtils;
 import android.util.SparseArray;
 import android.view.View;
+
 import com.tencent.mtt.hippy.HippyRootView;
 import com.tencent.mtt.hippy.common.HippyArray;
 import com.tencent.mtt.hippy.common.HippyMap;
@@ -25,7 +26,11 @@ import com.tencent.mtt.hippy.dom.node.NodeProps;
 import com.tencent.mtt.hippy.modules.Promise;
 import com.tencent.mtt.hippy.utils.LogUtils;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Set;
 
 /**
  * @author: edsheng
@@ -472,6 +477,11 @@ public class RenderNode
 		mTextExtra = object;
 		mTextExtraUpdate = object;
 	}
+
+	public Object getTextExtra()
+  {
+    return mTextExtra;
+  }
 
 
 	public void setDelete(boolean b)

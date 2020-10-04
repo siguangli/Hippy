@@ -7,13 +7,14 @@ import com.tencent.mtt.hippy.HippyEngineContext;
 import com.tencent.mtt.hippy.HippyRootView;
 import com.tencent.mtt.hippy.common.HippyMap;
 import com.tencent.mtt.hippy.dom.DomManager;
-import com.tencent.mtt.hippy.dom.flex.FlexSpacing;
 import com.tencent.mtt.hippy.dom.node.DomNode;
 import com.tencent.mtt.hippy.dom.node.NodeProps;
-import com.tencent.mtt.hippy.dom.node.TextExtra;
-import com.tencent.mtt.hippy.dom.node.TextNode;
 import com.tencent.mtt.hippy.modules.nativemodules.uimanager.UIManagerModule;
 import com.tencent.mtt.hippy.nv.converter.NVConverter;
+import com.tencent.mtt.hippy.nv.walker.ApplyLayoutWalker;
+import com.tencent.mtt.hippy.nv.walker.CreateRenderNodeWalker;
+import com.tencent.mtt.hippy.nv.walker.DomNodeWalker;
+import com.tencent.mtt.hippy.nv.walker.ReleaseNVNodeWalker;
 import com.tencent.mtt.hippy.uimanager.RenderManager;
 import com.tencent.mtt.hippy.uimanager.RenderNode;
 import com.tencent.mtt.hippy.utils.LogUtils;
@@ -39,6 +40,10 @@ public class NVNodeTree {
   private HippyRootView hippyRootView;
   private HippyEngineContext engineContext;
 
+
+  private volatile CreateRenderNodeWalker renderNodeWalker;
+  private volatile ApplyLayoutWalker applyLayoutWalker;
+
   public NVNodeTree(HippyEngineContext engineContext, HippyRootView hippyRootView) {
     renderManager = engineContext.getRenderManager();
     domManager = engineContext.getDomManager();
@@ -60,15 +65,12 @@ public class NVNodeTree {
       return false;
     }
 
-    DomNode hippyRootNode = domManager.getNode(hippyRootView.getId());
-    if (hippyRootNode == null) {
-      return false;
+    renderNodeWalker = new CreateRenderNodeWalker(renderManager, hippyRootView);
+    rootDomNode = createDomNode(vdomJson, 0, null, true, renderNodeWalker);
+    if (renderNodeWalker != null) {
+      renderNodeWalker.executePendingTaskOnUIThread();
     }
-
-    rootDomNode = createDomNode(vdomJson, 0, hippyRootNode, true,
-      new CreateRenderNodeWalker(renderManager, hippyRootView));
     layout(rootDomNode);
-    removeDomNodeFromHippyRootNode();
     return true;
   }
 
@@ -87,57 +89,22 @@ public class NVNodeTree {
 
     RenderNode rootRenderNode = renderManager.getRenderNode(rootDomNode.getId());
     if (rootRenderNode != null) {
-      view = rootRenderNode.createViewRecursive();
-      rootRenderNode.updateViewRecursive();
-      removeRenderNodeFromHippyRootNode(rootRenderNode);
+      view = createView(rootRenderNode);
+      if (view != null) {
+        updateView(rootRenderNode);
+      }
     }
     return view;
   }
 
   public void destroy() {
     if (rootDomNode != null) {
-      walkNode(rootDomNode, new DomNodeWalker() {
-        @Override
-        public void onWalk(DomNode node) {
-          domManager.removeNode(node);
-          int id = node.getId();
-          RenderNode renderNode = renderManager.getRenderNode(id);
-          renderManager.removeNode(renderNode);
-          renderManager.getControllerManager().removeCacheView(id);
-        }
-      });
-
+      walkNode(rootDomNode, new ReleaseNVNodeWalker(domManager, renderManager));
     }
     rootDomNode = null;
     view = null;
-  }
-
-  private void removeRenderNodeFromHippyRootNode(RenderNode rootRenderNode) {
-    if (rootRenderNode == null) {
-      return;
-    }
-
-    RenderNode hippyRootNode = renderManager.getRenderNode(hippyRootView.getId());
-    if (hippyRootNode == null) {
-      return;
-    }
-
-    hippyRootNode.removeChild(rootRenderNode);
-  }
-
-  private void removeDomNodeFromHippyRootNode() {
-    if (rootDomNode == null) {
-      return;
-    }
-
-    DomNode hippyRootNode = domManager.getNode(hippyRootView.getId());
-
-    int index = hippyRootNode.indexOf(rootDomNode);
-    if (index == -1) {
-      return;
-    }
-
-    hippyRootNode.removeChildAt(index);
+    applyLayoutWalker = null;
+    renderNodeWalker = null;
   }
 
   private DomNode createDomNode(JSONObject vdomJson, int index, DomNode parentNode, boolean isRoot, DomNodeWalker walker) {
@@ -157,7 +124,9 @@ public class NVNodeTree {
       parentNode.addChildAt(domNode, index);
     }
 
-    walker.onWalk(domNode);
+    if (walker != null) {
+      walker.onWalk(domNode);
+    }
 
     JSONArray jsonArray = vdomJson.optJSONArray(NVConverter.CHILDREN);
     if (jsonArray != null) {
@@ -209,25 +178,11 @@ public class NVNodeTree {
       }
     }); //after layout
 
-    walkNode(domNode, new DomNodeWalker() {
-      @Override
-      public void onWalk(DomNode dom) { //apply layout
-        if (dom.getData() != null && !dom.isVirtual()) {
-          RenderNode renderNode = renderManager.getRenderNode(dom.getId());
-          if (renderNode == null) {
-            return;
-          }
-
-          TextNode textNode = (TextNode) dom;
-          TextExtra textExtra = new TextExtra(textNode.getData(), textNode.getPadding(FlexSpacing.START),
-            textNode.getPadding(FlexSpacing.END),
-            textNode.getPadding(FlexSpacing.BOTTOM), textNode.getPadding(FlexSpacing.TOP));
-          renderNode.updateExtra(textExtra);
-        }
-        applyLayout(dom);
-        dom.markUpdateSeen();
-      }
-    });
+    applyLayoutWalker = new ApplyLayoutWalker(renderManager);
+    walkNode(domNode, applyLayoutWalker); //apply layout
+    if (applyLayoutWalker != null) {
+      applyLayoutWalker.executeApplyLayoutTaskOnUIThread();
+    }
   }
 
   private void walkNode(DomNode domNode, DomNodeWalker walker) {
@@ -237,53 +192,51 @@ public class NVNodeTree {
       walkNode(dom, walker);
     }
 
-    walker.onWalk(domNode);
-  }
-
-  private void applyLayout(DomNode domNode) {
-
-    float x = domNode.getLayoutX();
-    float y = domNode.getLayoutY();
-
-    DomNode parent = domNode.getParent();
-    while (parent != null && parent.isJustLayout()) {
-      x += parent.getLayoutX();
-      y += parent.getLayoutY();
-      parent = parent.getParent();
+    if (walker != null) {
+      walker.onWalk(domNode);
     }
-
-    applyLayoutXY(domNode, x, y);
   }
 
-  private void applyLayoutXY(final DomNode domStyle, final float x, final float y) {
-    if (!domStyle.isJustLayout() && !domStyle.isVirtual()) {
-      if (domStyle.shouldUpdateLayout(x, y)) {
-
-        int newLeft = Math.round(x);
-        int newTop = Math.round(y);
-        int newRight = Math.round(x + domStyle.getLayoutWidth());
-        int newBottom = Math.round(y + domStyle.getLayoutHeight());
-
-        int newWidth = newRight - newLeft;
-
-        int newHeight = newBottom - newTop;
-        RenderNode renderNode = renderManager.getRenderNode(domStyle.getId());
-        if (renderNode == null) {
-          return;
-        }
-
-        renderNode.updateLayout(newLeft, newTop, newWidth, newHeight);
+  private View createView(RenderNode nvNode) {
+    if (nvNode == null) {
+      return null;
+    }
+    View view = createView(hippyRootView, nvNode);
+    if (nvNode.getChildCount() > 0) {
+      for (int i = 0; i < nvNode.getChildCount(); i++) {
+        RenderNode renderNode = nvNode.getChildAt(i);
+        createView(renderNode);
+        renderManager.getControllerManager().addChild(nvNode.getId(), renderNode.getId(), i);
       }
+    }
+    return view;
+  }
+
+  public View createView(HippyRootView hippyRootView, RenderNode renderNode) {
+    return renderManager.getControllerManager().createView(hippyRootView, renderNode.getId(),
+      renderNode.getClassName(), renderNode.getProps());
+  }
+
+  private void updateView(RenderNode renderNode) {
+    if (renderNode == null) {
       return;
     }
 
-    for (int i = 0; i < domStyle.getChildCount(); i++) {
-      DomNode child = domStyle.getChildAt(i);
-      float childX = child.getLayoutX();
-      float childY = child.getLayoutY();
-      childX += x;
-      childY += y;
-      applyLayoutXY(child, childX, childY);
+    update(renderNode);
+
+    for (int i = 0; i < renderNode.getChildCount(); i++) {
+      RenderNode node = renderNode.getChildAt(i);
+      update(node);
+    }
+  }
+
+  private void update(RenderNode renderNode) {
+    int id = renderNode.getId();
+    String name = renderNode.getClassName();
+    renderManager.getControllerManager().updateLayout(name, id, renderNode.getX(), renderNode.getY(),
+      renderNode.getWidth(), renderNode.getHeight());
+    if (renderNode.getTextExtra() != null) {
+      renderManager.getControllerManager().updateExtra(id, name, renderNode.getTextExtra());
     }
   }
 }

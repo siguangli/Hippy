@@ -25,12 +25,13 @@ public class TKDStyleNode extends StyleNode {
   private NVViewModel nvViewModel;
   private String wormholeId;
   private boolean hasLayoutNv;
+  private volatile boolean mHasAddNVView;
 
   public TKDStyleNode(boolean isVirtual, HippyEngineContext engineContext, HippyRootView hippyRootView, String wormholeId) {
     this.mIsVirtual = isVirtual;
     nvViewModel = new NVViewModel(engineContext, hippyRootView);
     this.wormholeId = wormholeId;
-    NativeVueManager.getInstance().registerNodeByWormholeId(wormholeId, this);
+    NativeVueManager.getInstance().registerNode(wormholeId, this);
   }
 
   public boolean isVirtual() {
@@ -46,12 +47,15 @@ public class TKDStyleNode extends StyleNode {
     }
     p.pushString(HippyWormholeManager.WORMHOLE_WORMHOLE_ID, wormholeId);
 
+    HippyMap params = p.getMap(HippyWormholeManager.WORMHOLE_PARAMS);
+    params.pushString(WORMHOLE_WORMHOLE_ID, wormholeId);
+    HippyWormholeManager.getInstance().onTkdWormholeNodeSetProps(params, wormholeId, getId());
+
     if (hasLayoutNv) {
       return;
     }
 
     //build nv node tree and layout it
-    HippyMap params = p.getMap(HippyWormholeManager.WORMHOLE_PARAMS);
     String templateType = getTemplateType(params);
     if (TextUtils.isEmpty(templateType)) {
       return;
@@ -72,27 +76,12 @@ public class TKDStyleNode extends StyleNode {
     float nvWidth = nvViewModel.getLayoutWidth();
     float nvHeight = nvViewModel.getLayoutHeight();
     if (nvWidth != 0) {
-      style.pushDouble(NodeProps.WIDTH, PixelUtil.px2dp(nvWidth));
+      style.pushInt(NodeProps.WIDTH, (int) PixelUtil.px2dp(nvWidth));
     }
     if (nvHeight != 0) {
-      style.pushDouble(NodeProps.HEIGHT, PixelUtil.px2dp(nvHeight));
+      style.pushInt(NodeProps.HEIGHT, (int) PixelUtil.px2dp(nvHeight));
     }
     hasLayoutNv = true;
-
-    params.pushString(WORMHOLE_WORMHOLE_ID, wormholeId);
-    HippyWormholeManager.getInstance().onTkdWormholeNodeSetProps(params, wormholeId, getId());
-
-  }
-
-  @Override
-  public void layoutBefore(HippyEngineContext context) {
-    super.layoutBefore(context);
-
-    if (getChildCount() != 0) {
-      //WormholeEngine has created DomNode and add into this，so TKDStyleNode can create view by itself
-      //and we can remove NVNode and NVView
-      NativeVueManager.getInstance().unregisterTDKWormholeStyleNode(wormholeId);
-    }
   }
 
   public View getNVView() {
@@ -107,7 +96,7 @@ public class TKDStyleNode extends StyleNode {
     return props.getString(HippyWormholeManager.WORMHOLE_WORMHOLE_ID);
   }
 
-  public static String getTemplateType(HippyMap params) {
+  private static String getTemplateType(HippyMap params) {
     if (params == null) {
       return null;
     }
@@ -116,5 +105,13 @@ public class TKDStyleNode extends StyleNode {
       return null;
     }
     return data.getString(TEMPLATE_TYPE);
+  }
+
+  public void markHasAddNVView() {
+    mHasAddNVView = true;
+  }
+
+  public boolean hasAddNVView() {
+    return mHasAddNVView;
   }
 }

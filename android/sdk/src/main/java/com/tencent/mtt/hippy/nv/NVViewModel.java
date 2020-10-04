@@ -12,9 +12,7 @@ import com.tencent.mtt.hippy.dom.node.DomNode;
 /**
  * Created by kamlin on 2020/9/17.
  * TODO:
- * 5. 多线程校验
  * 8. 补充日志
- * 9. 清除View引用
  */
 public class NVViewModel {
 

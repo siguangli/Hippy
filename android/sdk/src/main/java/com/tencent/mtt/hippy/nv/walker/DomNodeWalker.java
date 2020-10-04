@@ -1,4 +1,4 @@
-package com.tencent.mtt.hippy.nv;
+package com.tencent.mtt.hippy.nv.walker;
 
 import com.tencent.mtt.hippy.dom.node.DomNode;
 

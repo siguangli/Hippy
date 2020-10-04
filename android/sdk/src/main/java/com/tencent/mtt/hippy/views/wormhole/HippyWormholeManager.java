@@ -120,7 +120,7 @@ public class HippyWormholeManager {
       if (oldParent != null) {
         oldParent.removeView(wormholeView);
       }
-      ((ViewGroup)newParent).addView(wormholeView);
+      ((ViewGroup)newParent).addView(wormholeView, 0);
     }
   }
 
@@ -171,9 +171,9 @@ public class HippyWormholeManager {
     return businessId;
   }
 
-  public void onCreateTKDWormholeView(TKDWormholeView tkdWormholeView, String wormholeId) {
+  public boolean onCreateTKDWormholeView(TKDWormholeView tkdWormholeView, String wormholeId) {
     if (TextUtils.isEmpty(wormholeId) || !mTkdWormholeNodeMap.containsKey(wormholeId)) {
-      return;
+      return false;
     }
 
     mTkdWormholeViewMap.put(wormholeId, tkdWormholeView);
@@ -186,7 +186,9 @@ public class HippyWormholeManager {
       tkdWormholeView.setId(id);
       addWormholeToParent(wormholeView, tkdWormholeView);
       sendBatchCompleteMessageToClient(wormholeId, tkdWormholeView);
+      return true;
     }
+    return false;
   }
 
   public void onTkdWormholeNodeSetProps(final HippyMap paramsMap, final String wormholeId, final Integer id) {

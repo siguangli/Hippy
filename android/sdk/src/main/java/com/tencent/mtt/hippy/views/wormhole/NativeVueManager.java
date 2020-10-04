@@ -2,6 +2,7 @@ package com.tencent.mtt.hippy.views.wormhole;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
+import android.text.TextUtils;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -12,8 +13,8 @@ import com.tencent.mtt.hippy.common.HippyMap;
 import com.tencent.mtt.hippy.devsupport.BundleFetchCallBack;
 import com.tencent.mtt.hippy.devsupport.DevServerConfig;
 import com.tencent.mtt.hippy.devsupport.DevServerHelper;
-import com.tencent.mtt.hippy.nv.INVTemplateLoader;
-import com.tencent.mtt.hippy.nv.NVTemplateLoader;
+import com.tencent.mtt.hippy.nv.template.INVTemplateLoader;
+import com.tencent.mtt.hippy.nv.template.NVTemplateLoader;
 import com.tencent.mtt.hippy.nv.converter.NVConverter;
 import com.tencent.mtt.hippy.utils.ContextHolder;
 import com.tencent.mtt.hippy.utils.FileUtils;
@@ -61,19 +62,10 @@ public class NativeVueManager {
     return NVConverter.convertNVConfig(hippyBridgeManager.getGlobalConfigs());
   }
 
-  public void registerNodeByWormholeId(String wormholeId, TKDStyleNode node) {
+  public void registerNode(String wormholeId, TKDStyleNode node) {
     if (!mTkdStyleNodeMap.containsKey(wormholeId)) {
       mTkdStyleNodeMap.put(wormholeId, node);
     }
-  }
-
-  public void unregisterTDKWormholeStyleNode(String wormholeId) {
-    TKDStyleNode styleNode = mTkdStyleNodeMap.remove(wormholeId);
-    if (styleNode == null) {
-      return;
-    }
-
-    styleNode.destroyNV();
   }
 
   public View getNVView(HippyMap props) {
@@ -96,37 +88,60 @@ public class NativeVueManager {
     return mTemplateLoader.getTemplate(templateId);
   }
 
+  public void markAddNVView(String wormholeId) {
+    if (TextUtils.isEmpty(wormholeId)) {
+      return;
+    }
 
-  public void hideNativeVueByWormholeId(String wormholeId){
+    TKDStyleNode styleNode = mTkdStyleNodeMap.get(wormholeId);
+    if (styleNode == null) {
+      return;
+    }
+    styleNode.markHasAddNVView();
+  }
+
+
+  public void hideNVView(final String wormholeId){
+    if (TextUtils.isEmpty(wormholeId)) {
+      return;
+    }
+
     final TKDStyleNode styleNode = mTkdStyleNodeMap.remove(wormholeId);
     if (styleNode == null) {
-      LogUtils.d(TAG, "styleNode is null, wormholeId: " + wormholeId);
       return;
     }
 
-    final View view = styleNode.getNVView();
-    if (view == null) {
-      return;
-    }
-
-    view.postDelayed(new Runnable() {
-      @Override
-      public void run() {
-        view.animate().alpha(0)
-          .setDuration(200)
-          .setListener(new AnimatorListenerAdapter() {
-            @Override
-            public void onAnimationEnd(Animator animation) {
-              destroyNVView(view, styleNode);
-            }
-
-            @Override
-            public void onAnimationCancel(Animator animation) {
-              destroyNVView(view, styleNode);
-            }
-          });
+    if (!styleNode.hasAddNVView()) {
+      styleNode.destroyNV();
+    } else {
+      final View view = styleNode.getNVView();
+      if (view == null) {
+        return;
       }
-    }, 100);
+
+      if (view.getParent() == null) {
+        styleNode.destroyNV();
+      } else {
+        view.postDelayed(new Runnable() {
+          @Override
+          public void run() {
+            view.animate().alpha(0)
+              .setDuration(200)
+              .setListener(new AnimatorListenerAdapter() {
+                @Override
+                public void onAnimationEnd(Animator animation) {
+                  destroyNVView(view, styleNode);
+                }
+
+                @Override
+                public void onAnimationCancel(Animator animation) {
+                  destroyNVView(view, styleNode);
+                }
+              });
+          }
+        }, 100);
+      }
+    }
   }
 
   private void destroyNVView(View nvView, TKDStyleNode styleNode) {
