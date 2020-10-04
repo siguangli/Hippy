@@ -9,7 +9,7 @@ import android.view.ViewGroup;
 import com.tencent.mtt.hippy.HippyEngine;
 import com.tencent.mtt.hippy.HippyGlobalConfigs;
 import com.tencent.mtt.hippy.bridge.HippyBridgeManagerImpl;
-import com.tencent.mtt.hippy.common.HippyMap;
+import com.tencent.mtt.hippy.nv.converter.NVConverter;
 import com.tencent.mtt.hippy.devsupport.BundleFetchCallBack;
 import com.tencent.mtt.hippy.devsupport.DevServerConfig;
 import com.tencent.mtt.hippy.devsupport.DevServerHelper;
@@ -66,10 +66,6 @@ public class NativeVueManager {
     if (!mTkdStyleNodeMap.containsKey(wormholeId)) {
       mTkdStyleNodeMap.put(wormholeId, node);
     }
-  }
-
-  public View getNVView(HippyMap props) {
-    return getNVView(TKDStyleNode.getWormholeId(props));
   }
 
   public View getNVView(String id) {

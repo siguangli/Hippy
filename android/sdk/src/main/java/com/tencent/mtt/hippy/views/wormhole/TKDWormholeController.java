@@ -29,17 +29,17 @@ public class TKDWormholeController extends HippyViewController<TKDWormholeView> 
       tkdWormholeView.setWormholeId(wormholeId);
       boolean hasView = HippyWormholeManager.getInstance().onCreateTKDWormholeView(tkdWormholeView, wormholeId);
       if (!hasView) {
-        addNVView(wormholeId, tkdWormholeView, initProps);
+        addNVView(wormholeId, tkdWormholeView);
       }
     }
     return tkdWormholeView;
   }
 
-  private void addNVView(String id, ViewGroup parent, HippyMap props) {
-    View view = NativeVueManager.getInstance().getNVView(props);
+  private void addNVView(String wormholeId, ViewGroup parent) {
+    View view = NativeVueManager.getInstance().getNVView(wormholeId);
     if (view != null && view.getParent() == null) {
       parent.addView(view);
-      NativeVueManager.getInstance().markAddNVView(id);
+      NativeVueManager.getInstance().markAddNVView(wormholeId);
     }
   }
 

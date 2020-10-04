@@ -45,9 +45,12 @@ public class TKDStyleNode extends StyleNode {
     if (p == null) {
       return;
     }
-    p.pushString(HippyWormholeManager.WORMHOLE_WORMHOLE_ID, wormholeId);
 
     HippyMap params = p.getMap(HippyWormholeManager.WORMHOLE_PARAMS);
+    if (params == null) {
+      return;
+    }
+
     params.pushString(WORMHOLE_WORMHOLE_ID, wormholeId);
     HippyWormholeManager.getInstance().onTkdWormholeNodeSetProps(params, wormholeId, getId());
 
@@ -90,10 +93,6 @@ public class TKDStyleNode extends StyleNode {
 
   public void destroyNV() {
     nvViewModel.destroy();
-  }
-
-  public static String getWormholeId(HippyMap props) {
-    return props.getString(HippyWormholeManager.WORMHOLE_WORMHOLE_ID);
   }
 
   private static String getTemplateType(HippyMap params) {

@@ -49,6 +49,8 @@ public class NVNodeTree {
     domManager = engineContext.getDomManager();
     this.hippyRootView = hippyRootView;
     this.engineContext = engineContext;
+    applyLayoutWalker = new ApplyLayoutWalker(renderManager);
+    renderNodeWalker = new CreateRenderNodeWalker(renderManager, hippyRootView);
   }
 
   public boolean buildNvNode(String vdom) {
@@ -65,9 +67,8 @@ public class NVNodeTree {
       return false;
     }
 
-    renderNodeWalker = new CreateRenderNodeWalker(renderManager, hippyRootView);
     rootDomNode = createDomNode(vdomJson, 0, null, true, renderNodeWalker);
-    if (renderNodeWalker != null) {
+    if (renderNodeWalker != null) { //multi thread access, do a null check
       renderNodeWalker.executePendingTaskOnUIThread();
     }
     layout(rootDomNode);
@@ -178,9 +179,8 @@ public class NVNodeTree {
       }
     }); //after layout
 
-    applyLayoutWalker = new ApplyLayoutWalker(renderManager);
     walkNode(domNode, applyLayoutWalker); //apply layout
-    if (applyLayoutWalker != null) {
+    if (applyLayoutWalker != null) { //multi thread access, do a null check
       applyLayoutWalker.executeApplyLayoutTaskOnUIThread();
     }
   }
