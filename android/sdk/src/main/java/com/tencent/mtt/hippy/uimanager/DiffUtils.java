@@ -120,7 +120,7 @@ public class DiffUtils
 			{
 				toChild = toNode.getChildAt(i);
 			}
-			if (toChild != null && TextUtils.equals(fromChild.getClassName(), toChild.getClassName()))
+			if (toChild != null && TextUtils.equals(fromChild.getClassName(), toChild.getClassName()) && !fromChild.getClassName().equals("TKDWormhole"))
 			{
 				diffFromNode(fromChild, toChild, patchTypes);
 			}
