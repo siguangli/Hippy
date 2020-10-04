@@ -71,6 +71,7 @@ public class NativeVueManager {
   public View getNVView(String id) {
     TKDStyleNode styleNode = mTkdStyleNodeMap.get(id);
     if (styleNode == null) {
+      LogUtils.d(TAG, "[getNVView]: styleNode is null, id: " + id);
       return null;
     }
     return styleNode.getNVView();
@@ -86,11 +87,13 @@ public class NativeVueManager {
 
   public void markAddNVView(String wormholeId) {
     if (TextUtils.isEmpty(wormholeId)) {
+      LogUtils.e(TAG, "[markAddNVView]: wormhole id is null");
       return;
     }
 
     TKDStyleNode styleNode = mTkdStyleNodeMap.get(wormholeId);
     if (styleNode == null) {
+      LogUtils.e(TAG, "[markAddNVView]: styleNode is null, id: " + wormholeId);
       return;
     }
     styleNode.markHasAddNVView();
@@ -99,11 +102,13 @@ public class NativeVueManager {
 
   public void hideNVView(final String wormholeId){
     if (TextUtils.isEmpty(wormholeId)) {
+      LogUtils.e(TAG, "[hideNVView]: wormhole id is null");
       return;
     }
 
     final TKDStyleNode styleNode = mTkdStyleNodeMap.remove(wormholeId);
     if (styleNode == null) {
+      LogUtils.e(TAG, "[hideNVView]: styleNode is null, id: " + wormholeId);
       return;
     }
 
@@ -112,6 +117,7 @@ public class NativeVueManager {
     } else {
       final View view = styleNode.getNVView();
       if (view == null) {
+        LogUtils.e(TAG, "[hideNVView]: view is null, id: " + wormholeId);
         return;
       }
 

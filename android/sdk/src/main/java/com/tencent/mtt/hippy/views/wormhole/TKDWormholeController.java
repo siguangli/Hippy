@@ -11,10 +11,13 @@ import com.tencent.mtt.hippy.common.HippyMap;
 import com.tencent.mtt.hippy.dom.node.StyleNode;
 import com.tencent.mtt.hippy.uimanager.HippyViewController;
 import com.tencent.mtt.hippy.uimanager.HippyViewEvent;
+import com.tencent.mtt.hippy.utils.LogUtils;
 import com.tencent.mtt.hippy.views.wormhole.node.TKDStyleNode;
 
 @HippyController(name = "TKDWormhole")
 public class TKDWormholeController extends HippyViewController<TKDWormholeView> {
+
+  private static final String TAG = "TKDWormholeController";
 
   @Override
   protected View createViewImpl(final Context context) {
@@ -40,6 +43,7 @@ public class TKDWormholeController extends HippyViewController<TKDWormholeView> 
     if (view != null && view.getParent() == null) {
       parent.addView(view);
       NativeVueManager.getInstance().markAddNVView(wormholeId);
+      LogUtils.d(TAG, "add nv view, wormhole id: " + wormholeId);
     }
   }
 

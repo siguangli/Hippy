@@ -11,8 +11,6 @@ import com.tencent.mtt.hippy.dom.node.DomNode;
 
 /**
  * Created by kamlin on 2020/9/17.
- * TODO:
- * 8. 补充日志
  */
 public class NVViewModel {
 

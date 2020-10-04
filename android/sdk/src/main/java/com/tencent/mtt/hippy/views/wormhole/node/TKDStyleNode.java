@@ -9,6 +9,7 @@ import com.tencent.mtt.hippy.common.HippyMap;
 import com.tencent.mtt.hippy.dom.node.NodeProps;
 import com.tencent.mtt.hippy.dom.node.StyleNode;
 import com.tencent.mtt.hippy.nv.NVViewModel;
+import com.tencent.mtt.hippy.utils.LogUtils;
 import com.tencent.mtt.hippy.utils.PixelUtil;
 import com.tencent.mtt.hippy.views.wormhole.HippyWormholeManager;
 import com.tencent.mtt.hippy.views.wormhole.NativeVueManager;
@@ -61,10 +62,12 @@ public class TKDStyleNode extends StyleNode {
     //build nv node tree and layout it
     String templateType = getTemplateType(params);
     if (TextUtils.isEmpty(templateType)) {
+      LogUtils.e(TAG, "[setProps]: template type is null, id: " + wormholeId);
       return;
     }
     String template = NativeVueManager.getInstance().getTemplate(templateType);
     if (TextUtils.isEmpty(template)) {
+      LogUtils.e(TAG, "[setProps]: template is null, templateType: " + templateType + ", id: " + wormholeId);
       return;
     }
 
