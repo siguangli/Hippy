@@ -710,6 +710,7 @@ public abstract class RecyclerAdapter extends RecyclerViewBase.Adapter<RecyclerV
 			v.setPadding(contentHolder.mItemPaddingLeft, 0, contentHolder.mItemPaddingRight, 0);
 		}
 		RecyclerView.ViewHolderWrapper h = new RecyclerView.ViewHolderWrapper(v, parent);
+		h.mViewType = viewType;
 		h.setContentHolder(contentHolder);
 		return h;
 	}

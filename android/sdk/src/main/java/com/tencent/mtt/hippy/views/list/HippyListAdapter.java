@@ -15,6 +15,8 @@
  */
 package com.tencent.mtt.hippy.views.list;
 
+import static com.tencent.mtt.supportui.views.recyclerview.RecyclerViewBase.ViewHolder.TYPE_WORMHOLE;
+
 import android.view.View;
 import android.view.ViewGroup;
 import com.tencent.mtt.hippy.HippyEngineContext;
@@ -213,15 +215,15 @@ public class HippyListAdapter extends RecyclerAdapter implements IRecycleItemTyp
 	RecyclerViewBase.ViewHolder findBestHolderRecursive(int position, int targetType, RecyclerViewBase.Recycler recycler)
 	{
 		RecyclerViewBase.ViewHolder matchHolder = getScrapViewForPositionInner(position, targetType, recycler);
-		if (matchHolder == null)
-		{
-			matchHolder = recycler.getViewHolderForPosition(position);
-		}
+		if (targetType != TYPE_WORMHOLE) {
+      if (matchHolder == null) {
+        matchHolder = recycler.getViewHolderForPosition(position);
+      }
 
-		if (matchHolder != null && ((NodeHolder) matchHolder.mContentHolder).mBindNode.isDelete())
-		{
-			matchHolder = findBestHolderRecursive(position, targetType, recycler);
-		}
+      if (matchHolder != null && ((NodeHolder) matchHolder.mContentHolder).mBindNode.isDelete()) {
+        matchHolder = findBestHolderRecursive(position, targetType, recycler);
+      }
+    }
 
 		return matchHolder;
 	}
@@ -583,9 +585,22 @@ public class HippyListAdapter extends RecyclerAdapter implements IRecycleItemTyp
 
 			  if (listItemNode.getProps() != null) {
           HippyMap listItemProps = listItemNode.getProps();
-          if (listItemProps.get(ListItemRenderNode.ITEM_VIEW_TYPE) != null)
-          {
-            return listItemProps.getInt(ListItemRenderNode.ITEM_VIEW_TYPE);
+          Object typeObj = listItemProps.get(ListItemRenderNode.ITEM_VIEW_TYPE);
+          if (typeObj != null) {
+            int type = Integer.MIN_VALUE;
+            if (typeObj instanceof String) {
+              try {
+                type = Integer.parseInt((String)typeObj);
+              } catch (NumberFormatException e) {
+
+              }
+            } else if (typeObj instanceof Number) {
+              type = listItemProps.getInt(ListItemRenderNode.ITEM_VIEW_TYPE);
+            }
+
+            if (type != Integer.MIN_VALUE) {
+              return type;
+            }
           }
         }
 			}

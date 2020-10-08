@@ -104,6 +104,7 @@ public class HippyWormholeManager implements HippyWormholeProxy {
       RenderNode node = engineContext.getRenderManager().getRenderNode(id);
       if (node != null) {
         view = node.createViewRecursive();
+        node.updateViewRecursive();
       }
     }
     return view;
