@@ -6,6 +6,7 @@ import android.view.ViewGroup;
 
 import com.tencent.mtt.hippy.HippyEngine;
 import com.tencent.mtt.hippy.HippyEngineContext;
+import com.tencent.mtt.hippy.HippyRootView;
 import com.tencent.mtt.hippy.common.HippyMap;
 import com.tencent.mtt.hippy.uimanager.HippyViewEvent;
 import com.tencent.mtt.hippy.uimanager.RenderNode;
@@ -17,7 +18,7 @@ import org.json.JSONArray;
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class HippyWormholeManager implements HippyWormholeProxy {
+public class HippyWormholeManager {
   public static final String WORMHOLE_TAG                       = "hippy_wormhole";
 
   public static final String WORMHOLE_PARAMS                    = "params";
@@ -31,6 +32,7 @@ public class HippyWormholeManager implements HippyWormholeProxy {
   private static final AtomicInteger mWormholeIdCounter = new AtomicInteger(1000);
   private static volatile HippyWormholeManager INSTANCE;
   private HippyEngine mWormholeEngine;
+  private HippyRootView mHippyRootView;
   private HippyWormholeContainer mWormholeContainer;
   private ConcurrentHashMap<String, Integer> mTkdWormholeNodeMap = new ConcurrentHashMap<String, Integer>();
   private ConcurrentHashMap<String, Integer> mWormholeNodeMap = new ConcurrentHashMap<String, Integer>();
@@ -54,8 +56,17 @@ public class HippyWormholeManager implements HippyWormholeProxy {
     return INSTANCE;
   }
 
-  public void setServerEngine(HippyEngine engine) {
+  public void setServerEngine(HippyEngine engine,HippyRootView hippyRootView) {
     mWormholeEngine = engine;
+    mHippyRootView = hippyRootView;
+  }
+
+  public HippyEngineContext getEngineContext() {
+    return mWormholeEngine != null ? mWormholeEngine.getEngineContext() : null;
+  }
+
+  public HippyRootView getHippyRootView() {
+    return mHippyRootView;
   }
 
   public void setWormholeContainer(HippyWormholeContainer container) {
@@ -177,9 +188,9 @@ public class HippyWormholeManager implements HippyWormholeProxy {
     }
   }
 
-  public void onCreateTKDWormholeView(TKDWormholeView tkdWormholeView, String wormholeId) {
+  public boolean onCreateTKDWormholeView(TKDWormholeView tkdWormholeView, String wormholeId) {
     if (TextUtils.isEmpty(wormholeId) || !mTkdWormholeNodeMap.containsKey(wormholeId)) {
-      return;
+      return false;
     }
 
     mTkdWormholeViewMap.put(wormholeId, tkdWormholeView);
@@ -192,7 +203,9 @@ public class HippyWormholeManager implements HippyWormholeProxy {
       tkdWormholeView.setId(id);
       addWormholeToParent(wormholeView, tkdWormholeView);
       sendBatchCompleteMessageToClient(wormholeId, tkdWormholeView);
+      return true;
     }
+    return false;
   }
 
   public void onTkdWormholeNodeSetProps(final HippyMap paramsMap, final String wormholeId, final Integer id) {
