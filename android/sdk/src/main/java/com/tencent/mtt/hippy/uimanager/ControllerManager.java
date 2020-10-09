@@ -330,9 +330,10 @@ public class ControllerManager implements HippyInstanceLifecycleEventListener
 		}
 		HippyViewController hippyChildViewController = null;
     Object childTagString = HippyTag.getClassName(child);
+		String childClassName = "";
 		if (childTagString instanceof String)
 		{
-      String childClassName = (String)childTagString;
+			childClassName = (String)childTagString;
 			if (!TextUtils.isEmpty(childClassName))
 			{
 				hippyChildViewController = mControllerRegistry.getViewController(childClassName);
@@ -343,7 +344,7 @@ public class ControllerManager implements HippyInstanceLifecycleEventListener
 			}
 		}
 
-		if (child instanceof ViewGroup)
+		if (child instanceof ViewGroup && (TextUtils.isEmpty(childClassName) || !childClassName.equals("TKDWormhole")))
 		{
 			ViewGroup childViewGroup = (ViewGroup) child;
 			if (hippyChildViewController != null)

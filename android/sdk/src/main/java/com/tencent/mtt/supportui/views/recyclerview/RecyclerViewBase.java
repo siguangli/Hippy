@@ -3330,6 +3330,7 @@ public abstract class RecyclerViewBase extends ViewGroup
 		/* private */int						mAttachCount		= 0;
 
 		/* private */public int					DEFAULT_MAX_SCRAP	= 7;
+    public int					            DEFAULT_WORMHOLE_MAX_SCRAP = 2;
 
 		public void clear()
 		{
@@ -3440,15 +3441,22 @@ public abstract class RecyclerViewBase extends ViewGroup
 		public void putRecycledView(ViewHolder scrap, Adapter adapter)
 		{
 			final int viewType = scrap.getItemViewType();
-			final ArrayList scrapHeap = getScrapHeapForType(viewType);
+			final ArrayList<ViewHolder> scrapHeap = getScrapHeapForType(viewType);
 			if (mMaxScrap.get(viewType) <= scrapHeap.size())
 			{
-				// 如果scrapHeap已经满了，就不再向里面添加，此时这个viewHolder就被废弃，需要通知出去给adapter
-				if (adapter != null)
-				{
-					adapter.onViewAbandon(scrap);
-				}
-				return;
+			  if (viewType == ViewHolder.TYPE_WORMHOLE) {
+			    ViewHolder vh = scrapHeap.get(0);
+          if (adapter != null) {
+            adapter.onViewAbandon(vh);
+          }
+          scrapHeap.remove(0);
+        } else {
+          // 如果scrapHeap已经满了，就不再向里面添加，此时这个viewHolder就被废弃，需要通知出去给adapter
+          if (adapter != null) {
+            adapter.onViewAbandon(scrap);
+          }
+          return;
+        }
 			}
 			if (DEBUG)
 			{
@@ -3489,7 +3497,8 @@ public abstract class RecyclerViewBase extends ViewGroup
 				mScrap.put(viewType, scrap);
 				if (mMaxScrap.indexOfKey(viewType) < 0)
 				{
-					mMaxScrap.put(viewType, DEFAULT_MAX_SCRAP);
+				  int size = (viewType == ViewHolder.TYPE_WORMHOLE) ? DEFAULT_WORMHOLE_MAX_SCRAP : DEFAULT_MAX_SCRAP;
+				  mMaxScrap.put(viewType, size);
 				}
 			}
 			return scrap;
@@ -3758,7 +3767,7 @@ public abstract class RecyclerViewBase extends ViewGroup
 				//				Log.e(TAG, "getViewFroPosition-->" + position + "-------------------------------------");
 				// Log.d(TAG, mRecycler.dump());
 			}
-			ViewHolder holder = null;
+			ViewHolder holder;
 			final int offsetPosition = findPositionOffset(position);
 			// if there is suspentionView(sticky = true), remove suspentionView first
 			if (getLayoutManager() instanceof BaseLayoutManager && !isRepeatableSuspensionMode())
@@ -3778,13 +3787,14 @@ public abstract class RecyclerViewBase extends ViewGroup
 					((BaseLayoutManager) getLayoutManager()).removeSuspentions();
 				}
 			}
-
-      if (mAdapter.hasCustomRecycler()) {
-        holder = mAdapter.findBestHolderForPosition(offsetPosition, this);
-      } else {
-        holder = getViewHolderForPosition(offsetPosition);
-      }
-
+			if (mAdapter.hasCustomRecycler())
+			{
+				holder = mAdapter.findBestHolderForPosition(offsetPosition, this);
+			}
+			else
+			{
+				holder = getViewHolderForPosition(offsetPosition);
+			}
 			if (holder == null)
 			{
 				if (offsetPosition < 0 || offsetPosition >= mAdapter.getItemCount())
@@ -3941,10 +3951,10 @@ public abstract class RecyclerViewBase extends ViewGroup
 				return;
 			}
 			//			if (((QBViewHolder) holder).mViewType != QBViewHolder.TYPE_NORMAL && holder instanceof QBViewHolder)
-			if (holder.mViewType != ViewHolder.TYPE_NORMAL)
-			{
-				return;
-			}
+//			if (holder.mViewType != ViewHolder.TYPE_NORMAL && holder.mViewType != ViewHolder.TYPE_WORMHOLE)
+//			{
+//				return;
+//			}
 
 			if (holder.isScrap() || holder.itemView.getParent() != null)
 			{
@@ -6894,7 +6904,7 @@ public abstract class RecyclerViewBase extends ViewGroup
 		public static final int		TYPE_NORMAL			      = 3;
 		public static final int		TYPE_CUSTOM_HEADERE		= 4;
 		public static final int		TYPE_CUSTOM_FOOTER		= 5;
-		public static final int TYPE_WORMHOLE = 6;
+    public static final int		TYPE_WORMHOLE		      = 6;
 		public int					mViewType			= TYPE_NORMAL;
 		/**
 		 * This ViewHolder has been bound to a position; mPosition, mItemId and
