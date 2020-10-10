@@ -177,15 +177,22 @@ public class NativeVueManager {
         }
       },nvUrl, new File(ContextHolder.getAppContext().getFilesDir(), DevServerConfig.NATIVE_VUE_BUNDLE_FILE_NAME));
     }else {
-      //认为是直接打开在asset下面的文件，直接读出来即可
-      InputStream inputStream = null;
-      try {
-        inputStream = ContextHolder.getAppContext().getAssets().open("nativevue.json");
-      } catch (IOException e) {
-        LogUtils.e(TAG, "loadNativeVueJS io exception:" + e.getMessage());
+      File file = new File(nvUrl);
+      if (file != null && file.exists()) {
+        //认为是直接打开指定目录下的文件
+        String template = FileUtils.readFile(file);
+        onLoadNativeVueJSListener.onLoadSucess(template);
+      } else {
+        //认为是直接打开在asset下面的文件，直接读出来即可
+        InputStream inputStream = null;
+        try {
+          inputStream = ContextHolder.getAppContext().getAssets().open("nativevue.json");
+        } catch (IOException e) {
+          LogUtils.e(TAG, "loadNativeVueJS io exception:" + e.getMessage());
+        }
+        String template = getString(inputStream);
+        onLoadNativeVueJSListener.onLoadSucess(template);
       }
-      String template = getString(inputStream);
-      onLoadNativeVueJSListener.onLoadSucess(template);
     }
   }
 

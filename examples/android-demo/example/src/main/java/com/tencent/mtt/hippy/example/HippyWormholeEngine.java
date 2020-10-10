@@ -138,6 +138,7 @@ public class HippyWormholeEngine
                   NativeVueManager.getInstance().loadNativeVueJS(new NativeVueManager.OnLoadNativeVueJSListener() {
                     @Override
                     public void onLoadSucess(String result) {
+                      LogUtils.e(WORMHOLE_TAG, "loadNVJSAndInit onLoadSucess ");
                       initNV(mHippyEngine, result);
                     }
 
