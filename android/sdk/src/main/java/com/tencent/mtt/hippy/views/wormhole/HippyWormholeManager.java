@@ -12,11 +12,12 @@ import com.tencent.mtt.hippy.uimanager.HippyViewEvent;
 import com.tencent.mtt.hippy.uimanager.RenderNode;
 import com.tencent.mtt.hippy.utils.PixelUtil;
 import com.tencent.mtt.hippy.utils.UIThreadUtils;
-import java.util.concurrent.atomic.AtomicInteger;
+
 import org.json.JSONArray;
 
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class HippyWormholeManager {
   public static final String WORMHOLE_TAG                       = "hippy_wormhole";
@@ -131,7 +132,7 @@ public class HippyWormholeManager {
       if (oldParent != null) {
         oldParent.removeView(wormholeView);
       }
-      ((ViewGroup)newParent).addView(wormholeView);
+      ((ViewGroup)newParent).addView(wormholeView, 0);
     }
   }
 
