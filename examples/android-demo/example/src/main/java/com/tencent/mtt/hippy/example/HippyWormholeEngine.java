@@ -88,6 +88,7 @@ public class HippyWormholeEngine
 
 			// 根据EngineInitParams创建引擎实例
 			mHippyEngine = HippyEngine.create(initParams);
+
 			// 异步初始化Hippy引擎
 			mHippyEngine.initEngine(new HippyEngine.EngineListener() {
 				// Hippy引擎初始化完成
@@ -105,7 +106,7 @@ public class HippyWormholeEngine
 					{
 						// 2/3. 加载hippy前端模块
 
-						HippyEngine.ModuleLoadParams loadParams = new HippyEngine.ModuleLoadParams();
+						final HippyEngine.ModuleLoadParams loadParams = new HippyEngine.ModuleLoadParams();
 						// 必须：该Hippy模块将要挂在的Activity or Dialog的context
 						loadParams.context = context;
 						/*
@@ -129,35 +130,51 @@ public class HippyWormholeEngine
 						// 可选：发送给Hippy前端模块的参数
 						loadParams.jsParams = new HippyMap();
 						loadParams.jsParams.pushString("msgFromNative", "Hi js developer, I come from native code!");
-						// 加载Hippy前端模块
-						mHippyRootView = mHippyEngine.loadModule(loadParams, new HippyEngine.ModuleListener() {
-							public void onInitialized(int statusCode, String msg, HippyRootView hippyRootView) {
-								if (statusCode == HippyEngine.STATUS_OK) {
+						//加载nv模块
+            NativeVueManager.getInstance().loadNativeVueJS("nativevue.json",initParams,new NativeVueManager.OnLoadNativeVueJSListener() {
+              @Override
+              public void onLoadSucess(String result) {
+                LogUtils.e(WORMHOLE_TAG, "loadNVJSAndInit onLoadSucess ");
+                initNV(mHippyEngine, result);
+                // 加载Hippy前端模块
+                mHippyRootView = mHippyEngine.loadModule(loadParams, new HippyEngine.ModuleListener() {
+                  public void onInitialized(int statusCode, String msg, HippyRootView hippyRootView) {
+                    if (statusCode == HippyEngine.STATUS_OK) {
 //                  loadNVJSAndInit(initParams,mHippyEngine,"https://kdweb-75176.gzc.vod.tencent-cloud.com/viola/nativevue/nativevue.json");
 //                  loadNVJSAndInit(initParams,mHippyEngine,"nativevue.json");
-                  NativeVueManager.getInstance().loadNativeVueJS(new NativeVueManager.OnLoadNativeVueJSListener() {
-                    @Override
-                    public void onLoadSucess(String result) {
-                      LogUtils.e(WORMHOLE_TAG, "loadNVJSAndInit onLoadSucess ");
-                      initNV(mHippyEngine, result);
+                      HippyWormholeManager.getInstance().setServerEngine(mHippyEngine, hippyRootView);
+                    } else {
+                      LogUtils.e(WORMHOLE_TAG, "Hippy: init worm engine failed statusCode:" + statusCode + ",msg:" + msg);
                     }
+                  }
 
-                    @Override
-                    public void onLoadFailed(Exception exception) {
-                      LogUtils.e(WORMHOLE_TAG, "loadNVJSAndInit onLoadFailed exception:" + exception.getMessage());
+                  public boolean onJsException(HippyJsException exception) {
+                    LogUtils.e(WORMHOLE_TAG, "Hippy: loadModule onJsException:" + exception);
+                    return true;
+                  }
+                });
+              }
+
+              @Override
+              public void onLoadFailed(Exception exception) {
+                LogUtils.e(WORMHOLE_TAG, "loadNVJSAndInit onLoadFailed exception:" + exception.getMessage());
+                // 加载Hippy前端模块
+                mHippyRootView = mHippyEngine.loadModule(loadParams, new HippyEngine.ModuleListener() {
+                  public void onInitialized(int statusCode, String msg, HippyRootView hippyRootView) {
+                    if (statusCode == HippyEngine.STATUS_OK) {
+                      HippyWormholeManager.getInstance().setServerEngine(mHippyEngine, hippyRootView);
+                    } else {
+                      LogUtils.e(WORMHOLE_TAG, "Hippy: init worm engine failed statusCode:" + statusCode + ",msg:" + msg);
                     }
-                  },initParams,"nativevue.json");
-									HippyWormholeManager.getInstance().setServerEngine(mHippyEngine, hippyRootView);
-								} else {
-									LogUtils.e(WORMHOLE_TAG, "Hippy: init worm engine failed statusCode:" + statusCode + ",msg:" + msg);
-								}
-							}
+                  }
 
-							public boolean onJsException(HippyJsException exception) {
-								LogUtils.e(WORMHOLE_TAG, "Hippy: loadModule onJsException:" + exception);
-								return true;
-							}
-						});
+                  public boolean onJsException(HippyJsException exception) {
+                    LogUtils.e(WORMHOLE_TAG, "Hippy: loadModule onJsException:" + exception);
+                    return true;
+                  }
+                });
+              }
+            });
 					}
 				}
 			});

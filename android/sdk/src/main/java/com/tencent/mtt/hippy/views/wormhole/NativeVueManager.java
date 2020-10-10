@@ -157,7 +157,7 @@ public class NativeVueManager {
     }
   }
 
-  public void loadNativeVueJS(final OnLoadNativeVueJSListener onLoadNativeVueJSListener,HippyEngine.EngineInitParams params,String nvUrl){
+  public void loadNativeVueJS(String nvUrl,HippyEngine.EngineInitParams params,final OnLoadNativeVueJSListener onLoadNativeVueJSListener){
     if(nvUrl.startsWith("http")){
       HippyGlobalConfigs configs = new HippyGlobalConfigs(params);
       DevServerHelper devServerHelper = new DevServerHelper(configs,params.debugServerHost);
