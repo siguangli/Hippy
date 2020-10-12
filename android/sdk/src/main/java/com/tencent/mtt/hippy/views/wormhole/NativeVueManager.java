@@ -8,14 +8,14 @@ import android.view.ViewGroup;
 
 import com.tencent.mtt.hippy.HippyEngine;
 import com.tencent.mtt.hippy.HippyGlobalConfigs;
+import com.tencent.mtt.hippy.adapter.nv.HippyNativeVueAdapter;
 import com.tencent.mtt.hippy.bridge.HippyBridgeManagerImpl;
-import com.tencent.mtt.hippy.nv.converter.NVConverter;
 import com.tencent.mtt.hippy.devsupport.BundleFetchCallBack;
 import com.tencent.mtt.hippy.devsupport.DevServerConfig;
 import com.tencent.mtt.hippy.devsupport.DevServerHelper;
+import com.tencent.mtt.hippy.nv.converter.NVConverter;
 import com.tencent.mtt.hippy.nv.template.INVTemplateLoader;
 import com.tencent.mtt.hippy.nv.template.NVTemplateLoader;
-import com.tencent.mtt.hippy.nv.converter.NVConverter;
 import com.tencent.mtt.hippy.utils.ContextHolder;
 import com.tencent.mtt.hippy.utils.FileUtils;
 import com.tencent.mtt.hippy.utils.LogUtils;
@@ -31,9 +31,6 @@ import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-
-import static com.tencent.mtt.hippy.views.wormhole.HippyWormholeManager.WORMHOLE_TAG;
-
 public class NativeVueManager {
 
   private static final String TAG = "NativeVueManager";
@@ -57,11 +54,6 @@ public class NativeVueManager {
     return INSTANCE;
   }
 
-  public JSONObject getNVConfig(HippyEngine engine) {
-    HippyBridgeManagerImpl hippyBridgeManager = (HippyBridgeManagerImpl) engine.getEngineContext().getBridgeManager();
-    return NVConverter.convertNVConfig(hippyBridgeManager.getGlobalConfigs());
-  }
-
   public void registerNode(String wormholeId, TKDStyleNode node) {
     if (!mTkdStyleNodeMap.containsKey(wormholeId)) {
       mTkdStyleNodeMap.put(wormholeId, node);
@@ -75,6 +67,16 @@ public class NativeVueManager {
       return null;
     }
     return styleNode.getNVView();
+  }
+
+  public boolean initEngine(HippyEngine hippyEngine, String nvTemplates) {
+    HippyNativeVueAdapter adapter = hippyEngine.getEngineContext().getGlobalConfigs().getNativeVueAdapter();
+    if (adapter == null) {
+      return false;
+    }
+    JSONObject globalConfig = getNVConfig(hippyEngine);
+    adapter.initNativeVueEngine(globalConfig);
+    return parseTemplates(nvTemplates);
   }
 
   public boolean parseTemplates(String templates) {
@@ -155,6 +157,11 @@ public class NativeVueManager {
     if (styleNode != null) {
       styleNode.destroyNV();
     }
+  }
+
+  private JSONObject getNVConfig(HippyEngine engine) {
+    HippyBridgeManagerImpl hippyBridgeManager = (HippyBridgeManagerImpl) engine.getEngineContext().getBridgeManager();
+    return NVConverter.convertNVConfig(hippyBridgeManager.getGlobalConfigs());
   }
 
   public void loadNativeVueJS(String nvUrl,HippyEngine.EngineInitParams params,final OnLoadNativeVueJSListener onLoadNativeVueJSListener){
