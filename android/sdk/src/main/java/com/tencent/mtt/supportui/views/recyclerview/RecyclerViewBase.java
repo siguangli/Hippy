@@ -3330,7 +3330,7 @@ public abstract class RecyclerViewBase extends ViewGroup
 		/* private */int						mAttachCount		= 0;
 
 		/* private */public int					DEFAULT_MAX_SCRAP	= 7;
-    public int					            DEFAULT_WORMHOLE_MAX_SCRAP = 2;
+		public int					            DEFAULT_WORMHOLE_MAX_SCRAP = 4;
 
 		public void clear()
 		{
@@ -3444,19 +3444,19 @@ public abstract class RecyclerViewBase extends ViewGroup
 			final ArrayList<ViewHolder> scrapHeap = getScrapHeapForType(viewType);
 			if (mMaxScrap.get(viewType) <= scrapHeap.size())
 			{
-			  if (viewType == ViewHolder.TYPE_WORMHOLE) {
-			    ViewHolder vh = scrapHeap.get(0);
-          if (adapter != null) {
-            adapter.onViewAbandon(vh);
-          }
-          scrapHeap.remove(0);
-        } else {
-          // 如果scrapHeap已经满了，就不再向里面添加，此时这个viewHolder就被废弃，需要通知出去给adapter
-          if (adapter != null) {
-            adapter.onViewAbandon(scrap);
-          }
-          return;
-        }
+				if (viewType == ViewHolder.TYPE_WORMHOLE) {
+					ViewHolder vh = scrapHeap.get(0);
+					if (adapter != null) {
+						adapter.onViewAbandon(vh);
+					}
+					scrapHeap.remove(0);
+				} else {
+					// 如果scrapHeap已经满了，就不再向里面添加，此时这个viewHolder就被废弃，需要通知出去给adapter
+					if (adapter != null) {
+						adapter.onViewAbandon(scrap);
+					}
+					return;
+				}
 			}
 			if (DEBUG)
 			{
@@ -6902,9 +6902,9 @@ public abstract class RecyclerViewBase extends ViewGroup
 		public static final int		TYPE_HEADERE		      = 1;
 		public static final int		TYPE_FOOTER			      = 2;
 		public static final int		TYPE_NORMAL			      = 3;
-		public static final int		TYPE_CUSTOM_HEADERE		= 4;
-		public static final int		TYPE_CUSTOM_FOOTER		= 5;
-    public static final int		TYPE_WORMHOLE		      = 6;
+		public static final int		TYPE_CUSTOM_HEADERE		  = 4;
+		public static final int		TYPE_CUSTOM_FOOTER		  = 5;
+		public static final int		TYPE_WORMHOLE		      = 6;
 		public int					mViewType			= TYPE_NORMAL;
 		/**
 		 * This ViewHolder has been bound to a position; mPosition, mItemId and
