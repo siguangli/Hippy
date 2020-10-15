@@ -32,6 +32,7 @@ import com.tencent.mtt.hippy.views.refresh.HippyPullFooterView;
 import com.tencent.mtt.hippy.views.refresh.HippyPullHeaderView;
 import com.tencent.mtt.supportui.views.recyclerview.*;
 
+import com.tencent.mtt.supportui.views.recyclerview.RecyclerViewBase.ViewHolder;
 import java.util.ArrayList;
 
 /**
@@ -216,14 +217,14 @@ public class HippyListAdapter extends RecyclerAdapter implements IRecycleItemTyp
 	{
 		RecyclerViewBase.ViewHolder matchHolder = getScrapViewForPositionInner(position, targetType, recycler);
 		if (targetType != TYPE_WORMHOLE) {
-      if (matchHolder == null) {
-        matchHolder = recycler.getViewHolderForPosition(position);
-      }
+			if (matchHolder == null) {
+				matchHolder = recycler.getViewHolderForPosition(position);
+			}
 
-      if (matchHolder != null && ((NodeHolder) matchHolder.mContentHolder).mBindNode.isDelete()) {
-        matchHolder = findBestHolderRecursive(position, targetType, recycler);
-      }
-    }
+			if (matchHolder != null && ((NodeHolder) matchHolder.mContentHolder).mBindNode.isDelete()) {
+				matchHolder = findBestHolderRecursive(position, targetType, recycler);
+			}
+		}
 
 		return matchHolder;
 	}
@@ -575,34 +576,34 @@ public class HippyListAdapter extends RecyclerAdapter implements IRecycleItemTyp
 			RenderNode listItemNode = mHippyContext.getRenderManager().getRenderNode(mParentRecyclerView.getId()).getChildAt(index);
 			if (listItemNode != null)
 			{
-			  if (listItemNode instanceof PullFooterRenderNode) {
-			    return RecyclerViewBase.ViewHolder.TYPE_CUSTOM_FOOTER;
-        }
+				if (listItemNode instanceof PullFooterRenderNode) {
+					return RecyclerViewBase.ViewHolder.TYPE_CUSTOM_FOOTER;
+				}
 
-        if (listItemNode instanceof PullHeaderRenderNode) {
-          return RecyclerViewBase.ViewHolder.TYPE_CUSTOM_HEADERE;
-        }
+				if (listItemNode instanceof PullHeaderRenderNode) {
+					return RecyclerViewBase.ViewHolder.TYPE_CUSTOM_HEADERE;
+				}
 
-			  if (listItemNode.getProps() != null) {
-          HippyMap listItemProps = listItemNode.getProps();
-          Object typeObj = listItemProps.get(ListItemRenderNode.ITEM_VIEW_TYPE);
-          if (typeObj != null) {
-            int type = Integer.MIN_VALUE;
-            if (typeObj instanceof String) {
-              try {
-                type = Integer.parseInt((String)typeObj);
-              } catch (NumberFormatException e) {
+				if (listItemNode.getProps() != null) {
+					HippyMap listItemProps = listItemNode.getProps();
+					Object typeObj = listItemProps.get(ListItemRenderNode.ITEM_VIEW_TYPE);
+					if (typeObj != null) {
+						int type = 0;
+						if (typeObj instanceof String) {
+							try {
+								type = Integer.parseInt((String)typeObj);
+							} catch (NumberFormatException e) {
 
-              }
-            } else if (typeObj instanceof Number) {
-              type = listItemProps.getInt(ListItemRenderNode.ITEM_VIEW_TYPE);
-            }
+							}
+						}
 
-            if (type != Integer.MIN_VALUE) {
-              return type;
-            }
-          }
-        }
+						if (type == ViewHolder.TYPE_WORMHOLE) {
+							return type;
+						}
+
+						return listItemProps.getInt(ListItemRenderNode.ITEM_VIEW_TYPE);
+					}
+				}
 			}
 		}
 		return super.getItemViewType(index);
