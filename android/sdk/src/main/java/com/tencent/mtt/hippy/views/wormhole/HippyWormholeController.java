@@ -1,6 +1,7 @@
 package com.tencent.mtt.hippy.views.wormhole;
 
 import android.content.Context;
+import android.text.TextUtils;
 import android.view.View;
 import com.tencent.mtt.hippy.annotation.HippyController;
 import com.tencent.mtt.hippy.common.HippyMap;
@@ -20,7 +21,9 @@ public class HippyWormholeController extends HippyViewController<HippyWormholeVi
   protected View createViewImpl(final Context context, HippyMap iniProps) {
     HippyWormholeView wormholeView = new HippyWormholeView(context);
     String wormholeId = HippyWormholeManager.getInstance().getWormholeIdFromProps(iniProps);
-    wormholeView.setWormholeId(wormholeId);
+    if (!TextUtils.isEmpty(wormholeId)) {
+      wormholeView.setWormholeId(wormholeId);
+    }
     return wormholeView;
   }
 
@@ -34,11 +37,12 @@ public class HippyWormholeController extends HippyViewController<HippyWormholeVi
     super.onBatchComplete(view);
     if (view != null) {
       HippyWormholeManager.getInstance().onServerBatchComplete(view);
+      NativeVueManager.getInstance().hideNVView(view.getWormholeId());
     }
   }
 
   public void onViewDestroy(HippyWormholeView wormHoleView) {
-
+    //HippyWormholeManager.getInstance().onWormholeDestroy(wormHoleView.getBusinessId());
   }
 
 }

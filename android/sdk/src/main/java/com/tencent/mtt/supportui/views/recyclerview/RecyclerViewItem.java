@@ -61,6 +61,9 @@ public class RecyclerViewItem extends FrameLayout
 			ViewGroup.LayoutParams lp = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
 			mContentView.setLayoutParams(lp);
 			//mContentView.setId(CONTENTVIEW_ID);
+      if (mContentView.getParent() != null) {
+        ((ViewGroup) mContentView.getParent()).removeView(mContentView);
+      }
 			addView(mContentView);
 
 		}

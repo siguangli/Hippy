@@ -577,4 +577,9 @@ public class ControllerManager implements HippyInstanceLifecycleEventListener
 		}
 		mControllerRegistry.removeRootView(mId);
 	}
+
+	public void removeCacheView(int id)
+  {
+    mControllerRegistry.removeView(id);
+  }
 }

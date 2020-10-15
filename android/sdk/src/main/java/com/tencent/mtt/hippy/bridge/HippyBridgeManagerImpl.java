@@ -14,8 +14,10 @@
  */
 package com.tencent.mtt.hippy.bridge;
 
-import com.tencent.mtt.hippy.uimanager.NativeGestureDispatcher;
-import java.util.ArrayList;
+import android.os.Build;
+import android.os.Handler;
+import android.os.Message;
+import android.text.TextUtils;
 
 import com.tencent.mtt.hippy.HippyEngine;
 import com.tencent.mtt.hippy.HippyEngineContext;
@@ -28,17 +30,13 @@ import com.tencent.mtt.hippy.common.HippyArray;
 import com.tencent.mtt.hippy.common.HippyJsException;
 import com.tencent.mtt.hippy.common.HippyMap;
 import com.tencent.mtt.hippy.modules.HippyModuleManager;
+import com.tencent.mtt.hippy.uimanager.NativeGestureDispatcher;
 import com.tencent.mtt.hippy.utils.ArgumentUtils;
 import com.tencent.mtt.hippy.utils.DimensionsUtil;
 import com.tencent.mtt.hippy.utils.GrowByteBuffer;
-import com.tencent.mtt.hippy.adapter.thirdparty.HippyThirdPartyAdapter;
-import com.tencent.mtt.hippy.utils.LogUtils;
 import com.tencent.mtt.hippy.utils.UIThreadUtils;
 
-import android.os.Build;
-import android.os.Handler;
-import android.os.Message;
-import android.text.TextUtils;
+import java.util.ArrayList;
 
 /**
  * FileName: HippyBridgeManager
@@ -73,7 +71,7 @@ public class HippyBridgeManagerImpl implements HippyBridgeManager, HippyBridge.B
 	int						mBridgeType							= BRIDGE_TYPE_NORMAL;
 	boolean					mEnableHippyBuffer					= false;
 	ArrayList<String>		mLoadedBundleInfo					= null;
-	private GrowByteBuffer  mGrowByteBuffer;                     
+	private GrowByteBuffer  mGrowByteBuffer;
 	private StringBuilder   mStringBuilder;
 	private boolean         mIsDevModule                        = false;
 	private String          mDebugServerHost;
@@ -185,7 +183,7 @@ public class HippyBridgeManagerImpl implements HippyBridgeManager, HippyBridge.B
 							mLoadedBundleInfo = new ArrayList<>();
 						}
 						mLoadedBundleInfo.add(bundleUniKey);
-						
+
 						loader.load(mHippyBridge, new NativeCallback(mHandler) {
 							@Override
 							public void Call(long value, Message msg, String action) {
@@ -512,7 +510,7 @@ public class HippyBridgeManagerImpl implements HippyBridgeManager, HippyBridge.B
 
 
 
-	String getGlobalConfigs()
+	public String getGlobalConfigs()
 	{
 		HippyMap globalParams = new HippyMap();
 		HippyMap dimensionMap = DimensionsUtil.getDimensions(-1, -1, mContext.getGlobalConfigs().getContext(), false);

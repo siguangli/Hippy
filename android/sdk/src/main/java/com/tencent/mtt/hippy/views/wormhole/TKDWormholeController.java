@@ -1,19 +1,23 @@
 package com.tencent.mtt.hippy.views.wormhole;
 
 import android.content.Context;
+import android.text.TextUtils;
 import android.view.View;
+import android.view.ViewGroup;
 
 import com.tencent.mtt.hippy.annotation.HippyController;
 import com.tencent.mtt.hippy.common.HippyArray;
 import com.tencent.mtt.hippy.common.HippyMap;
 import com.tencent.mtt.hippy.dom.node.StyleNode;
-import com.tencent.mtt.hippy.dom.node.TKDWormholeNode;
 import com.tencent.mtt.hippy.uimanager.HippyViewController;
 import com.tencent.mtt.hippy.uimanager.HippyViewEvent;
+import com.tencent.mtt.hippy.utils.LogUtils;
+import com.tencent.mtt.hippy.views.wormhole.node.TKDStyleNode;
 
 @HippyController(name = "TKDWormhole")
 public class TKDWormholeController extends HippyViewController<TKDWormholeView> {
-  //private HippyWormholeProxy mWormholeProxy = HippyWormholeManager.getInstance();
+
+  private static final String TAG = "TKDWormholeController";
 
   @Override
   protected View createViewImpl(final Context context) {
@@ -22,22 +26,25 @@ public class TKDWormholeController extends HippyViewController<TKDWormholeView> 
 
   @Override
   protected View createViewImpl(final Context context, HippyMap initProps) {
-    TKDWormholeView tkdWormholeView = new TKDWormholeView(context);
+    final TKDWormholeView tkdWormholeView = new TKDWormholeView(context);
     String wormholeId = HippyWormholeManager.getInstance().getWormholeIdFromProps(initProps);
-    tkdWormholeView.setWormholeId(wormholeId);
-    HippyWormholeManager.getInstance().onCreateTKDWormholeView(tkdWormholeView, wormholeId);
+    if(!TextUtils.isEmpty(wormholeId)) {
+      tkdWormholeView.setWormholeId(wormholeId);
+      boolean hasView = HippyWormholeManager.getInstance().onCreateTKDWormholeView(tkdWormholeView, wormholeId);
+      if (!hasView) {
+        addNVView(wormholeId, tkdWormholeView);
+      }
+    }
     return tkdWormholeView;
   }
 
-  @Override
-  protected StyleNode createNode(boolean virtual) {
-    String wormholeId = HippyWormholeManager.getInstance().generateWormholeId();
-    return new TKDWormholeNode(virtual, wormholeId);
-  }
-
-  @Override
-  public void onViewDestroy(TKDWormholeView tkdWormHoleView) {
-    HippyWormholeManager.getInstance().onTKDWormholeViewDestroy(tkdWormHoleView);
+  private void addNVView(String wormholeId, ViewGroup parent) {
+    View view = NativeVueManager.getInstance().getNVView(wormholeId);
+    if (view != null && view.getParent() == null) {
+      parent.addView(view);
+      NativeVueManager.getInstance().markAddNVView(wormholeId);
+      LogUtils.d(TAG, "add nv view, wormhole id: " + wormholeId);
+    }
   }
 
   @Override
@@ -56,6 +63,18 @@ public class TKDWormholeController extends HippyViewController<TKDWormholeView> 
         break;
       }
     }
+  }
+
+  @Override
+  protected StyleNode createNode(boolean virtual) {
+    HippyWormholeManager manager = HippyWormholeManager.getInstance();
+    String wormholeId = manager.generateWormholeId();
+    return new TKDStyleNode(virtual, manager.getEngineContext(), manager.getHippyRootView(), wormholeId);
+  }
+
+  @Override
+  public void onViewDestroy(TKDWormholeView tkdWormHoleView) {
+    HippyWormholeManager.getInstance().onTKDWormholeViewDestroy(tkdWormHoleView);
   }
 
 }

@@ -34,7 +34,7 @@ public class HippyMap
 	private final HashMap<String, Object>	mDatas;
 
 	@Override
-	public String toString() 
+	public String toString()
 	{
 		return mDatas == null ? "null" : mDatas.toString();
 	}
@@ -83,25 +83,25 @@ public class HippyMap
 	public double getDouble(String key)
 	{
 		Object value = mDatas.get(key);
-		return value instanceof Number ? ((Number) value).doubleValue() : 0;
+    return value instanceof Number ? ((Number) value).doubleValue() : 0;
 	}
 
 	public int getInt(String key)
 	{
 		Object value = mDatas.get(key);
-		return value instanceof Number ? ((Number) value).intValue() : 0;
+    return value instanceof Number ? ((Number) value).intValue() : 0;
 	}
 
 	public boolean getBoolean(String key)
 	{
 		Object value = mDatas.get(key);
-		return value != null && (boolean) value;
+    return value != null && (boolean) value;
 	}
 
 	public long getLong(String key)
 	{
 		Object value = mDatas.get(key);
-		return value instanceof Number ? ((Number) value).longValue() : 0;
+    return value instanceof Number ? ((Number) value).longValue() : 0;
 	}
 
 	public HippyMap getMap(String key)

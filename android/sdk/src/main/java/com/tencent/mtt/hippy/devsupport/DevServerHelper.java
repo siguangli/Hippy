@@ -21,9 +21,12 @@ import com.tencent.mtt.hippy.adapter.http.HippyHttpAdapter;
 import com.tencent.mtt.hippy.adapter.http.HippyHttpRequest;
 import com.tencent.mtt.hippy.adapter.http.HippyHttpResponse;
 import com.tencent.mtt.hippy.modules.nativemodules.HippySettableFuture;
+import com.tencent.mtt.hippy.utils.LogUtils;
 
 import java.io.*;
 import java.util.Locale;
+
+import static com.tencent.mtt.hippy.views.wormhole.HippyWormholeManager.WORMHOLE_TAG;
 
 /**
  * @author: edsheng
@@ -107,96 +110,76 @@ public class DevServerHelper
 		}
 	}
 
-	public void fetchBundleFromURL(final BundleFetchCallBack bundleFetchCallBack, boolean enableDebug, String serverHost, String bundleName, final File outputFile)
-	{
-		final String bundleURL = createBundleURL(serverHost, bundleName, enableDebug, false, false);
+  public void fetchBundleFromURL(final BundleFetchCallBack bundleFetchCallBack, boolean enableDebug, String serverHost, String bundleName, final File outputFile) {
+    final String bundleURL = createBundleURL(serverHost, bundleName, enableDebug, false, false);
+    LogUtils.e(WORMHOLE_TAG, "test fetchBundleFromURL result:" + bundleURL);
+    dealfetchBundleFromURL(bundleFetchCallBack, bundleURL, outputFile);
+  }
 
-		HippyHttpRequest request = new HippyHttpRequest();
-		request.setUrl(bundleURL);
-		mGlobalConfigs.getHttpAdapter().sendRequest(request, new HippyHttpAdapter.HttpTaskCallback()
-		{
-			@Override
-			public void onTaskSuccess(HippyHttpRequest request, HippyHttpResponse response) throws Exception
-			{
-				if (bundleFetchCallBack == null)
-				{
-					return;
-				}
-				if (response.getStatusCode() == 200 && response.getInputStream() != null)
-				{
-					FileOutputStream fileOutputStream = null;
-					try
-					{
-						if (outputFile.exists())
-						{
-							outputFile.delete();
-						}
-						outputFile.createNewFile();
+  public void dealfetchBundleFromURL(final BundleFetchCallBack bundleFetchCallBack, final String bundleURL, final File outputFile) {
+    HippyHttpRequest request = new HippyHttpRequest();
+    request.setUrl(bundleURL);
+    mGlobalConfigs.getHttpAdapter().sendRequest(request, new HippyHttpAdapter.HttpTaskCallback() {
+      @Override
+      public void onTaskSuccess(HippyHttpRequest request, HippyHttpResponse response) throws Exception {
+        if (bundleFetchCallBack == null) {
+          return;
+        }
+        if (response.getStatusCode() == 200 && response.getInputStream() != null) {
+          FileOutputStream fileOutputStream = null;
+          try {
+            if (outputFile.exists()) {
+              outputFile.delete();
+            }
+            outputFile.createNewFile();
 
-						fileOutputStream = new FileOutputStream(outputFile);
+            fileOutputStream = new FileOutputStream(outputFile);
 
-						byte[] b = new byte[2048];
-						int size = 0;
-						while ((size = response.getInputStream().read(b)) > 0)
-						{
-							fileOutputStream.write(b, 0, size);
-						}
-						fileOutputStream.flush();
-						if (bundleFetchCallBack != null)
-						{
-							bundleFetchCallBack.onSuccess(outputFile);
-						}
-					}
-					catch (Throwable e)
-					{
-						e.printStackTrace();
-					}
-					finally
-					{
-						if (fileOutputStream != null)
-						{
-							try
-							{
-								fileOutputStream.close();
-							}
-							catch (IOException e)
-							{
-							}
-						}
-					}
-				}
-				else
-				{
-					String message = "unknown";
-					if (response.getErrorStream() != null)
-					{
-						StringBuffer sb = new StringBuffer();
-						String readLine = null;
-						BufferedReader bfReader = new BufferedReader(new InputStreamReader(response.getErrorStream(), "UTF-8"));
-						while ((readLine = bfReader.readLine()) != null)
-						{
-							sb.append(readLine);
-							sb.append("\r\n");
-						}
-						message = sb.toString();
-					}
-					if (bundleFetchCallBack != null)
-					{
-						bundleFetchCallBack.onFail(new DevServerException("Could not connect to development server." + "URL: " + bundleURL.toString()
-								+ "  try to :adb reverse tcp:38989 tcp:38989 , message : " + message));
-					}
-				}
-			}
+            byte[] b = new byte[2048];
+            int size = 0;
+            while ((size = response.getInputStream().read(b)) > 0) {
+              fileOutputStream.write(b, 0, size);
+            }
+            fileOutputStream.flush();
+            if (bundleFetchCallBack != null) {
+              bundleFetchCallBack.onSuccess(outputFile);
+            }
+          } catch (Throwable e) {
+            e.printStackTrace();
+          } finally {
+            if (fileOutputStream != null) {
+              try {
+                fileOutputStream.close();
+              } catch (IOException e) {
+              }
+            }
+          }
+        } else {
+          String message = "unknown";
+          if (response.getErrorStream() != null) {
+            StringBuffer sb = new StringBuffer();
+            String readLine = null;
+            BufferedReader bfReader = new BufferedReader(new InputStreamReader(response.getErrorStream(), "UTF-8"));
+            while ((readLine = bfReader.readLine()) != null) {
+              sb.append(readLine);
+              sb.append("\r\n");
+            }
+            message = sb.toString();
+          }
+          if (bundleFetchCallBack != null) {
+            bundleFetchCallBack.onFail(new DevServerException("Could not connect to development server." + "URL: " + bundleURL.toString()
+              + "  try to :adb reverse tcp:38989 tcp:38989 , message : " + message));
+          }
+        }
+      }
 
-			@Override
-			public void onTaskFailed(HippyHttpRequest request, Throwable error)
-			{
-				if (bundleFetchCallBack != null)
-				{
-					bundleFetchCallBack.onFail(new DevServerException("Could not connect to development server." + "URL: " + bundleURL.toString()
-							+ "  try to :adb reverse tcp:38989 tcp:38989 , message : " + error.getMessage()));
-				}
-			}
-		});
-	}
+      @Override
+      public void onTaskFailed(HippyHttpRequest request, Throwable error) {
+        if (bundleFetchCallBack != null) {
+          bundleFetchCallBack.onFail(new DevServerException("Could not connect to development server." + "URL: " + bundleURL.toString()
+            + "  try to :adb reverse tcp:38989 tcp:38989 , message : " + error.getMessage()));
+        }
+      }
+    });
+  }
 }

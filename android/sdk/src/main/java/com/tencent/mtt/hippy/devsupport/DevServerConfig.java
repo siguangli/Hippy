@@ -22,11 +22,13 @@ import java.io.File;
 
 public class DevServerConfig
 {
-	private static final String	JS_REMOTE_DEBUG		= "js_remote_debug";
+	public static final String	JS_REMOTE_DEBUG		= "js_remote_debug";
 
-	private static final String	HIPPYDEBUGPREF		= "hippydebugpref";
+	public static final String	HIPPYDEBUGPREF		= "hippydebugpref";
 
 	private static final String	JS_BUNDLE_FILE_NAME	= "HippyDevBundle.js";
+
+  public static final String	NATIVE_VUE_BUNDLE_FILE_NAME	= "HippyNativeVueBundle.js";
 
 	boolean						mLiveDebug			= false;
 

@@ -18,9 +18,11 @@ package com.tencent.mtt.hippy.utils;
 import android.content.Context;
 import android.text.TextUtils;
 
+import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.InputStreamReader;
 
 /**
  * @Description: TODO
@@ -164,4 +166,77 @@ public class FileUtils
 
 		return childDir;
 	}
+
+  public static String readFile(File file) {
+    return readFileToStringEx(file, -1);
+  }
+
+  public static String readFileToStringEx(File file, int capacity) {
+    if (null == file) {
+      LogUtils.e("FileUtils", "readFileToStringEx file = null");
+      return null;
+    }
+    if (!file.exists() || !file.canRead()) {
+      LogUtils.e("FileUtils", "readFileToStringEx file exists = " + file.exists()
+        + " canRead = " + file.canRead());
+      return null;
+    }
+
+    BufferedInputStream fis = null;
+    InputStreamReader reader = null;
+    char[] buffer = null;
+    String rtn = null;
+    int n = 0;
+    try {
+      fis = new BufferedInputStream(new FileInputStream(file));
+      reader = new InputStreamReader(fis, "UTF-8");
+      int size = (int) file.length();
+
+      //由于某些文件很大，如果capacity设置小了会导致StringBuilder扩容次数太多引发性能问题,这里控制扩容次数在5-6次左右
+      if (size > 1024 * 12) {
+        if (capacity == -1) { //没有发生过OOM
+          capacity = size / (1024 * 6);
+          if (capacity < 12) {
+            capacity = 12; //小于72K
+          } else if (capacity > 60) {
+            capacity = 60;
+          }
+        }
+
+        buffer = new char[1024 * 4];
+        StringBuilder result = new StringBuilder(capacity * 1024);
+        while (-1 != (n = reader.read(buffer))) {
+          result.append(buffer, 0, n);
+        }
+        rtn = result.toString();
+      } else {
+        //12k以内，直接不要使用StringBuilder，解决出现两份内存问题
+        buffer = new char[size];
+        n = reader.read(buffer);
+        rtn = new String(buffer, 0, n);
+      }
+    } catch (Exception e) {
+      LogUtils.e("FileUtils", "readFileToStringEx error info: " + e.toString());
+    } catch (OutOfMemoryError error) {
+      LogUtils.d("FileUtils", "readSignatureFileToString OOM!! filename: " + file.getName());
+      //发生一次OOM还是要再尝试一下
+      if (capacity == -1) {
+        rtn = readFileToStringEx(file, 6);
+      }
+    } finally {
+      if (fis != null) {
+        try {
+          fis.close();
+        } catch (Exception e) {
+        }
+      }
+      if (reader != null) {
+        try {
+          reader.close();
+        } catch (Exception e) {
+        }
+      }
+    }
+    return rtn;
+  }
 }
