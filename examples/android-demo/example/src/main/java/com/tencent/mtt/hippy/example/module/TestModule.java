@@ -9,6 +9,7 @@ import com.tencent.mtt.hippy.annotation.HippyMethod;
 import com.tencent.mtt.hippy.annotation.HippyNativeModule;
 import com.tencent.mtt.hippy.common.HippyMap;
 import com.tencent.mtt.hippy.example.BaseActivity;
+import com.tencent.mtt.hippy.example.WormholeNativeDemoActivity;
 import com.tencent.mtt.hippy.modules.Promise;
 import com.tencent.mtt.hippy.modules.nativemodules.HippyNativeModuleBase;
 
@@ -33,6 +34,7 @@ public class TestModule extends HippyNativeModuleBase {
         HippyRootView hippyRootView = mContext.getInstance(instanceid);
         Intent intent = new Intent();
         intent.setClass(hippyRootView.getContext(), BaseActivity.class);
+        //intent.setClass(hippyRootView.getContext(), WormholeNativeDemoActivity.class);
         hippyRootView.getContext().startActivity(intent);
     }
 

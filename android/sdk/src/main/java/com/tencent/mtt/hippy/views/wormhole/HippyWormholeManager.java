@@ -1,8 +1,10 @@
 package com.tencent.mtt.hippy.views.wormhole;
 
+import android.content.Context;
 import android.text.TextUtils;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.FrameLayout;
 
 import com.tencent.mtt.hippy.HippyEngine;
 import com.tencent.mtt.hippy.HippyEngineContext;
@@ -35,9 +37,17 @@ public class HippyWormholeManager {
   private HippyEngine mWormholeEngine;
   private HippyRootView mHippyRootView;
   private HippyWormholeContainer mWormholeContainer;
+
+  //for纯前端场景
   private ConcurrentHashMap<String, Integer> mTkdWormholeNodeMap = new ConcurrentHashMap<String, Integer>();
   private ConcurrentHashMap<String, Integer> mWormholeNodeMap = new ConcurrentHashMap<String, Integer>();
   private ConcurrentHashMap<String, TKDWormholeView> mTkdWormholeViewMap = new ConcurrentHashMap<String, TKDWormholeView>();
+  private ConcurrentHashMap<String, Integer> mPositionMap = new ConcurrentHashMap<String, Integer>();
+
+  //for native场景
+  private ConcurrentHashMap<String, View> mNativeWormholeParentViewMap = new ConcurrentHashMap<String, View>();
+  public ConcurrentHashMap<String, View> mNativeWormholeChildViewMap = new ConcurrentHashMap<String, View>();
+
 
   //存储业务方引擎
   private ArrayList<HippyEngine> mClientEngineList = new ArrayList<>();
@@ -132,14 +142,30 @@ public class HippyWormholeManager {
       if (oldParent != null) {
         oldParent.removeView(wormholeView);
       }
+      //todo 如果wormhole不是作为parent的唯一子节点的话，这里可能会有隐患
+      ((ViewGroup)newParent).removeAllViews();
       ((ViewGroup)newParent).addView(wormholeView, 0);
+    }
+    //将虫洞的宽高同步给oarent
+    ViewGroup.LayoutParams layoutParams = newParent.getLayoutParams();
+    if (layoutParams!=null && layoutParams.height != wormholeView.getHeight()) {
+      layoutParams.height = wormholeView.getHeight();
+      newParent.setLayoutParams(layoutParams);
     }
   }
 
   public void onServerBatchComplete(HippyWormholeView wormholeView) {
     String wormholeId = wormholeView.getWormholeId();
     if (mTkdWormholeViewMap.containsKey(wormholeId)) {
+      //从前端场景里找
       View parent = mTkdWormholeViewMap.get(wormholeId);
+      if (parent != null) {
+        addWormholeToParent(wormholeView, parent);
+        sendBatchCompleteMessageToClient(wormholeId, parent);
+      }
+    } else if (mNativeWormholeParentViewMap.containsKey(wormholeId)) {
+      //从native场景里找
+      View parent = mNativeWormholeParentViewMap.get(wormholeId);
       if (parent != null) {
         addWormholeToParent(wormholeView, parent);
         sendBatchCompleteMessageToClient(wormholeId, parent);
@@ -249,6 +275,59 @@ public class HippyWormholeManager {
     for (int i = 0; i < mClientEngineList.size(); i++) {
       if (mClientEngineList.get(i) != null) {
         mClientEngineList.get(i).sendEvent(EVENT_DATARECEIVED, data);
+      }
+    }
+  }
+
+  public void addNativeWormholeParent(String wormholeId, View parent) {
+    mNativeWormholeParentViewMap.put(wormholeId, parent);
+  }
+
+  public void addNativeWormholeChild(String wormholeId, View child) {
+    if (!TextUtils.isEmpty(wormholeId) && !mNativeWormholeChildViewMap.containsKey(wormholeId)) {
+      mNativeWormholeChildViewMap.put(wormholeId, child);
+    }
+  }
+
+  public View getNativeWormholeChild(String wormholeId) {
+    if (!TextUtils.isEmpty(wormholeId) && mNativeWormholeChildViewMap.containsKey(wormholeId)) {
+      return mNativeWormholeChildViewMap.get(wormholeId);
+    }
+    return null;
+  }
+
+  public View onNativeCreateWormholeParent(Context context) {
+    FrameLayout frameLayout = new FrameLayout(context);
+    frameLayout.setLayoutParams(new FrameLayout.LayoutParams(FrameLayout.LayoutParams.WRAP_CONTENT, FrameLayout.LayoutParams.WRAP_CONTENT));
+    return frameLayout;
+  }
+
+  public void onNativeBindItemView(String wormholeId, View itemView, HippyMap hippyMap){
+    addNativeWormholeParent(wormholeId, itemView);
+    View childView = getNativeWormholeChild(wormholeId);
+    if(childView!=null){
+      addWormholeToParent(childView,itemView);
+    } else {
+      HippyWormholeManager.getInstance().sendDataReceivedMessageToServer(hippyMap);
+    }
+  }
+
+  public void onNativeWormholeDestroy(String wormholeId) {
+    if (!TextUtils.isEmpty(wormholeId) && mNativeWormholeParentViewMap.get(wormholeId) instanceof ViewGroup) {
+      ViewGroup targetView = (ViewGroup) mNativeWormholeParentViewMap.get(wormholeId);
+      if (targetView.getChildCount() > 0) {
+        View child = targetView.getChildAt(0);
+        if (child instanceof HippyWormholeView) {
+          targetView.removeView(child);
+          mWormholeContainer.addView(child);
+          HippyEngineContext engineContext = mWormholeEngine.getEngineContext();
+          if (engineContext != null) {
+            engineContext.getRenderManager().getControllerManager().deleteChild(mWormholeContainer.getId(), child.getId());
+          }
+        }
+      }
+      if (!TextUtils.isEmpty(wormholeId)) {
+        mNativeWormholeParentViewMap.remove(wormholeId);
       }
     }
   }

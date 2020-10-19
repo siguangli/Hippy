@@ -24,6 +24,7 @@ public class HippyWormholeController extends HippyViewController<HippyWormholeVi
     if (!TextUtils.isEmpty(wormholeId)) {
       wormholeView.setWormholeId(wormholeId);
     }
+    HippyWormholeManager.getInstance().addNativeWormholeChild(wormholeId, wormholeView);
     return wormholeView;
   }
 
