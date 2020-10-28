@@ -6,6 +6,6 @@ import com.tencent.mtt.hippy.views.wormhole.HippyWormholeManager;
 public class DefaultEventObserverAdapter implements HippyEventObserverAdapter {
   @Override
   public void handleMessage(HippyMap data) {
-    HippyWormholeManager.getInstance().sendMessageToClient(data);
+    HippyWormholeManager.getInstance().sendMessageToWormhole(data);
   }
 }

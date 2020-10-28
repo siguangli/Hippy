@@ -24,6 +24,7 @@ import com.tencent.mtt.hippy.common.HippyMap;
 import com.tencent.mtt.hippy.dom.node.NodeProps;
 import com.tencent.mtt.hippy.modules.Promise;
 import com.tencent.mtt.hippy.utils.LogUtils;
+import com.tencent.mtt.hippy.views.wormhole.HippyWormholeManager;
 
 import java.util.*;
 
@@ -477,6 +478,15 @@ public class RenderNode
 	public void setDelete(boolean b)
 	{
 		mIsDelete = b;
+    if (mClassName.equals(HippyWormholeManager.WORMHOLE_TKD)) {
+      //render node回收的时候给前端发送虫洞item回收事件
+      HippyWormholeManager.getInstance().sendItemDeleteMessageToClient(HippyWormholeManager.getInstance().getWormholeIdFromProps(getProps()), mRootView);
+    }
+    //将delete派发给child
+    for (RenderNode renderNode : mChildren)
+    {
+      renderNode.setDelete(b);
+    }
 	}
 
 	public boolean isDelete()

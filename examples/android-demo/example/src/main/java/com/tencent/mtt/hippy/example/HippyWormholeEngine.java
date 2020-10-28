@@ -50,7 +50,7 @@ public class HippyWormholeEngine
 				@Override
 				public void handleMessage(HippyMap data) {
 					//虫洞自己收到了这个数据之后需要广播给业务方
-					HippyWormholeManager.getInstance().sendMessageToClient(data);
+					HippyWormholeManager.getInstance().sendMessageToAllClient(data);
 				}
 			};
 			// 可选：异常处理器
@@ -125,7 +125,7 @@ public class HippyWormholeEngine
 						mHippyRootView = mHippyEngine.loadModule(loadParams, new HippyEngine.ModuleListener() {
 							public void onInitialized(int statusCode, String msg, HippyRootView hippyRootView) {
 								if (statusCode == HippyEngine.STATUS_OK) {
-									HippyWormholeManager.getInstance().setServerEngine(mHippyEngine);
+									HippyWormholeManager.getInstance().setServerEngine(mHippyEngine,mHippyRootView);
 								} else {
 									LogUtils.e(WORMHOLE_TAG, "Hippy: init worm engine failed statusCode:" + statusCode + ",msg:" + msg);
 								}

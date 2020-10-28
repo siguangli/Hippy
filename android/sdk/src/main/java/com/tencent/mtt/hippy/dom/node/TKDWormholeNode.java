@@ -12,10 +12,12 @@ import org.json.JSONArray;
 public class TKDWormholeNode extends StyleNode {
   private final boolean mIsVirtual;
   private String mWormholeId;
+  private HippyRootView mClientHippyRootView;
 
-  public TKDWormholeNode(boolean isVirtual, String wormholeId) {
+  public TKDWormholeNode(boolean isVirtual, String wormholeId,HippyRootView hippyRootView) {
     this.mIsVirtual = isVirtual;
     this.mWormholeId = wormholeId;
+    this.mClientHippyRootView = hippyRootView;
   }
 
   public boolean isVirtual() {
@@ -28,7 +30,7 @@ public class TKDWormholeNode extends StyleNode {
     HippyMap paramsMap = props.getMap(WORMHOLE_PARAMS);
     if (paramsMap != null) {
       paramsMap.pushString(WORMHOLE_WORMHOLE_ID, mWormholeId);
-      HippyWormholeManager.getInstance().onTkdWormholeNodeSetProps(paramsMap, mWormholeId, getId());
+      HippyWormholeManager.getInstance().onTkdWormholeNodeSetProps(paramsMap, mWormholeId, getId(),mClientHippyRootView);
     }
   }
 

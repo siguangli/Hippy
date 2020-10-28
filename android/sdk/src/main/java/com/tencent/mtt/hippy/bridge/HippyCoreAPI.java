@@ -57,6 +57,7 @@ import com.tencent.mtt.hippy.views.viewpager.HippyViewPagerItemController;
 import com.tencent.mtt.hippy.views.webview.HippyWebViewController;
 import com.tencent.mtt.hippy.views.wormhole.HippyWormholeContainerController;
 import com.tencent.mtt.hippy.views.wormhole.HippyWormholeController;
+import com.tencent.mtt.hippy.views.wormhole.HippyWormholeSession;
 import com.tencent.mtt.hippy.views.wormhole.TKDWormholeController;
 import com.tencent.mtt.hippy.views.wormhole.event.EventObserverModule;
 import com.tencent.mtt.tkd.views.scroll.TkdScrollViewController;
@@ -246,6 +247,7 @@ public class HippyCoreAPI implements HippyAPIProvider
 		components.add(HippyWormholeContainerController.class);
 		components.add(HippyWormholeController.class);
 		components.add(TKDWormholeController.class);
+    components.add(HippyWormholeSession.class);
 
 		return components;
 	}

@@ -266,9 +266,9 @@ public class RenderManager
 		}
 	}
 
-	public DomNode createStyleNode(String className, boolean isVirtual, int id)
+	public DomNode createStyleNode(String className, boolean isVirtual, int id,HippyRootView hippyRootView)
 	{
-		DomNode domNode = mControllerManager.createStyleNode(className, isVirtual);
+		DomNode domNode = mControllerManager.createStyleNode(className, isVirtual,hippyRootView);
 		domNode.setViewClassName(className);
 		domNode.setId(id);
 		return domNode;

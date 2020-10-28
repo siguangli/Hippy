@@ -110,7 +110,7 @@ public class MyActivity extends Activity
 						      entryPage: App
 						  });
 						  */
-						loadParams.componentName = "Demo";
+						loadParams.componentName = "FeedsDemo";
 						/*
 						  可选：二选一设置。自己开发的业务模块的jsbundle的assets路径（assets路径和文件路径二选一，优先使用assets路径）
 						  debugMode = false 时必须设置jsAssetsPath或jsFilePath（debugMode = true时，所有jsbundle都是从debug server上下载）

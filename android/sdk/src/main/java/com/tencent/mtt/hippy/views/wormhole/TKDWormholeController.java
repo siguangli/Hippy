@@ -3,6 +3,7 @@ package com.tencent.mtt.hippy.views.wormhole;
 import android.content.Context;
 import android.view.View;
 
+import com.tencent.mtt.hippy.HippyRootView;
 import com.tencent.mtt.hippy.annotation.HippyController;
 import com.tencent.mtt.hippy.common.HippyArray;
 import com.tencent.mtt.hippy.common.HippyMap;
@@ -30,9 +31,10 @@ public class TKDWormholeController extends HippyViewController<TKDWormholeView> 
   }
 
   @Override
-  protected StyleNode createNode(boolean virtual) {
-    String wormholeId = HippyWormholeManager.getInstance().generateWormholeId();
-    return new TKDWormholeNode(virtual, wormholeId);
+  protected StyleNode createNode(boolean virtual, HippyRootView hippyRootView) {
+    HippyWormholeManager manager = HippyWormholeManager.getInstance();
+    String wormholeId = manager.generateWormholeId();
+    return new TKDWormholeNode(virtual, wormholeId, hippyRootView);
   }
 
   @Override
