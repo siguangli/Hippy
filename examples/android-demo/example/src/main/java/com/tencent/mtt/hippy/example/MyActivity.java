@@ -140,6 +140,7 @@ public class MyActivity extends Activity
 		// 3/3. 摧毁hippy前端模块，摧毁hippy引擎
 		mHippyEngine.destroyModule(mHippyView);
 		mHippyEngine.destroyEngine();
+		HippyWormholeManager.getInstance().sendRootDeleteMessageToClient(mHippyView);
 		super.onDestroy();
 	}
 

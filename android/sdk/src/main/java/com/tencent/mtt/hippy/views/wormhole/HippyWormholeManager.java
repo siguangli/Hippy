@@ -28,6 +28,7 @@ public class HippyWormholeManager {
   public static final String WORMHOLE_WORMHOLE_ID               = "wormholeId";
   public static final String WORMHOLE_CLIENT_DATA_RECEIVED      = "Wormhole.dataReceived";
   public static final String WORMHOLE_CLIENT_ITEM_DELETED       = "Wormhole.itemDeleted";
+  public static final String WORMHOLE_CLIENT_ROOT_DELETED       = "Wormhole.rootDeleted";
   public static final String WORMHOLE_SERVER_BATCH_COMPLETE     = "onServerBatchComplete";
   public static final String EVENT_DATARECEIVED                 = "onClientMessageReceived";
   public static final String FUNCTION_SENDEVENT_TO_WORMHOLEVIEW = "sendEventToWormholeView";
@@ -273,6 +274,14 @@ public class HippyWormholeManager {
       jsonArray.pushString(wormholeId);
       hippyMap.pushArray("items", jsonArray);
       mWormholeEngine.sendEvent(WORMHOLE_CLIENT_ITEM_DELETED, hippyMap);
+    }
+  }
+
+  public void sendRootDeleteMessageToClient(HippyRootView clientRootView) {
+    if (mClientRootViewIdToRootTagMap.containsKey(clientRootView.getId())) {
+      HippyArray jsonArray = new HippyArray();
+      jsonArray.pushInt(mClientRootViewIdToRootTagMap.get(clientRootView.getId()));
+      mWormholeEngine.sendEvent(WORMHOLE_CLIENT_ROOT_DELETED, jsonArray);
     }
   }
 
