@@ -3,6 +3,7 @@ package com.tencent.mtt.hippy.views.wormhole;
 import android.content.Context;
 import android.view.View;
 
+import com.tencent.mtt.hippy.HippyRootView;
 import com.tencent.mtt.hippy.annotation.HippyController;
 import com.tencent.mtt.hippy.common.HippyArray;
 import com.tencent.mtt.hippy.common.HippyMap;
@@ -24,15 +25,18 @@ public class TKDWormholeController extends HippyViewController<TKDWormholeView> 
   protected View createViewImpl(final Context context, HippyMap initProps) {
     TKDWormholeView tkdWormholeView = new TKDWormholeView(context);
     String wormholeId = HippyWormholeManager.getInstance().getWormholeIdFromProps(initProps);
+    int rootId = HippyWormholeManager.getInstance().getRootIdFromProps(initProps);
     tkdWormholeView.setWormholeId(wormholeId);
+    tkdWormholeView.setRootId(rootId);
     HippyWormholeManager.getInstance().onCreateTKDWormholeView(tkdWormholeView, wormholeId);
     return tkdWormholeView;
   }
 
   @Override
-  protected StyleNode createNode(boolean virtual) {
-    String wormholeId = HippyWormholeManager.getInstance().generateWormholeId();
-    return new TKDWormholeNode(virtual, wormholeId);
+  protected StyleNode createNode(boolean virtual, int rootId) {
+    HippyWormholeManager manager = HippyWormholeManager.getInstance();
+    String wormholeId = manager.generateWormholeId();
+    return new TKDWormholeNode(virtual, wormholeId, rootId);
   }
 
   @Override
