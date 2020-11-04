@@ -19,10 +19,7 @@ public class EventObserverModule extends HippyNativeModuleBase {
   @HippyMethod(name = "postWormholeMessage")
   public void postWormholeMessage(HippyMap data) {
     if (mContext != null && mContext.getGlobalConfigs() != null) {
-      //指定虫洞的话交给虫洞去处理，否则丢弃
-      if (HippyWormholeManager.WORMHOLE_NAME.equals(data.getString("toModule"))) {
-        mContext.getGlobalConfigs().getEventObserverAdapter().handleMessage(data);
-      }
+      mContext.getGlobalConfigs().getEventObserverAdapter().handleMessage(data);
     }
   }
 }

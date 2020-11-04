@@ -285,11 +285,9 @@ public class HippyWormholeManager {
   //如果是虫洞引擎收到了通知之后，应该要广播给所有的业务方
   public void sendMessageToAllClient(HippyMap data) {
     for (int i = 0; i < mClientEngineList.size(); i++) {
-      if (mClientEngineList.get(i) != null) {
-        if (mClientEngineList.get(i).getId() == data.getInt(WORMHOLE_ROOT_TAG)) {
-          mClientEngineList.get(i).sendEvent(EVENT_DATARECEIVED, data);
-          break;
-        }
+      if (mClientEngineList.get(i) != null && mClientEngineList.get(i).getEngineContext() != null && mClientEngineList.get(i).getEngineContext().getInstance(data.getInt(WORMHOLE_ROOT_TAG)) != null) {
+        mClientEngineList.get(i).sendEvent(EVENT_DATARECEIVED, data);
+        break;
       }
     }
   }
