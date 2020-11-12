@@ -62,10 +62,10 @@ task clean(type: Delete) {
     delete rootProject.buildDir
 }
 
-project.afterEvaluate {
-    delete 'example/src/main/assets'
-    copy{
-        from "res"
-        into "example/src/main/assets"
-    }
-}
+//project.afterEvaluate {
+//    delete 'example/src/main/assets'
+//    copy{
+//        from "res"
+//        into "example/src/main/assets"
+//    }
+//}

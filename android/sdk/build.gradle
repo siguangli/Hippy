@@ -305,7 +305,7 @@ android {
 
 dependencies {
   api fileTree(dir: 'libs', include: ['*.jar'])
-  compileOnly 'com.tencent.mtt:support-ui:99.0.9'
+  compileOnly 'com.tencent.mtt:support-ui:99.0.11'
 }
 
 afterEvaluate {
