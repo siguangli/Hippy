@@ -24,6 +24,7 @@ public class HippyWormholeManager {
   public static final String WORMHOLE_TAG                       = "hippy_wormhole";
 
   public static final String WORMHOLE_TKD                       = "TKDWormhole";
+  public static final String WORMHOLE_NAME                      = "wormhole";
   public static final String WORMHOLE_ROOT_TAG                  = "rootTag";
   public static final String WORMHOLE_PARAMS                    = "params";
   public static final String WORMHOLE_WORMHOLE_ID               = "wormholeId";
@@ -31,7 +32,7 @@ public class HippyWormholeManager {
   public static final String WORMHOLE_CLIENT_ITEM_DELETED       = "Wormhole.itemDeleted";
   public static final String WORMHOLE_CLIENT_ROOT_DELETED       = "Wormhole.rootDeleted";
   public static final String WORMHOLE_SERVER_BATCH_COMPLETE     = "onServerBatchComplete";
-  public static final String EVENT_DATARECEIVED                 = "onClientMessageReceived";
+  public static final String EVENT_DATARECEIVED                 = "onWormholeMessageReceived";
   public static final String FUNCTION_SENDEVENT_TO_WORMHOLEVIEW = "sendEventToWormholeView";
   public static final String FUNCTION_ONCUSTOMEVENT             = "onCustomEvent";
 
@@ -284,8 +285,9 @@ public class HippyWormholeManager {
   //如果是虫洞引擎收到了通知之后，应该要广播给所有的业务方
   public void sendMessageToAllClient(HippyMap data) {
     for (int i = 0; i < mClientEngineList.size(); i++) {
-      if (mClientEngineList.get(i) != null) {
+      if (mClientEngineList.get(i) != null && mClientEngineList.get(i).getEngineContext() != null && mClientEngineList.get(i).getEngineContext().getInstance(data.getInt(WORMHOLE_ROOT_TAG)) != null) {
         mClientEngineList.get(i).sendEvent(EVENT_DATARECEIVED, data);
+        break;
       }
     }
   }

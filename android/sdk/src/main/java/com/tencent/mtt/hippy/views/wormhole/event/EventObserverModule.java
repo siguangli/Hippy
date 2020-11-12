@@ -5,6 +5,7 @@ import com.tencent.mtt.hippy.annotation.HippyMethod;
 import com.tencent.mtt.hippy.annotation.HippyNativeModule;
 import com.tencent.mtt.hippy.common.HippyMap;
 import com.tencent.mtt.hippy.modules.nativemodules.HippyNativeModuleBase;
+import com.tencent.mtt.hippy.views.wormhole.HippyWormholeManager;
 
 @HippyNativeModule(name = "EventObserver")
 public class EventObserverModule extends HippyNativeModuleBase {
@@ -15,10 +16,9 @@ public class EventObserverModule extends HippyNativeModuleBase {
     mContext = context;
   }
 
-  @HippyMethod(name = "postMessageToClient")
-  public void postMessageToClient(HippyMap data) {
+  @HippyMethod(name = "postWormholeMessage")
+  public void postWormholeMessage(HippyMap data) {
     if (mContext != null && mContext.getGlobalConfigs() != null) {
-      //交给业务方自己去处理
       mContext.getGlobalConfigs().getEventObserverAdapter().handleMessage(data);
     }
   }

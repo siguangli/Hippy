@@ -49,7 +49,7 @@ public class HippyWormholeEngine
 			initParams.eventObserverAdapter = new HippyEventObserverAdapter() {
 				@Override
 				public void handleMessage(HippyMap data) {
-					//虫洞自己收到了这个数据之后需要广播给业务方
+					//虫洞自己收到了这个数据之后需要发送给指定业务方
 					HippyWormholeManager.getInstance().sendMessageToAllClient(data);
 				}
 			};
