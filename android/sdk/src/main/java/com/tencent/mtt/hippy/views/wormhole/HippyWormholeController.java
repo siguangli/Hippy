@@ -13,8 +13,7 @@ import com.tencent.mtt.hippy.uimanager.ControllerManager;
 import com.tencent.mtt.hippy.uimanager.HippyViewController;
 import com.tencent.mtt.hippy.uimanager.RenderNode;
 
-
-@HippyController(name = "Wormhole")
+@HippyController(name = "Wormhole", isLazyLoad = true)
 public class HippyWormholeController extends HippyViewController<HippyWormholeView> {
   @Override
   protected View createViewImpl(Context context) {
@@ -24,10 +23,6 @@ public class HippyWormholeController extends HippyViewController<HippyWormholeVi
   @Override
   protected View createViewImpl(final Context context, HippyMap iniProps) {
     HippyWormholeView wormholeView = new HippyWormholeView(context);
-    String wormholeId = HippyWormholeManager.getInstance().getWormholeIdFromProps(iniProps);
-    if (!TextUtils.isEmpty(wormholeId)) {
-      wormholeView.setWormholeId(wormholeId);
-    }
     return wormholeView;
   }
 
@@ -36,6 +31,12 @@ public class HippyWormholeController extends HippyViewController<HippyWormholeVi
     return new WormholeNode(virtual);
   }
 
+  @Override
+  public RenderNode createRenderNode(int id,  HippyMap props, String className, HippyRootView hippyRootView, ControllerManager controllerManager, boolean lazy) {
+    lazy = HippyWormholeManager.getInstance().onCreateWormholeRenderNode(id, props);
+    RenderNode node = new RenderNode(id, props, className, hippyRootView, controllerManager, lazy);
+    return node;
+  }
 
   @Override
   public void onBatchComplete(HippyWormholeView view) {

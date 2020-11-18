@@ -216,7 +216,7 @@ public class HippyListAdapter extends RecyclerAdapter implements IRecycleItemTyp
 	RecyclerViewBase.ViewHolder findBestHolderRecursive(int position, int targetType, RecyclerViewBase.Recycler recycler)
 	{
 		RecyclerViewBase.ViewHolder matchHolder = getScrapViewForPositionInner(position, targetType, recycler);
-		if (targetType != TYPE_WORMHOLE) {
+		if (targetType != ViewHolder.TYPE_WORMHOLE) {
 			if (matchHolder == null) {
 				matchHolder = recycler.getViewHolderForPosition(position);
 			}
@@ -592,13 +592,10 @@ public class HippyListAdapter extends RecyclerAdapter implements IRecycleItemTyp
 						if (typeObj instanceof String) {
 							try {
 								type = Integer.parseInt((String)typeObj);
+								return type;
 							} catch (NumberFormatException e) {
 
 							}
-						}
-
-						if (type == ViewHolder.TYPE_WORMHOLE) {
-							return type;
 						}
 
 						return listItemProps.getInt(ListItemRenderNode.ITEM_VIEW_TYPE);

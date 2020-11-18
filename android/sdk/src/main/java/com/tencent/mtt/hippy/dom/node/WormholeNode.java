@@ -12,7 +12,6 @@ import com.tencent.mtt.hippy.views.wormhole.HippyWormholeManager;
 
 public class WormholeNode extends StyleNode {
   private final boolean mIsVirtual;
-  private String mWormholeId;
 
   public WormholeNode(boolean isVirtual) {
     this.mIsVirtual = isVirtual;
@@ -25,12 +24,5 @@ public class WormholeNode extends StyleNode {
   @Override
   public void setProps(HippyMap props) {
     super.setProps(props);
-    if (TextUtils.isEmpty(mWormholeId)) {
-      mWormholeId = HippyWormholeManager.getInstance().onWormholeNodeSetProps(props, getId());
-    }
-  }
-
-  public String getWormholeId() {
-    return mWormholeId;
   }
 }

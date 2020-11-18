@@ -247,7 +247,7 @@ public class HippyCoreAPI implements HippyAPIProvider
 		components.add(HippyWormholeContainerController.class);
 		components.add(HippyWormholeController.class);
 		components.add(TKDWormholeController.class);
-    components.add(HippyWormholeSession.class);
+		components.add(HippyWormholeSession.class);
 
 		return components;
 	}

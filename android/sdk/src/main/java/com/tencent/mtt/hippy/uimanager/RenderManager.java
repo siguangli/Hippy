@@ -174,7 +174,7 @@ public class RenderManager
 				//render node回收的时候给前端发送虫洞item回收事件
 				HippyMap props = uiNode.getProps();
 				int rootId = uiNode.mRootView.getId();
-				HippyWormholeManager.getInstance().sendItemDeleteMessageToClient(props, rootId);
+				HippyWormholeManager.getInstance().sendItemDeleteMessageToServer(props, rootId);
 			}
 		}
 		else if (TextUtils.equals(NodeProps.ROOT_NODE, uiNode.getClassName()))
