@@ -11,6 +11,7 @@ import com.tencent.mtt.hippy.common.HippyArray;
 import com.tencent.mtt.hippy.common.HippyMap;
 import com.tencent.mtt.hippy.uimanager.HippyViewEvent;
 import com.tencent.mtt.hippy.uimanager.RenderNode;
+import com.tencent.mtt.hippy.utils.LogUtils;
 import com.tencent.mtt.hippy.utils.PixelUtil;
 import com.tencent.mtt.hippy.utils.UIThreadUtils;
 
@@ -71,6 +72,10 @@ public class HippyWormholeManager {
   }
 
   private void sendDataReceivedMessageToServer(HippyMap bundle, int rootId) {
+    if(mWormholeEngine == null){
+      LogUtils.e(WORMHOLE_TAG,"sendDataReceivedMessageToServer mWormholeEngine null");
+      return;
+    }
     HippyMap hippyMap = new HippyMap();
     hippyMap.pushInt(WORMHOLE_ROOT_TAG, rootId);
     HippyArray jsonArray = new HippyArray();
@@ -82,6 +87,10 @@ public class HippyWormholeManager {
   }
 
   private void sendBatchCompleteMessageToClient(String wormholeId, View view) {
+    if(mWormholeEngine == null){
+      LogUtils.e(WORMHOLE_TAG,"sendBatchCompleteMessageToClient mWormholeEngine null");
+      return;
+    }
     int id = mWormholeNodeMap.get(wormholeId);
     HippyEngineContext engineContext = mWormholeEngine.getEngineContext();
     if (engineContext == null) {
@@ -199,7 +208,7 @@ public class HippyWormholeManager {
       if (child instanceof HippyWormholeView) {
         tkdWormholeView.removeView(child);
         HippySessionView sessionView = findSessionView(tkdWormholeView);
-        if (sessionView != null) {
+        if (sessionView != null && mWormholeEngine != null) {
           sessionView.addView(child);
           HippyEngineContext engineContext = mWormholeEngine.getEngineContext();
           if (engineContext != null) {
@@ -294,7 +303,7 @@ public class HippyWormholeManager {
 
   public void sendItemDeleteMessageToClient(HippyMap props, int rootId) {
     String wormholeId = getWormholeIdFromProps(props);
-    if (TextUtils.isEmpty(wormholeId)) {
+    if (TextUtils.isEmpty(wormholeId) || mWormholeEngine == null) {
       return;
     }
 
@@ -307,6 +316,10 @@ public class HippyWormholeManager {
   }
 
   public void sendRootDeleteMessageToClient(int rootId) {
+    if(mWormholeEngine == null){
+      LogUtils.e(WORMHOLE_TAG,"sendRootDeleteMessageToClient mWormholeEngine null");
+      return;
+    }
     HippyArray jsonArray = new HippyArray();
     jsonArray.pushInt(rootId);
     mWormholeEngine.sendEvent(WORMHOLE_CLIENT_ROOT_DELETED, jsonArray);
