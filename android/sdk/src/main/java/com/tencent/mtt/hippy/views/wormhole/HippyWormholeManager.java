@@ -11,6 +11,7 @@ import com.tencent.mtt.hippy.common.HippyMap;
 import com.tencent.mtt.hippy.uimanager.DiffUtils;
 import com.tencent.mtt.hippy.uimanager.HippyViewEvent;
 import com.tencent.mtt.hippy.uimanager.RenderNode;
+import com.tencent.mtt.hippy.utils.LogUtils;
 import com.tencent.mtt.hippy.utils.PixelUtil;
 import com.tencent.mtt.hippy.utils.UIThreadUtils;
 
@@ -71,6 +72,10 @@ public class HippyWormholeManager {
     }
 
     private void sendDataReceivedMessageToServer(HippyMap bundle, int rootId) {
+        if(mWormholeEngine == null){
+            LogUtils.e(WORMHOLE_TAG,"sendDataReceivedMessageToServer mWormholeEngine null");
+            return;
+        }
         HippyMap hippyMap = new HippyMap();
         hippyMap.pushInt(WORMHOLE_ROOT_TAG, rootId);
         HippyArray jsonArray = new HippyArray();
@@ -82,6 +87,10 @@ public class HippyWormholeManager {
     }
 
     private void sendBatchCompleteMessageToClient(String wormholeId, View view) {
+        if(mWormholeEngine == null){
+            LogUtils.e(WORMHOLE_TAG,"sendBatchCompleteMessageToClient mWormholeEngine null");
+            return;
+        }
         int id = mWormholeNodeMap.get(wormholeId);
         HippyEngineContext engineContext = mWormholeEngine.getEngineContext();
         RenderNode node = engineContext.getRenderManager().getRenderNode(id);
@@ -159,6 +168,10 @@ public class HippyWormholeManager {
     }
 
     public boolean onCreateWormholeRenderNode(int id,  HippyMap props) {
+        if(mWormholeEngine == null){
+            LogUtils.e(WORMHOLE_TAG,"onCreateWormholeRenderNode mWormholeEngine null");
+            return true;
+        }
         String wormholeId = getWormholeIdFromProps(props);
         HippyEngineContext engineContext = mWormholeEngine.getEngineContext();
         if (engineContext == null || TextUtils.isEmpty(wormholeId)) {
@@ -226,7 +239,7 @@ public class HippyWormholeManager {
     }
 
     private int getWormholeType(int id, HippyMap props) {
-        if (props == null) {
+        if (props == null && mWormholeEngine!=null) {
             HippyEngineContext engineContext = mWormholeEngine.getEngineContext();
             if (engineContext != null) {
                 RenderNode node = engineContext.getRenderManager().getRenderNode(id);
@@ -258,7 +271,7 @@ public class HippyWormholeManager {
                 Integer rootId = tkdWormholeView.getRootId();
                 HippySessionView sessionView = mSessionViewMap.get(rootId);
 
-                if (sessionView != null) {
+                if (sessionView != null && mWormholeEngine!=null) {
                     HippyEngineContext engineContext = mWormholeEngine.getEngineContext();
                     if (engineContext != null) {
                         engineContext.getRenderManager().getControllerManager()
@@ -352,7 +365,7 @@ public class HippyWormholeManager {
 
     public void sendItemDeleteMessageToServer(HippyMap props, int rootId) {
         String wormholeId = getWormholeIdFromProps(props);
-        if (TextUtils.isEmpty(wormholeId)) {
+        if (TextUtils.isEmpty(wormholeId) || mWormholeEngine == null) {
             return;
         }
 
@@ -365,6 +378,10 @@ public class HippyWormholeManager {
     }
 
     public void sendRootDeleteMessageToServer(int rootId) {
+        if(mWormholeEngine == null){
+            LogUtils.e(WORMHOLE_TAG,"sendRootDeleteMessageToServer mWormholeEngine null");
+            return;
+        }
         mWormholeViewMap.clear();
         HippyArray jsonArray = new HippyArray();
         jsonArray.pushInt(rootId);
