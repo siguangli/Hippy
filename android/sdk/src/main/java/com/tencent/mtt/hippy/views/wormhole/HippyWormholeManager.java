@@ -125,6 +125,7 @@ public class HippyWormholeManager {
     if (view == null) {
       RenderNode node = engineContext.getRenderManager().getRenderNode(id);
       if (node != null) {
+        node.setLazy(false);
         view = node.createViewRecursive();
         node.updateViewRecursive();
       }
@@ -214,6 +215,10 @@ public class HippyWormholeManager {
           if (engineContext != null) {
             engineContext.getRenderManager().getControllerManager()
                     .deleteChild(sessionView.getId(), child.getId());
+            RenderNode node = engineContext.getRenderManager().getRenderNode(child.getId());
+            if (node != null) {
+              node.setLazy(true);
+            }
           }
         }
       }
