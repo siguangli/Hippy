@@ -38,6 +38,7 @@ import com.tencent.mtt.hippy.utils.PixelUtil;
 import com.tencent.mtt.hippy.utils.UIThreadUtils;
 import com.tencent.mtt.hippy.views.list.HippyRecycler;
 import com.tencent.mtt.hippy.views.view.HippyViewGroupController;
+import com.tencent.mtt.hippy.views.wormhole.HippySessionView;
 import com.tencent.mtt.hippy.views.wormhole.HippyWormholeManager;
 
 import java.lang.reflect.Field;
@@ -531,8 +532,9 @@ public class ControllerManager implements HippyInstanceLifecycleEventListener
 //				mContext.getGlobalConfigs().getLogAdapter().log( TAG,"addChild error childView has parent id: " + id + " pid: " + pid);
 //			}
 		}
-		else
+		else if (!(parentView instanceof HippySessionView))
 		{
+		  //目前虫洞的机制，走到这里不可避免，先通过!(parentView instanceof HippySessionView)的形式规避下吧
 			RenderNode parentNode = mContext.getRenderManager().getRenderNode(pid);
 			String renderNodeClass = "null";
 			if (parentNode != null)
