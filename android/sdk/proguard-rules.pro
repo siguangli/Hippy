@@ -183,3 +183,19 @@ public <fields>;
 protected <fields>;
 }
 
+-keepclasseswithmembers class androidx.recyclerview.widget.** {
+public <methods>;
+}
+
+-keepclasseswithmembers class androidx.recyclerview.widget.** {
+protected <methods>;
+}
+
+-keepclasseswithmembers class androidx.recyclerview.widget.** {
+public <fields>;
+}
+
+-keepclasseswithmembers class androidx.recyclerview.widget.** {
+protected <fields>;
+}
+
