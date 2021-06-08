@@ -138,7 +138,6 @@ android {
 dependencies {
   api fileTree(dir: 'libs', include: ['*.jar'])
   implementation 'androidx.annotation:annotation:1.0.0'
-  implementation 'androidx.recyclerview:recyclerview:1.1.0'
   if (!INCLUDE_SUPPORT_UI.toBoolean()) {
     compileOnly('com.tencent.mtt:support-ui:99.2.3')
   }
