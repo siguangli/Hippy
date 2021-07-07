@@ -68,16 +68,18 @@ public class HippyBridgeImpl implements HippyBridge, DevRemoteDebugProxy.OnRecei
   private Deserializer deserializer;
   private BinaryReader safeHeapReader;
   private BinaryReader safeDirectReader;
+  private boolean mIsUsingTdf = false;
 
   public HippyBridgeImpl(HippyEngineContext engineContext, BridgeCallback callback,
       boolean singleThreadMode,
-      boolean enableV8Serialization, boolean isDevModule, String debugServerHost) {
+      boolean enableV8Serialization, boolean isDevModule, String debugServerHost, boolean isUsingTDF) {
     this.mBridgeCallback = callback;
     this.mSingleThreadMode = singleThreadMode;
     this.enableV8Serialization = enableV8Serialization;
     this.mIsDevModule = isDevModule;
     this.mDebugServerHost = debugServerHost;
     this.mContext = engineContext;
+    this.mIsUsingTdf = isUsingTDF;
 
     synchronized (sBridgeSyncLock) {
       if (mCodeCacheRootDir == null) {
@@ -133,7 +135,11 @@ public class HippyBridgeImpl implements HippyBridge, DevRemoteDebugProxy.OnRecei
     synchronized (HippyBridgeImpl.class) {
       try {
         byte[] globalConfig = mDebugGlobalConfig.getBytes("UTF-16LE");
-        mV8RuntimeId = initJSFramework(globalConfig, mSingleThreadMode, enableV8Serialization, mIsDevModule, mDebugInitJSFrameworkCallback, groupId);
+        if (mIsUsingTdf) {
+          mV8RuntimeId = initTDFJSFramework(globalConfig, mSingleThreadMode, enableV8Serialization, mIsDevModule, mDebugInitJSFrameworkCallback, groupId);
+        } else {
+          mV8RuntimeId = initJSFramework(globalConfig, mSingleThreadMode, enableV8Serialization, mIsDevModule, mDebugInitJSFrameworkCallback, groupId);
+        }
         mInit = true;
       } catch (Throwable e) {
         if (mBridgeCallback != null) {
@@ -154,17 +160,25 @@ public class HippyBridgeImpl implements HippyBridge, DevRemoteDebugProxy.OnRecei
     if (!mInit) {
       return false;
     }
-
     if (!TextUtils.isEmpty(codeCacheTag) && !TextUtils.isEmpty(mCodeCacheRootDir)) {
       String codeCacheDir = mCodeCacheRootDir + codeCacheTag + File.separator;
+      if (mIsUsingTdf) {
+        return runTDFScriptFromUri(uri, assetManager, canUseCodeCache, codeCacheDir, mV8RuntimeId,
+          callback);
+      }
       return runScriptFromUri(uri, assetManager, canUseCodeCache, codeCacheDir, mV8RuntimeId,
           callback);
     } else {
       boolean ret = false;
       LogUtils.d("HippyEngineMonitor", "runScriptFromAssets codeCacheTag is null");
       try {
-        ret = runScriptFromUri(uri, assetManager, false, "" + codeCacheTag + File.separator,
+        if (mIsUsingTdf) {
+          ret = runTDFScriptFromUri(uri, assetManager, false, "" + codeCacheTag + File.separator,
             mV8RuntimeId, callback);
+        } else {
+          ret = runScriptFromUri(uri, assetManager, false, "" + codeCacheTag + File.separator,
+            mV8RuntimeId, callback);
+        }
       } catch (Throwable e) {
         if (mBridgeCallback != null) {
           mBridgeCallback.reportException(e);
@@ -183,7 +197,11 @@ public class HippyBridgeImpl implements HippyBridge, DevRemoteDebugProxy.OnRecei
     int offset = buffer.position();
     int length = buffer.limit() - buffer.position();
     if (buffer.isDirect()) {
-      callFunction(action, mV8RuntimeId, callback, buffer, offset, length);
+      if (mIsUsingTdf) {
+        callTDFFunction(action, mV8RuntimeId, callback, buffer, offset, length);
+      } else {
+        callFunction(action, mV8RuntimeId, callback, buffer, offset, length);
+      }
     } else {
       /*
        * In Android's DirectByteBuffer implementation.
@@ -200,7 +218,11 @@ public class HippyBridgeImpl implements HippyBridge, DevRemoteDebugProxy.OnRecei
        * {@link ByteBuffer#arrayOffset} will be ignored, treated as 0.
        */
       offset += buffer.arrayOffset();
-      callFunction(action, mV8RuntimeId, callback, buffer.array(), offset, length);
+      if (mIsUsingTdf) {
+        callTDFFunction(action, mV8RuntimeId, callback, buffer.array(), offset, length);
+      } else {
+        callFunction(action, mV8RuntimeId, callback, buffer.array(), offset, length);
+      }
     }
   }
 
@@ -217,7 +239,11 @@ public class HippyBridgeImpl implements HippyBridge, DevRemoteDebugProxy.OnRecei
       return;
     }
 
-    callFunction(action, mV8RuntimeId, callback, buffer, offset, length);
+    if (mIsUsingTdf) {
+      callTDFFunction(action, mV8RuntimeId, callback, buffer, offset, length);
+    } else {
+      callFunction(action, mV8RuntimeId, callback, buffer, offset, length);
+    }
   }
 
   @Override
@@ -242,24 +268,40 @@ public class HippyBridgeImpl implements HippyBridge, DevRemoteDebugProxy.OnRecei
 
   @Override
   public void destroy(NativeCallback callback) {
-    destroy(mV8RuntimeId, mSingleThreadMode, callback);
+    if (mIsUsingTdf) {
+      destroyTDF(mV8RuntimeId, mSingleThreadMode, callback);
+    } else {
+      destroy(mV8RuntimeId, mSingleThreadMode, callback);
+    }
   }
 
   public native long initJSFramework(byte[] gobalConfig, boolean useLowMemoryMode,
       boolean enableV8Serialization, boolean isDevModule, NativeCallback callback, long groupId);
+  public native long initTDFJSFramework(byte[] gobalConfig, boolean useLowMemoryMode,
+    boolean enableV8Serialization, boolean isDevModule, NativeCallback callback, long groupId);
 
   public native boolean runScriptFromUri(String uri, AssetManager assetManager,
       boolean canUseCodeCache, String codeCacheDir, long V8RuntimId, NativeCallback callback);
+  public native boolean runTDFScriptFromUri(String uri, AssetManager assetManager,
+    boolean canUseCodeCache, String codeCacheDir, long V8RuntimId, NativeCallback callback);
 
   public native void destroy(long runtimeId, boolean useLowMemoryMode, NativeCallback callback);
+  public native void destroyTDF(long runtimeId, boolean useLowMemoryMode, NativeCallback callback);
 
   public native void callFunction(String action, long V8RuntimId, NativeCallback callback,
       ByteBuffer buffer, int offset, int length);
+  public native void callTDFFunction(String action, long V8RuntimId, NativeCallback callback,
+    ByteBuffer buffer, int offset, int length);
 
   public native void callFunction(String action, long V8RuntimId, NativeCallback callback,
       byte[] buffer, int offset, int length);
+  public native void callTDFFunction(String action, long V8RuntimId, NativeCallback callback,
+    byte[] buffer, int offset, int length);
 
   public native void onResourceReady(ByteBuffer output, long runtimeId, long resId);
+  public native void onTDFResourceReady(ByteBuffer output, long runtimeId, long resId);
+
+  public native void setTDFRootViewId(int rootViewId);
 
   public void callNatives(String moduleName, String moduleFunc, String callId, byte[] buffer) {
     callNatives(moduleName, moduleFunc, callId, ByteBuffer.wrap(buffer));
@@ -314,19 +356,31 @@ public class HippyBridgeImpl implements HippyBridge, DevRemoteDebugProxy.OnRecei
               byte[] resBytes = output.toByteArray();
               final ByteBuffer buffer = ByteBuffer.allocateDirect(resBytes.length);
               buffer.put(resBytes);
-              onResourceReady(buffer, mV8RuntimeId, resId);
+              if (mIsUsingTdf) {
+                onTDFResourceReady(buffer, mV8RuntimeId, resId);
+              } else {
+                onResourceReady(buffer, mV8RuntimeId, resId);
+              }
             } catch (Throwable e) {
               if (mBridgeCallback != null) {
                 mBridgeCallback.reportException(e);
               }
-              onResourceReady(null, mV8RuntimeId, resId);
+              if (mIsUsingTdf) {
+                onTDFResourceReady(null, mV8RuntimeId, resId);
+              } else {
+                onResourceReady(null, mV8RuntimeId, resId);
+              }
             }
           }
 
           @Override
           public void onInitDevError(Throwable e) {
             LogUtils.e("hippy", "requireSubResource: " + e.getMessage());
-            onResourceReady(null, mV8RuntimeId, resId);
+            if (mIsUsingTdf) {
+              onTDFResourceReady(null, mV8RuntimeId, resId);
+            } else {
+              onResourceReady(null, mV8RuntimeId, resId);
+            }
           }
         });
       }

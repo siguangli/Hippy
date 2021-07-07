@@ -84,13 +84,14 @@ public class HippyBridgeManagerImpl implements HippyBridgeManager, HippyBridge.B
   private SafeHeapWriter safeHeapWriter;
   private SafeDirectWriter safeDirectWriter;
   private Serializer serializer;
+  private boolean mIsTdf = false;
 
   HippyEngine.ModuleListener mLoadModuleListener;
 
   public HippyBridgeManagerImpl(HippyEngineContext context, HippyBundleLoader coreBundleLoader,
       int bridgeType,
       boolean enableV8Serialization, boolean isDevModule, String debugServerHost, int groupId,
-      HippyThirdPartyAdapter thirdPartyAdapter) {
+      HippyThirdPartyAdapter thirdPartyAdapter, boolean isTdf) {
     mContext = context;
     mCoreBundleLoader = coreBundleLoader;
     mBridgeType = bridgeType;
@@ -99,6 +100,7 @@ public class HippyBridgeManagerImpl implements HippyBridgeManager, HippyBridge.B
     mGroupId = groupId;
     mThirdPartyAdapter = thirdPartyAdapter;
     this.enableV8Serialization = enableV8Serialization;
+    mIsTdf = isTdf;
 
     if (enableV8Serialization) {
       serializer = new Serializer();
@@ -250,7 +252,7 @@ public class HippyBridgeManagerImpl implements HippyBridgeManager, HippyBridge.B
           try {
             mHippyBridge = new HippyBridgeImpl(mContext, HippyBridgeManagerImpl.this,
                 mBridgeType == BRIDGE_TYPE_SINGLE_THREAD, enableV8Serialization, this.mIsDevModule,
-                this.mDebugServerHost);
+                this.mDebugServerHost, this.mIsTdf);
 
             mHippyBridge.initJSBridge(getGlobalConfigs(), new NativeCallback(mHandler) {
               @Override

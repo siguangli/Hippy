@@ -67,6 +67,7 @@ public abstract class HippyEngine {
   // Engine所属的分组ID，同一个组共享线程和isolate，不同context
   protected int mGroupId;
   ModuleListener mModuleListener;
+  protected boolean mIsTdf = false;
 
   static {
     LibraryLoader.loadLibraryIfNeed();
@@ -275,6 +276,9 @@ public abstract class HippyEngine {
     @SuppressWarnings("DeprecatedIsStillUsed")
     @Deprecated
     public HippyLogAdapter logAdapter;
+
+    // 是否使用tdf引擎
+    public boolean isTdf = false;
 
     protected void check() {
       if (context == null) {
