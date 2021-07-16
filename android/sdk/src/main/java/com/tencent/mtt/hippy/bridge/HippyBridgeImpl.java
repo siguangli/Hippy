@@ -104,7 +104,8 @@ public class HippyBridgeImpl implements HippyBridge, DevRemoteDebugProxy.OnRecei
 			if (TextUtils.isEmpty(mDebugServerHost)) {
 				mDebugServerHost = "localhost:38989";
 			}
-			mDebugWebSocketClient.connect(String.format(Locale.US, "ws://%s/debugger-proxy?role=android_client", mDebugServerHost),
+			String clientId = mContext.getDevSupportManager().getDevInstanceUUID();  // 方便区分不同的 Hippy 调试页面
+			mDebugWebSocketClient.connect(String.format(Locale.US, "ws://%s/debugger-proxy?role=android_client&clientId=%s", mDebugServerHost, clientId),
 					new DebugWebSocketClient.JSDebuggerCallback() {
 				@SuppressWarnings("unused")
 				@Override
@@ -333,9 +334,12 @@ public class HippyBridgeImpl implements HippyBridge, DevRemoteDebugProxy.OnRecei
 	{
 		if(this.mIsDevModule)
 		{
-			final byte[] bytes = msg.getBytes();
-			callFunction("onWebsocketMsg", bytes, 0, bytes.length , mV8RuntimeId, null);
-			Inspector.getInstance().setWebSocketClient(mDebugWebSocketClient).dispatchReqFromFrontend(msg);
+      boolean isInspectMsg = Inspector.getInstance(mContext)
+        .setWebSocketClient(mDebugWebSocketClient).dispatchReqFromFrontend(mContext, msg);
+      if (!isInspectMsg) {
+        final byte[] bytes = msg.getBytes();
+        callFunction("onWebsocketMsg", bytes, 0, bytes.length, mV8RuntimeId, null);
+      }
 		}
 	}
 }

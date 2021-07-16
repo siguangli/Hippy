@@ -35,6 +35,8 @@ public class DomNode extends FlexNode
 
 	boolean					mIsLazy			= false;
 
+	private DomDomainData			mDomainData;
+
 	public void setLazy(boolean lazy)
 	{
 		this.mIsLazy = lazy;
@@ -57,6 +59,8 @@ public class DomNode extends FlexNode
 			mLastY = y;
 			mLastWidth = getLayoutWidth();
 			mLastHeight = getLayoutHeight();
+
+			updateDomainData();
 		}
 
 		return res;
@@ -112,6 +116,20 @@ public class DomNode extends FlexNode
 	public void setProps(HippyMap props)
 	{
 		mTotalProps = props;
+	}
+
+	public void setDomainData(DomDomainData domainData) {
+		mDomainData = domainData;
+	}
+
+	public DomDomainData getDomainData() {
+		return mDomainData;
+	}
+
+	private void updateDomainData() {
+		if (mDomainData != null) {
+		  mDomainData.updateLayout(mLastX, mLastY, mLastWidth, mLastHeight);
+		}
 	}
 
 	@Override
