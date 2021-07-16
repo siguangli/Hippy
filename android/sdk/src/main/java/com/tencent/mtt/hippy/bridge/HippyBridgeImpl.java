@@ -18,6 +18,7 @@ package com.tencent.mtt.hippy.bridge;
 import com.tencent.mtt.hippy.HippyEngineContext;
 import com.tencent.mtt.hippy.devsupport.DevServerCallBack;
 import com.tencent.mtt.hippy.devsupport.DevSupportManager;
+import com.tencent.mtt.hippy.devsupport.inspector.Inspector;
 import com.tencent.mtt.hippy.utils.UIThreadUtils;
 import com.tencent.mtt.hippy.utils.UrlUtils;
 import java.io.ByteArrayOutputStream;
@@ -30,6 +31,7 @@ import java.util.Locale;
 import android.content.Context;
 import android.content.res.AssetManager;
 import android.text.TextUtils;
+
 import com.tencent.mtt.hippy.common.HippyArray;
 import com.tencent.mtt.hippy.devsupport.DebugWebSocketClient;
 import com.tencent.mtt.hippy.devsupport.DevRemoteDebugProxy;
@@ -333,6 +335,7 @@ public class HippyBridgeImpl implements HippyBridge, DevRemoteDebugProxy.OnRecei
 		{
 			final byte[] bytes = msg.getBytes();
 			callFunction("onWebsocketMsg", bytes, 0, bytes.length , mV8RuntimeId, null);
+			Inspector.getInstance().setWebSocketClient(mDebugWebSocketClient).dispatchReqFromFrontend(msg);
 		}
 	}
 }
