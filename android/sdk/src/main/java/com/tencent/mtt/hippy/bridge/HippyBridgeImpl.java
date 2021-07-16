@@ -120,7 +120,6 @@ public class HippyBridgeImpl implements HippyBridge, DevRemoteDebugProxy.OnRecei
                     initJSEngine(groupId);
 				}
 			});
-      Inspector.getInstance();
 		} else {
 			initJSEngine(groupId);
 		}
