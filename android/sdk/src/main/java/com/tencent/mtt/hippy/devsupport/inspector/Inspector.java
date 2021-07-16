@@ -2,7 +2,13 @@ package com.tencent.mtt.hippy.devsupport.inspector;
 
 import android.text.TextUtils;
 
+import com.tencent.mtt.hippy.HippyEngineContext;
 import com.tencent.mtt.hippy.devsupport.DebugWebSocketClient;
+import com.tencent.mtt.hippy.devsupport.inspector.domain.CssDomain;
+import com.tencent.mtt.hippy.devsupport.inspector.domain.DomDomain;
+import com.tencent.mtt.hippy.devsupport.inspector.domain.InspectorDomain;
+import com.tencent.mtt.hippy.devsupport.inspector.domain.PageDomain;
+import com.tencent.mtt.hippy.devsupport.inspector.model.InspectEvent;
 import com.tencent.mtt.hippy.utils.LogUtils;
 
 import org.json.JSONObject;
@@ -14,23 +20,19 @@ public class Inspector {
 
   private static final String TAG = "Inspector";
 
-  private static Inspector sMe;
+  private static Inspector sInspector;
 
   private Map<String, InspectorDomain> mDomainMap = new HashMap<>();
   private DebugWebSocketClient mDebugWebSocketClient;
 
   public static synchronized Inspector getInstance() {
-    if (sMe == null) {
-      sMe = new Inspector();
-      sMe.init();
+    if (sInspector == null) {
+      sInspector = new Inspector();
     }
-    return sMe;
+    return sInspector;
   }
 
   private Inspector() {
-  }
-
-  private void init() {
     DomDomain domDomain = new DomDomain(this);
     CssDomain cssDomain = new CssDomain(this);
     PageDomain pageDomain = new PageDomain(this);
@@ -44,10 +46,10 @@ public class Inspector {
     return this;
   }
 
-  public void dispatchReqFromFrontend(String msg) {
+  public boolean dispatchReqFromFrontend(HippyEngineContext context, String msg) {
     if (TextUtils.isEmpty(msg)) {
       LogUtils.e(TAG, "dispatchReqFromFrontend, msg null");
-      return;
+      return false;
     }
 
     try {
@@ -55,7 +57,7 @@ public class Inspector {
       String methodParam = msgObj.optString("method");
       if (!TextUtils.isEmpty(methodParam)) {
         String[] methodParamArray = methodParam.split("\\.");
-        if (methodParamArray != null && methodParamArray.length > 1) {
+        if (methodParamArray.length > 1) {
           String domain = methodParamArray[0];
           if (!TextUtils.isEmpty(domain) && mDomainMap.containsKey(domain)) {
             InspectorDomain inspectorDomain = mDomainMap.get(domain);
@@ -63,7 +65,8 @@ public class Inspector {
               String method = methodParamArray[1];
               int id = msgObj.optInt("id");
               JSONObject paramsObj = msgObj.optJSONObject("params");
-              inspectorDomain.handleRequest(method, id, paramsObj);
+              inspectorDomain.handleRequest(context, method, id, paramsObj);
+              return true;
             }
           }
         }
@@ -71,25 +74,29 @@ public class Inspector {
     } catch (Exception e) {
       LogUtils.e(TAG, "dispatchReqFromFrontend, exception:", e);
     }
+    return false;
   }
 
-  public void rspToFrontend(int id, String data) {
-    if (mDebugWebSocketClient == null) return;
+  public void rspToFrontend(int id, String result) {
+    if (mDebugWebSocketClient == null) {
+      return;
+    }
     try {
       JSONObject resultObj = new JSONObject();
       resultObj.put("id", id);
-      resultObj.put("result", data);
-      // TODO encode
+      resultObj.put("result", result);
       mDebugWebSocketClient.sendMessage(resultObj.toString());
     } catch (Exception e) {
       LogUtils.e(TAG, "rspToFrontEnd, exception:", e);
     }
   }
 
-  public void sendEventToFrontend(String data) {
-    if (mDebugWebSocketClient == null) return;
-    // TODO encode
-    mDebugWebSocketClient.sendMessage(data);
+  public void sendEventToFrontend(InspectEvent event) {
+    String eventJson = event.toJson();
+    if (mDebugWebSocketClient == null || eventJson == null) {
+      return;
+    }
+    mDebugWebSocketClient.sendMessage(eventJson);
   }
 
 }
