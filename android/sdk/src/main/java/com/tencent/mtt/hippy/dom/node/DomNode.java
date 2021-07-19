@@ -19,6 +19,8 @@ import com.tencent.mtt.hippy.HippyEngineContext;
 import com.tencent.mtt.hippy.common.HippyMap;
 import com.tencent.smtt.flexbox.FlexNode;
 
+import java.util.Map;
+
 public class DomNode extends FlexNode
 {
 
@@ -34,6 +36,8 @@ public class DomNode extends FlexNode
 
 
 	boolean					mIsLazy			= false;
+
+	private DomDomainData mDomainData;
 
 	public void setLazy(boolean lazy)
 	{
@@ -246,4 +250,19 @@ public class DomNode extends FlexNode
 	{
 		this.mShouldNotifyOnlayout = shouldNotifyOnLayout;
 	}
+
+	public static class DomDomainData {
+	  public int id;
+    public int rootId;
+    public int pid;
+    public String name;
+    public String tagName;
+    public double layoutX;
+    public double layoutY;
+    public double width;
+    public double height;
+    public String text;
+    public HippyMap style;
+    public HippyMap attributes;
+  }
 }
