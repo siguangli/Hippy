@@ -24,6 +24,10 @@ import java.util.Map;
 public class DomNode extends FlexNode
 {
 
+  public static final String PROP_TEXT = "text";
+  public static final String PROP_STYLE = "style";
+  public static final String PROP_ATTRIBUTES = "attributes";
+
 	private int				mID;
 	private String			mViewClassName;
 	private boolean			mNodeUpdated	= true;
@@ -61,6 +65,8 @@ public class DomNode extends FlexNode
 			mLastY = y;
 			mLastWidth = getLayoutWidth();
 			mLastHeight = getLayoutHeight();
+
+      updateDomainData();
 		}
 
 		return res;
@@ -117,6 +123,19 @@ public class DomNode extends FlexNode
 	{
 		mTotalProps = props;
 	}
+
+	public void setDomainData(DomDomainData domainData) {
+	  mDomainData = domainData;
+  }
+
+  private void updateDomainData() {
+	  if (mDomainData != null) {
+      mDomainData.layoutX = mLastX;
+      mDomainData.layoutY = mLastY;
+      mDomainData.width = mLastWidth;
+      mDomainData.height = mLastHeight;
+    }
+  }
 
 	@Override
 	public void dirty()

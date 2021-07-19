@@ -65,7 +65,7 @@ public class UIManagerModule extends HippyNativeModuleBase
 				String className = (String) nodeArray.get(NAME);
 				String tagName = (String) nodeArray.get(TAG_NAME);
 				HippyMap props = (HippyMap) nodeArray.get(PROPS);
-				domManager.createNode(hippyRootView, rootID, tagName, tag, pTag, index, className, props);
+				domManager.createNode(hippyRootView, rootID, tag, pTag, index, className, tagName, props);
 			}
 		}
 	}
