@@ -128,8 +128,13 @@ public class DomNode extends FlexNode
 	  mDomainData = domainData;
   }
 
+  public DomDomainData getDomainData() {
+	  return mDomainData;
+  }
+
   private void updateDomainData() {
 	  if (mDomainData != null) {
+	    // TODO
       mDomainData.layoutX = mLastX;
       mDomainData.layoutY = mLastY;
       mDomainData.width = mLastWidth;
