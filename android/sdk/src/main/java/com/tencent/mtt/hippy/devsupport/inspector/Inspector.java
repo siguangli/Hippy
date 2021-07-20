@@ -11,6 +11,7 @@ import com.tencent.mtt.hippy.devsupport.inspector.domain.PageDomain;
 import com.tencent.mtt.hippy.devsupport.inspector.model.InspectEvent;
 import com.tencent.mtt.hippy.utils.LogUtils;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.util.HashMap;
@@ -52,6 +53,8 @@ public class Inspector {
       return false;
     }
 
+    LogUtils.d(TAG, "dispatchReqFromFrontend, msg=" + msg);
+
     try {
       JSONObject msgObj = new JSONObject(msg);
       String methodParam = msgObj.optString("method");
@@ -65,7 +68,7 @@ public class Inspector {
               String method = methodParamArray[1];
               int id = msgObj.optInt("id");
               JSONObject paramsObj = msgObj.optJSONObject("params");
-              inspectorDomain.handleRequest(context, method, id, paramsObj);
+              inspectorDomain.handleRequestFromBackend(context, method, id, paramsObj);
               return true;
             }
           }
@@ -84,7 +87,8 @@ public class Inspector {
     try {
       JSONObject resultObj = new JSONObject();
       resultObj.put("id", id);
-      resultObj.put("result", result);
+      resultObj.put("result", TextUtils.isEmpty(result) ? "{}" : new JSONObject(result));
+      LogUtils.d(TAG, "rspToFrontend, msg=" + resultObj.toString());
       mDebugWebSocketClient.sendMessage(resultObj.toString());
     } catch (Exception e) {
       LogUtils.e(TAG, "rspToFrontEnd, exception:", e);
@@ -96,6 +100,8 @@ public class Inspector {
     if (mDebugWebSocketClient == null || eventJson == null) {
       return;
     }
+
+    LogUtils.d(TAG, "sendEventToFrontend, eventJson=" + eventJson);
     mDebugWebSocketClient.sendMessage(eventJson);
   }
 
