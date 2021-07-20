@@ -79,9 +79,10 @@ void CallFunction(JNIEnv* j_env,
   unicode_string_view action_name = JniUtils::ToStrView(j_env, j_action);
   std::shared_ptr<JavaRef> cb = std::make_shared<JavaRef>(j_env, j_callback);
   std::shared_ptr<JavaScriptTask> task = std::make_shared<JavaScriptTask>();
-  task->callback = [j_env, runtime, cb_ = std::move(cb), action_name,
+  task->callback = [runtime, cb_ = std::move(cb), action_name,
                     buffer_data_ = std::move(buffer_data),
                     buffer_owner_ = std::move(buffer_owner)] {
+    JNIEnv* j_env = JNIEnvironment::GetInstance()->AttachCurrentThread();
     std::shared_ptr<Scope> scope = runtime->GetScope();
     if (!scope) {
       TDF_BASE_DLOG(WARNING) << "CallFunction scope invalid";
@@ -94,10 +95,13 @@ void CallFunction(JNIEnv* j_env,
       std::shared_ptr<CtxValue> fn = context->GetJsFn(name);
       bool is_fn = context->IsFunction(fn);
       TDF_BASE_DLOG(INFO) << "is_fn = " << is_fn;
+
       if (!is_fn) {
-        CallJavaMethod(
-            cb_->GetObj(), CALLFUNCTION_CB_STATE::NO_METHOD_ERROR,
-            JniUtils::StrViewToJString(j_env, u"hippyBridge not find"));
+        jstring j_msg =
+            JniUtils::StrViewToJString(j_env, u"hippyBridge not find");
+        CallJavaMethod(cb_->GetObj(), CALLFUNCTION_CB_STATE::NO_METHOD_ERROR,
+                       j_msg);
+        j_env->DeleteLocalRef(j_msg);
         return;
       } else {
         runtime->SetBridgeFunc(fn);
@@ -116,7 +120,7 @@ void CallFunction(JNIEnv* j_env,
     }
 
     std::shared_ptr<CtxValue> action = context->CreateString(action_name);
-    std::shared_ptr<CtxValue> params = nullptr;
+    std::shared_ptr<CtxValue> params;
     if (runtime->IsEnableV8Serialization()) {
       v8::Isolate* isolate = std::static_pointer_cast<hippy::napi::V8VM>(
                                  runtime->GetEngine()->GetVM())
@@ -125,7 +129,7 @@ void CallFunction(JNIEnv* j_env,
       v8::Local<v8::Context> ctx = std::static_pointer_cast<hippy::napi::V8Ctx>(
                                        runtime->GetScope()->GetContext())
                                        ->context_persistent_.Get(isolate);
-
+      hippy::napi::V8TryCatch try_catch(true, context);
       v8::ValueDeserializer deserializer(
           isolate, reinterpret_cast<const uint8_t*>(buffer_data_.c_str()),
           buffer_data_.length());
@@ -135,20 +139,29 @@ void CallFunction(JNIEnv* j_env,
         params = std::make_shared<hippy::napi::V8CtxValue>(
             isolate, ret.ToLocalChecked());
       } else {
+        jstring j_msg;
+        if (try_catch.HasCaught()) {
+          unicode_string_view msg = try_catch.GetExceptionMsg();
+          j_msg = JniUtils::StrViewToJString(j_env, msg);
+        } else {
+          j_msg = JniUtils::StrViewToJString(j_env, u"deserializer error");
+        }
         CallJavaMethod(
             cb_->GetObj(),
-            hippy::bridge::CALLFUNCTION_CB_STATE::DESERIALIZER_FAILED,
-            JniUtils::StrViewToJString(j_env, u"deserializer error"));
+            hippy::bridge::CALLFUNCTION_CB_STATE::DESERIALIZER_FAILED, j_msg);
+        j_env->DeleteLocalRef(j_msg);
         return;
       }
     } else {
       std::u16string str(reinterpret_cast<const char16_t*>(&buffer_data_[0]),
                          buffer_data_.length() / sizeof(char16_t));
-      unicode_string_view buf_str =
-          std::move(unicode_string_view(std::move(str)));
+      unicode_string_view buf_str(std::move(str));
       TDF_BASE_DLOG(INFO) << "action_name = " << action_name
                           << ", buf_str = " << buf_str;
       params = context->CreateObject(buf_str);
+    }
+    if (!params) {
+      params = context->CreateNull();
     }
     std::shared_ptr<CtxValue> argv[] = {action, params};
     context->CallFunction(runtime->GetBridgeFunc(), 2, argv);
@@ -190,23 +203,22 @@ void CallFunctionByDirectBuffer(JNIEnv* j_env,
 }
 
 void CallJavaMethod(jobject j_obj, jlong j_value, jstring j_msg) {
-  jclass j_class = nullptr;
   if (!j_obj) {
     TDF_BASE_DLOG(INFO) << "CallJavaMethod j_obj is nullptr";
     return;
   }
 
   JNIEnv* j_env = JNIEnvironment::GetInstance()->AttachCurrentThread();
-  j_class = j_env->GetObjectClass(j_obj);
+  jclass j_class = j_env->GetObjectClass(j_obj);
   if (!j_class) {
-    TDF_BASE_DLOG(ERROR) << "CallJavaMethod j_class error";
+    TDF_BASE_LOG(ERROR) << "CallJavaMethod j_class error";
     return;
   }
 
   jmethodID j_cb_id =
       j_env->GetMethodID(j_class, "Callback", "(JLjava/lang/String;)V");
   if (!j_cb_id) {
-    TDF_BASE_DLOG(ERROR) << "CallJavaMethod j_cb_id error";
+    TDF_BASE_LOG(ERROR) << "CallJavaMethod j_cb_id error";
     return;
   }
 
