@@ -80,14 +80,14 @@ public class Inspector {
     return false;
   }
 
-  public void rspToFrontend(int id, String result) {
+  public void rspToFrontend(int id, JSONObject result) {
     if (mDebugWebSocketClient == null) {
       return;
     }
     try {
       JSONObject resultObj = new JSONObject();
       resultObj.put("id", id);
-      resultObj.put("result", TextUtils.isEmpty(result) ? "{}" : new JSONObject(result));
+      resultObj.put("result", result != null ? result : new JSONObject());
       LogUtils.d(TAG, "rspToFrontend, msg=" + resultObj.toString());
       mDebugWebSocketClient.sendMessage(resultObj.toString());
     } catch (Exception e) {

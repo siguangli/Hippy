@@ -36,6 +36,7 @@ public class DomDomain extends InspectorDomain {
         handleGetBoxModel(context, id, paramsObj);
         break;
       case METHOD_GET_NODE_FOR_LOCATION:
+        handleNodeInfoForLocation(context, id, paramsObj);
         break;
       case METHOD_REMOVE_NODE:
         break;
@@ -47,13 +48,18 @@ public class DomDomain extends InspectorDomain {
   }
 
   private void handleGetDocument(HippyEngineContext context, int id) {
-    String document = domModel.getDocument(context);
+    JSONObject document = domModel.getDocument(context);
     sendRspToFrontend(id, document);
   }
 
   private void handleGetBoxModel(HippyEngineContext context, int id, JSONObject paramsObj) {
-    String boxModel = domModel.getBoxModel(context, paramsObj);
+    JSONObject boxModel = domModel.getBoxModel(context, paramsObj);
     sendRspToFrontend(id, boxModel);
+  }
+
+  private void handleNodeInfoForLocation(HippyEngineContext context, int id, JSONObject paramsObj) {
+    JSONObject nodeInfo = domModel.getNodeInfoForLocation(context, paramsObj);
+    sendRspToFrontend(id, nodeInfo);
   }
 
 

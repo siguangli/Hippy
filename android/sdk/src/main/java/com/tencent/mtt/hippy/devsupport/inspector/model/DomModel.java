@@ -20,6 +20,8 @@ public class DomModel {
 
   private static final String TAG = "DomModel";
 
+  private static final String DEFAULT_FRAME_ID = "main_frame";
+
   private JSONObject getNode(HippyEngineContext context, int nodeId) {
     JSONArray childrenArray = new JSONArray();
     JSONObject result = null;
@@ -117,8 +119,8 @@ public class DomModel {
     return resultBuilder.toString();
   }
 
-  public String getDocument(HippyEngineContext context) {
-    if (context == null) return "{}";
+  public JSONObject getDocument(HippyEngineContext context) {
+    if (context == null) return new JSONObject();
     try {
       JSONObject result = new JSONObject();
       JSONObject root = new JSONObject();
@@ -142,11 +144,11 @@ public class DomModel {
           }
         }
       }
-      return result.toString();
+      return result;
     } catch (Exception e) {
       LogUtils.e(TAG, "getDocument, exception:", e);
     }
-    return "{}";
+    return new JSONObject();
   }
 
   private JSONArray getBorder(int x, int y, int width, int height) {
@@ -268,8 +270,8 @@ public class DomModel {
     return margin;
   }
 
-  public String getBoxModel(HippyEngineContext context, JSONObject paramsObj) {
-    if (context == null || paramsObj == null) return "{}";
+  public JSONObject getBoxModel(HippyEngineContext context, JSONObject paramsObj) {
+    if (context == null || paramsObj == null) return new JSONObject();
     try {
       int nodeId = paramsObj.optInt("nodeId", -1);
       DomManager domManager = context.getDomManager();
@@ -293,13 +295,98 @@ public class DomModel {
           model.put("width", renderNode.getWidth());
           model.put("height", renderNode.getHeight());
           result.put("model", model);
-          return result.toString();
+          return result;
         }
       }
     } catch (Exception e) {
       LogUtils.e(TAG, "getDocument, exception:", e);
     }
-    return "{}";
+    return new JSONObject();
+  }
+
+  private boolean isLocationHitRenderNode(int x, int y, RenderNode renderNode) {
+    if (renderNode == null) return false;
+    int dx = renderNode.getX();
+    int dy = renderNode.getY();
+    int width = renderNode.getWidth();
+    int height = renderNode.getHeight();
+    boolean isInTopOffset = x >= dx && y >= dy;
+    boolean isInBottomOffset = x <= (dx + width) && y <= (dy + height);
+    boolean isHit = isInTopOffset && isInBottomOffset;
+    return isHit;
+  }
+
+  /**
+   * 获取面积更小的渲染节点
+   * @param oldNode
+   * @param newNode
+   * @return
+   */
+  private RenderNode getSmallerAreaRenderNode(RenderNode oldNode, RenderNode newNode) {
+    if (oldNode == null) {
+      return newNode;
+    }
+    if (newNode == null) {
+      return oldNode;
+    }
+
+    int oldNodeArea = oldNode.getWidth() * oldNode.getHeight();
+    int newNodeArea = newNode.getWidth() * newNode.getHeight();
+    return oldNodeArea > newNodeArea ? newNode : oldNode;
+  }
+
+  /**
+   * 获取当前坐标(x, y)所在的最深层级且面积最小的RenderNode节点
+   * @param x
+   * @param y
+   * @param rootNode
+   * @return
+   */
+  private RenderNode getMaxDepthAndMinAreaHitRenderNode(int x, int y, RenderNode rootNode) {
+    if (rootNode == null || !isLocationHitRenderNode(x, y, rootNode)) {
+      return null;
+    }
+
+    RenderNode hitNode = null;
+    for (int i = 0, size = rootNode.getChildCount(); i < size; i++) {
+      RenderNode childNode = rootNode.getChildAt(i);
+      if (isLocationHitRenderNode(x, y, childNode)) {
+        RenderNode newHitNode = getMaxDepthAndMinAreaHitRenderNode(x, y, childNode);
+        hitNode = getSmallerAreaRenderNode(hitNode, newHitNode);
+      }
+    }
+
+    return hitNode != null ? hitNode : rootNode;
+  }
+
+  public JSONObject getNodeInfoForLocation(HippyEngineContext context, JSONObject paramsObj) {
+    if (context == null || paramsObj == null) return new JSONObject();
+    try {
+      int x = paramsObj.optInt("x", 0);
+      int y = paramsObj.optInt("y", 0);
+      DomManager domManager = context.getDomManager();
+      RenderManager renderManager = context.getRenderManager();
+      if (domManager != null && renderManager != null) {
+        int rootId = domManager.getRootNodeId();
+        RenderNode renderNode = renderManager.getRenderNode(rootId);
+        if (renderNode.getChildCount() > 0) {
+          RenderNode firstChildNode = renderNode.getChildAt(0);
+          if (firstChildNode != null) {
+            RenderNode hitRenderNode = getMaxDepthAndMinAreaHitRenderNode(x, y, firstChildNode);
+            JSONObject result = new JSONObject();
+            if (hitRenderNode != null) {
+              result.put("backendId", hitRenderNode.getId());
+              result.put("frameId", DEFAULT_FRAME_ID);
+              result.put("nodeId", hitRenderNode.getId());
+            }
+            return result;
+          }
+        }
+      }
+    } catch (Exception e) {
+      LogUtils.e(TAG, "getDocument, exception:", e);
+    }
+    return new JSONObject();
   }
 
   /**

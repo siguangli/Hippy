@@ -67,7 +67,7 @@ public abstract class InspectorDomain {
    * @param id 调用过来的自增id
    * @param result 回包数据 json
    */
-  protected void sendRspToFrontend(int id, String result) {
+  protected void sendRspToFrontend(int id, JSONObject result) {
     Inspector inspector = mInspectorRef.get();
     if (inspector != null) {
       inspector.rspToFrontend(id, result);
