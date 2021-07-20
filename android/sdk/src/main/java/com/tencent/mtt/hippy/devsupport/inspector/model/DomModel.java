@@ -6,6 +6,8 @@ import com.tencent.mtt.hippy.HippyEngineContext;
 import com.tencent.mtt.hippy.common.HippyMap;
 import com.tencent.mtt.hippy.dom.DomManager;
 import com.tencent.mtt.hippy.dom.node.DomNode;
+import com.tencent.mtt.hippy.uimanager.RenderManager;
+import com.tencent.mtt.hippy.uimanager.RenderNode;
 import com.tencent.mtt.hippy.utils.LogUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -116,6 +118,7 @@ public class DomModel {
   }
 
   public String getDocument(HippyEngineContext context) {
+    if (context == null) return "{}";
     try {
       JSONObject result = new JSONObject();
       JSONObject root = new JSONObject();
@@ -140,6 +143,159 @@ public class DomModel {
         }
       }
       return result.toString();
+    } catch (Exception e) {
+      LogUtils.e(TAG, "getDocument, exception:", e);
+    }
+    return "{}";
+  }
+
+  private JSONArray getBorder(int x, int y, int width, int height) {
+    JSONArray border = new JSONArray();
+    try {
+      border.put(x);
+      border.put(y);
+      border.put(x + width);
+      border.put(y);
+      border.put(x + width);
+      border.put(y + height);
+      border.put(x);
+      border.put(y + height);
+    } catch (Exception e) {
+      LogUtils.e(TAG, "getBorder, exception:", e);
+    }
+    return border;
+  }
+
+  private JSONArray getPadding(JSONArray border, HippyMap style) {
+    int borderTop = 0;
+    if (style.containsKey(NodeProps.BORDER_WIDTH)) {
+      borderTop = ((Double) style.get(NodeProps.BORDER_WIDTH)).intValue();
+    }
+    int borderRight = 0;
+    if (style.containsKey(NodeProps.BORDER_RIGHTWIDTH)) {
+      borderTop = ((Double) style.get(NodeProps.BORDER_RIGHTWIDTH)).intValue();
+    }
+    int borderBottom = 0;
+    if (style.containsKey(NodeProps.BORDER_BOTTOMWIDTH)) {
+      borderBottom = ((Double) style.get(NodeProps.BORDER_BOTTOMWIDTH)).intValue();
+    }
+    int borderLeft = 0;
+    if (style.containsKey(NodeProps.BORDER_LEFTWIDTH)) {
+      borderLeft = ((Double) style.get(NodeProps.BORDER_LEFTWIDTH)).intValue();
+    }
+
+    JSONArray padding = new JSONArray();
+    try {
+      padding.put(border.getInt(0) + borderLeft);
+      padding.put(border.getInt(1) + borderTop);
+      padding.put(border.getInt(2) - borderRight);
+      padding.put(border.getInt(3) + borderTop);
+      padding.put(border.getInt(4) - borderRight);
+      padding.put(border.getInt(5) - borderBottom);
+      padding.put(border.getInt(6) + borderLeft);
+      padding.put(border.getInt(7) - borderBottom);
+    } catch (Exception e) {
+      LogUtils.e(TAG, "getPadding, exception:", e);
+    }
+    return padding;
+  }
+
+  private JSONArray getContent(JSONArray padding, HippyMap style) {
+    int paddingTop = 0;
+    if (style.containsKey(NodeProps.PADDING_TOP)) {
+      paddingTop = ((Double) style.get(NodeProps.PADDING_TOP)).intValue();
+    }
+    int paddingRight = 0;
+    if (style.containsKey(NodeProps.PADDING_RIGHT)) {
+      paddingRight = ((Double) style.get(NodeProps.PADDING_RIGHT)).intValue();
+    }
+    int paddingBottom = 0;
+    if (style.containsKey(NodeProps.PADDING_BOTTOM)) {
+      paddingBottom = ((Double) style.get(NodeProps.PADDING_BOTTOM)).intValue();
+    }
+    int paddingLeft = 0;
+    if (style.containsKey(NodeProps.PADDING_LEFT)) {
+      paddingLeft = ((Double) style.get(NodeProps.PADDING_LEFT)).intValue();
+    }
+
+    JSONArray content = new JSONArray();
+    try {
+      content.put(padding.getInt(0) + paddingLeft);
+      content.put(padding.getInt(1) + paddingTop);
+      content.put(padding.getInt(2) - paddingRight);
+      content.put(padding.getInt(3) + paddingTop);
+      content.put(padding.getInt(4) - paddingRight);
+      content.put(padding.getInt(5) - paddingBottom);
+      content.put(padding.getInt(6) + paddingLeft);
+      content.put(padding.getInt(7) - paddingBottom);
+    } catch (Exception e) {
+      LogUtils.e(TAG, "getPadding, exception:", e);
+    }
+    return content;
+  }
+
+  private JSONArray getMargin(JSONArray border, HippyMap style) {
+    int marginTop = 0;
+    if (style.containsKey(NodeProps.MARGIN_TOP)) {
+      marginTop = ((Double) style.get(NodeProps.MARGIN_TOP)).intValue();
+    }
+    int marginRight = 0;
+    if (style.containsKey(NodeProps.MARGIN_RIGHT)) {
+      marginRight = ((Double) style.get(NodeProps.MARGIN_RIGHT)).intValue();
+    }
+    int marginBottom = 0;
+    if (style.containsKey(NodeProps.MARGIN_BOTTOM)) {
+      marginBottom = ((Double) style.get(NodeProps.MARGIN_BOTTOM)).intValue();
+    }
+    int marginLeft = 0;
+    if (style.containsKey(NodeProps.MARGIN_LEFT)) {
+      marginLeft = ((Double) style.get(NodeProps.MARGIN_LEFT)).intValue();
+    }
+
+    JSONArray margin = new JSONArray();
+    try {
+      margin.put(border.getInt(0) - marginLeft);
+      margin.put(border.getInt(1) - marginTop);
+      margin.put(border.getInt(2) + marginRight);
+      margin.put(border.getInt(3) - marginTop);
+      margin.put(border.getInt(4) + marginRight);
+      margin.put(border.getInt(5) + marginBottom);
+      margin.put(border.getInt(6) - marginLeft);
+      margin.put(border.getInt(7) + marginBottom);
+    } catch (Exception e) {
+      LogUtils.e(TAG, "getPadding, exception:", e);
+    }
+    return margin;
+  }
+
+  public String getBoxModel(HippyEngineContext context, JSONObject paramsObj) {
+    if (context == null || paramsObj == null) return "{}";
+    try {
+      int nodeId = paramsObj.optInt("nodeId", -1);
+      DomManager domManager = context.getDomManager();
+      RenderManager renderManager = context.getRenderManager();
+      if (domManager != null && renderManager != null) {
+        DomNode domNode = domManager.getNode(nodeId);
+        RenderNode renderNode = renderManager.getRenderNode(nodeId);
+        if (domNode != null && renderNode != null) {
+          JSONArray border = getBorder(renderNode.getX(), renderNode.getY(),
+            renderNode.getWidth(), renderNode.getHeight());
+          HippyMap style = domNode.getDomainData().style;
+          JSONArray padding = getPadding(border, style);
+          JSONArray content = getContent(padding, style);
+          JSONArray margin = getMargin(border, style);
+          JSONObject result = new JSONObject();
+          JSONObject model = new JSONObject();
+          model.put("content", content);
+          model.put("padding", padding);
+          model.put("border", border);
+          model.put("margin", margin);
+          model.put("width", renderNode.getWidth());
+          model.put("height", renderNode.getHeight());
+          result.put("model", model);
+          return result.toString();
+        }
+      }
     } catch (Exception e) {
       LogUtils.e(TAG, "getDocument, exception:", e);
     }
