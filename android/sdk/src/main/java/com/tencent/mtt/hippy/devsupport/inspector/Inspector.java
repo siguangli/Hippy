@@ -4,7 +4,7 @@ import android.text.TextUtils;
 
 import com.tencent.mtt.hippy.HippyEngineContext;
 import com.tencent.mtt.hippy.devsupport.DebugWebSocketClient;
-import com.tencent.mtt.hippy.devsupport.inspector.domain.CssDomain;
+import com.tencent.mtt.hippy.devsupport.inspector.domain.CSSDomain;
 import com.tencent.mtt.hippy.devsupport.inspector.domain.DomDomain;
 import com.tencent.mtt.hippy.devsupport.inspector.domain.InspectorDomain;
 import com.tencent.mtt.hippy.devsupport.inspector.domain.PageDomain;
@@ -38,7 +38,7 @@ public class Inspector {
 
   private Inspector(HippyEngineContext context) {
     DomDomain domDomain = new DomDomain(this);
-    CssDomain cssDomain = new CssDomain(this);
+    CSSDomain cssDomain = new CSSDomain(this);
     PageDomain pageDomain = new PageDomain(this);
     mDomainMap.put(domDomain.getDomainName(), domDomain);
     mDomainMap.put(cssDomain.getDomainName(), cssDomain);
