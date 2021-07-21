@@ -29,7 +29,7 @@ public class PageDomain extends InspectorDomain implements Handler.Callback {
   private static final int MSG_START_SCREEN_CAST = 0x01;
   private static final int MSG_SCREEN_CAST_ACK   = 0x02;
 
-  private static final long FRAME_CALLBACK_INTERVAL = 32L;
+  private static final long FRAME_CALLBACK_INTERVAL = 128L;
 
   private PageModel mPageModel;
   private ScreenCastHandlerThread mHandlerThread;
