@@ -47,20 +47,20 @@ public class PageDomain extends InspectorDomain implements Handler.Callback {
   public void handleRequest(HippyEngineContext context, String method, int id, JSONObject paramsObj) {
     switch (method) {
       case METHOD_START_SCREEN_CAST:
-        handleStartScreenCast(context, id, paramsObj);
+        handleStartScreenCast(context);
         break;
       case METHOD_STOP_SCREEN_CAST:
-        handleStopScreenCast(context, id, paramsObj);
+        handleStopScreenCast();
         break;
       case METHOD_SCREEN_FRAME_ACK:
-        handleScreenFrameAck(context, id, paramsObj);
+        handleScreenFrameAck(context, paramsObj);
         break;
       default:
         break;
     }
   }
 
-  private void handleStartScreenCast(HippyEngineContext context, int id, JSONObject paramsObj) {
+  private void handleStartScreenCast(HippyEngineContext context) {
     mHandlerThread = new ScreenCastHandlerThread(this);
     Handler hander = mHandlerThread.getHandler();
     Message msg = hander.obtainMessage(MSG_START_SCREEN_CAST);
@@ -68,7 +68,7 @@ public class PageDomain extends InspectorDomain implements Handler.Callback {
     hander.sendMessage(msg);
   }
 
-  private void handleStopScreenCast(HippyEngineContext context, int id, JSONObject paramsObj) {
+  private void handleStopScreenCast() {
     mPageModel.stopScreenCast();
     if (mHandlerThread != null) {
       Handler hander = mHandlerThread.getHandler();
@@ -79,7 +79,7 @@ public class PageDomain extends InspectorDomain implements Handler.Callback {
     }
   }
 
-  private void handleScreenFrameAck(final HippyEngineContext context, final int id, final JSONObject paramsObj) {
+  private void handleScreenFrameAck(final HippyEngineContext context, final JSONObject paramsObj) {
     if (mHandlerThread != null && paramsObj != null) {
       Handler hander = mHandlerThread.getHandler();
       Message msg = hander.obtainMessage(MSG_SCREEN_CAST_ACK);
@@ -104,8 +104,11 @@ public class PageDomain extends InspectorDomain implements Handler.Callback {
         HippyEngineContext context = (HippyEngineContext) message.obj;
         int sessionId = message.arg1;
         JSONObject result = mPageModel.screenFrameAck(context, sessionId);
-        InspectEvent event = new InspectEvent("Page.screencastFrame", result);
-        sendEventToFrontend(event);
+        // 无数据不返回
+        if (result != null) {
+          InspectEvent event = new InspectEvent("Page.screencastFrame", result);
+          sendEventToFrontend(event);
+        }
         break;
       }
     }

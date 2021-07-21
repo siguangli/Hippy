@@ -35,7 +35,8 @@ public class PageModel {
     if (isFramingScreenCast && sessionId == lastSessionId) {
       return getScreenCastData(context);
     }
-    return new JSONObject();
+    LogUtils.w(TAG, "screenFrameAck, isFramingScreenCast=" + isFramingScreenCast);
+    return null;
   }
 
   private JSONObject getScreenCastData(HippyEngineContext context) {
@@ -64,6 +65,7 @@ public class PageModel {
       lastSessionId = sessionId;
     } catch (Exception e) {
       LogUtils.e(TAG, "getScreenCastData, exception=", e);
+      return null;
     }
     return result;
   }
