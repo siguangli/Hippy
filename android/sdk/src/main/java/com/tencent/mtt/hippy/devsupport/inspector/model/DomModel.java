@@ -6,14 +6,13 @@ import com.tencent.mtt.hippy.HippyEngineContext;
 import com.tencent.mtt.hippy.common.HippyMap;
 import com.tencent.mtt.hippy.dom.DomManager;
 import com.tencent.mtt.hippy.dom.node.DomNode;
+import com.tencent.mtt.hippy.dom.node.NodeProps;
 import com.tencent.mtt.hippy.uimanager.RenderManager;
 import com.tencent.mtt.hippy.uimanager.RenderNode;
 import com.tencent.mtt.hippy.utils.LogUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 
 public class DomModel {
@@ -174,16 +173,16 @@ public class DomModel {
       borderTop = ((Double) style.get(NodeProps.BORDER_WIDTH)).intValue();
     }
     int borderRight = 0;
-    if (style.containsKey(NodeProps.BORDER_RIGHTWIDTH)) {
-      borderTop = ((Double) style.get(NodeProps.BORDER_RIGHTWIDTH)).intValue();
+    if (style.containsKey(NodeProps.BORDER_RIGHT_WIDTH)) {
+      borderTop = ((Double) style.get(NodeProps.BORDER_RIGHT_WIDTH)).intValue();
     }
     int borderBottom = 0;
-    if (style.containsKey(NodeProps.BORDER_BOTTOMWIDTH)) {
-      borderBottom = ((Double) style.get(NodeProps.BORDER_BOTTOMWIDTH)).intValue();
+    if (style.containsKey(NodeProps.BORDER_BOTTOM_WIDTH)) {
+      borderBottom = ((Double) style.get(NodeProps.BORDER_BOTTOM_WIDTH)).intValue();
     }
     int borderLeft = 0;
-    if (style.containsKey(NodeProps.BORDER_LEFTWIDTH)) {
-      borderLeft = ((Double) style.get(NodeProps.BORDER_LEFTWIDTH)).intValue();
+    if (style.containsKey(NodeProps.BORDER_LEFT_WIDTH)) {
+      borderLeft = ((Double) style.get(NodeProps.BORDER_LEFT_WIDTH)).intValue();
     }
 
     JSONArray padding = new JSONArray();
