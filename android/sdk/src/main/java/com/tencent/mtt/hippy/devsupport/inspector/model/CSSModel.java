@@ -5,6 +5,7 @@ import com.tencent.mtt.hippy.HippyRootView;
 import com.tencent.mtt.hippy.common.HippyMap;
 import com.tencent.mtt.hippy.dom.node.DomNode;
 import com.tencent.mtt.hippy.dom.node.NodeProps;
+import com.tencent.mtt.hippy.uimanager.RenderNode;
 import com.tencent.mtt.hippy.utils.LogUtils;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -58,7 +59,6 @@ public class CSSModel {
       JSONArray computedArray = new JSONArray();
 
       // property style
-      JSONArray propertyStyleArray = new JSONArray();
       HippyMap style = context.getDomManager().getNode(nodeId).getDomainData().style;
       if (style != null) {
         for (Map.Entry entry : style.entrySet()) {
@@ -68,13 +68,23 @@ public class CSSModel {
             continue;
           }
           String value = entry.getValue().toString();
-          propertyStyleArray.put(getStyleProperty(kebabize(key), value));
+          computedArray.put(getStyleProperty(kebabize(key), value));
+        }
+
+        // box model property
+        Map<String, String> boxModelRequireMap = getBoxModelRequireMap();
+        for (Map.Entry<String, String> entry : boxModelRequireMap.entrySet()) {
+          if (!style.containsKey(entry.getKey())) {
+            computedArray.put(getStyleProperty(kebabize(entry.getKey()), entry.getValue()));
+          }
+        }
+        RenderNode renderNode = context.getRenderManager().getRenderNode(nodeId);
+        if (renderNode != null) {
+          computedArray.put(getStyleProperty(kebabize(NodeProps.WIDTH), String.valueOf(renderNode.getWidth())));
+          computedArray.put(getStyleProperty(kebabize(NodeProps.HEIGHT), String.valueOf(renderNode.getHeight())));
         }
       }
 
-      // box model property
-
-      computedArray.put(propertyStyleArray);
       computedStyle.put("computedStyle", computedArray);
     } catch (Exception e) {
       LogUtils.e(TAG, "getComputedStyle, Exception: ", e);
@@ -292,6 +302,28 @@ public class CSSModel {
     transformEnumMap.put(NodeProps.TEXT_ALIGN, new String[]{"left", "center", "right"});
     transformEnumMap
       .put(NodeProps.RESIZE_MODE, new String[]{"cover", "contain", "stretch", "repeat", "center"});
+  }
+
+  private Map<String, String> getBoxModelRequireMap() {
+    String lengthDefault = "0";
+    String displayDefault = "block";
+    String positionDefault = "relative";
+    Map<String, String> map = new HashMap<>();
+    map.put(NodeProps.PADDING_TOP, lengthDefault);
+    map.put(NodeProps.PADDING_RIGHT, lengthDefault);
+    map.put(NodeProps.PADDING_BOTTOM, lengthDefault);
+    map.put(NodeProps.PADDING_LEFT, lengthDefault);
+    map.put(NodeProps.BORDER_TOP_WIDTH, lengthDefault);
+    map.put(NodeProps.BORDER_RIGHT_WIDTH, lengthDefault);
+    map.put(NodeProps.BORDER_BOTTOM_WIDTH, lengthDefault);
+    map.put(NodeProps.BORDER_LEFT_WIDTH, lengthDefault);
+    map.put(NodeProps.MARGIN_TOP, lengthDefault);
+    map.put(NodeProps.MARGIN_RIGHT, lengthDefault);
+    map.put(NodeProps.MARGIN_BOTTOM, lengthDefault);
+    map.put(NodeProps.MARGIN_LEFT, lengthDefault);
+    map.put(NodeProps.DISPLAY, displayDefault);
+    map.put(NodeProps.POSITION, positionDefault);
+    return map;
   }
 
   /**
