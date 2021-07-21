@@ -125,14 +125,19 @@ public class CSSModel {
     // set style
     int nodeId = editObj.optInt("styleSheetId");
     DomNode node = context.getDomManager().getNode(nodeId);
-    HippyRootView hippyRootView = context.getInstance(context.getEngineId());
-    if (node == null || hippyRootView == null) {
+    if (node == null || node.getDomainData() == null) {
+      LogUtils.e(TAG, "setStyleText node is null");
       return null;
     }
-    HippyMap newMap =
-      node.getDomainData().style == null ? new HippyMap() : node.getDomainData().style.copy();
+    HippyRootView hippyRootView = context.getInstance(node.getDomainData().rootId);
+    if (hippyRootView == null) {
+      LogUtils.e(TAG, "setStyleText hippyRootView is null");
+      return null;
+    }
+    HippyMap newMap = node.getTotalProps() == null ? new HippyMap() : node.getTotalProps().copy();
     HippyMap style =
       newMap.get(NodeProps.STYLE) != null ? (HippyMap) newMap.get(NodeProps.STYLE) : new HippyMap();
+
     String text = editObj.optString("text");
     String[] textList = text.split(";");
     for (String item : textList) {
