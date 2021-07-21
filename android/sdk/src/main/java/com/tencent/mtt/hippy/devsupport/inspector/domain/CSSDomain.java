@@ -49,26 +49,26 @@ public class CSSDomain extends InspectorDomain {
 
   private void handleGetMatchedStyles(HippyEngineContext context, int id, JSONObject paramsObj) {
     int nodeId = paramsObj.optInt("nodeId");
-    String matchedStyles = cssModel.getMatchedStyles(context, nodeId);
+    JSONObject matchedStyles = cssModel.getMatchedStyles(context, nodeId);
     sendRspToFrontend(id, matchedStyles);
   }
 
   private void handleGetComputedStyle(HippyEngineContext context, int id, JSONObject paramsObj) {
     int nodeId = paramsObj.optInt("nodeId");
-    String computedStyle = cssModel.getComputedStyle(context, nodeId);
+    JSONObject computedStyle = cssModel.getComputedStyle(context, nodeId);
     sendRspToFrontend(id, computedStyle);
   }
 
   private void handleGetInlineStyles(HippyEngineContext context, int id, JSONObject paramsObj) {
     int nodeId = paramsObj.optInt("nodeId");
-    String inlineStyles = cssModel.getInlineStyles(context, nodeId);
+    JSONObject inlineStyles = cssModel.getInlineStyles(context, nodeId);
     sendRspToFrontend(id, inlineStyles);
   }
 
 
   private void handleSetStyleTexts(HippyEngineContext context, int id, JSONObject paramsObj) {
     JSONArray editArray = paramsObj.optJSONArray("edits");
-    String styleTexts = cssModel.setStyleTexts(context, editArray);
+    JSONObject styleTexts = cssModel.setStyleTexts(context, editArray);
     sendRspToFrontend(id, styleTexts);
   }
 

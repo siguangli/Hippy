@@ -28,32 +28,31 @@ public class CSSModel {
   /**
    * @return 显示的样式
    */
-  public String getMatchedStyles(HippyEngineContext context, int nodeId) {
+  public JSONObject getMatchedStyles(HippyEngineContext context, int nodeId) {
     JSONObject matchedObject = new JSONObject();
     try {
       HippyMap style = context.getDomManager().getNode(nodeId).getDomainData().style;
       if (style != null) {
         matchedObject.put("inlineStyle", getCSSStyle(style, nodeId));
       }
-      return matchedObject.toString();
     } catch (Exception e) {
       LogUtils.e(TAG, "getMatchedStyles, Exception: ", e);
     }
-    return "{}";
+    return matchedObject;
   }
 
   /**
    * @return 标签里内联的样式
    */
-  public String getInlineStyles(HippyEngineContext context, int nodeId) {
+  public JSONObject getInlineStyles(HippyEngineContext context, int nodeId) {
     // 先在 MatchedStyles 中进行展示
-    return "{}";
+    return new JSONObject();
   }
 
   /**
    * @return 最终生效的样式
    */
-  public String getComputedStyle(HippyEngineContext context, int nodeId) {
+  public JSONObject getComputedStyle(HippyEngineContext context, int nodeId) {
     JSONObject computedStyle = new JSONObject();
     try {
       JSONArray computedArray = new JSONArray();
@@ -77,11 +76,10 @@ public class CSSModel {
 
       computedArray.put(propertyStyleArray);
       computedStyle.put("computedStyle", computedArray);
-      return computedStyle.toString();
     } catch (Exception e) {
       LogUtils.e(TAG, "getComputedStyle, Exception: ", e);
     }
-    return "{}";
+    return computedStyle;
   }
 
   /**
@@ -89,7 +87,7 @@ public class CSSModel {
    *
    * @return 设置后的样式
    */
-  public String setStyleTexts(HippyEngineContext context, JSONArray editArray) {
+  public JSONObject setStyleTexts(HippyEngineContext context, JSONArray editArray) {
     JSONObject styleObject = new JSONObject();
     try {
       JSONArray styleList = new JSONArray();
@@ -107,11 +105,10 @@ public class CSSModel {
         context.getDomManager().batch();
       }
       styleObject.put("styles", styleList);
-      return styleObject.toString();
     } catch (Exception e) {
       LogUtils.e(TAG, "setStyleTexts, Exception: ", e);
     }
-    return "{}";
+    return styleObject;
   }
 
   private JSONObject setStyleText(HippyEngineContext context, JSONObject editObj) {
