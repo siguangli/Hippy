@@ -18,7 +18,7 @@ public abstract class InspectorDomain {
 
   private boolean isEnable;
 
-  private WeakReference<Inspector> mInspectorRef;
+  protected WeakReference<Inspector> mInspectorRef;
 
   public InspectorDomain(Inspector inspector) {
     mInspectorRef = new WeakReference<>(inspector);

@@ -9,9 +9,10 @@ import com.tencent.mtt.hippy.utils.LogUtils;
 
 import org.json.JSONObject;
 
-public class DomDomain extends InspectorDomain implements DomManager.BatchListener {
+public class DomDomain extends InspectorDomain {
 
   private static final String TAG = "DomDomain";
+  public static final String DOM_DOMAIN_NAME = "DOM";
 
   private static final String METHOD_GET_DOCUMENT = "getDocument";
   private static final String METHOD_GET_BOX_MODEL = "getBoxModel";
@@ -27,7 +28,7 @@ public class DomDomain extends InspectorDomain implements DomManager.BatchListen
   }
 
   @Override public String getDomainName() {
-    return "DOM";
+    return DOM_DOMAIN_NAME;
   }
 
   @Override
@@ -66,13 +67,7 @@ public class DomDomain extends InspectorDomain implements DomManager.BatchListen
     sendRspToFrontend(id, nodeInfo);
   }
 
-  @Override
-  public void onBatch() {
-    LogUtils.d(TAG, "onBatch");
-    sendUpdateEvent();
-  }
-
-  private void sendUpdateEvent() {
+  public void sendUpdateEvent() {
     InspectEvent updateEvent = new InspectEvent("DOM.documentUpdated", new JSONObject());
     sendEventToFrontend(updateEvent);
   }

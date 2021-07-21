@@ -68,8 +68,15 @@ public class CSSDomain extends InspectorDomain {
 
   private void handleSetStyleTexts(HippyEngineContext context, int id, JSONObject paramsObj) {
     JSONArray editArray = paramsObj.optJSONArray("edits");
-    JSONObject styleTexts = cssModel.setStyleTexts(context, editArray);
+    JSONObject styleTexts = cssModel.setStyleTexts(context, editArray, this);
     sendRspToFrontend(id, styleTexts);
+  }
+
+  public void setNeedBatchUpdateDom(boolean needBatchUpdate) {
+    if (mInspectorRef == null) {
+      return;
+    }
+    mInspectorRef.get().setNeedBatchUpdateDom(needBatchUpdate);
   }
 
 

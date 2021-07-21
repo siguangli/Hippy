@@ -10,6 +10,7 @@ import com.tencent.mtt.hippy.devsupport.inspector.domain.InspectorDomain;
 import com.tencent.mtt.hippy.devsupport.inspector.domain.PageDomain;
 import com.tencent.mtt.hippy.devsupport.inspector.model.InspectEvent;
 import com.tencent.mtt.hippy.dom.DomManager;
+import com.tencent.mtt.hippy.dom.DomManager.BatchListener;
 import com.tencent.mtt.hippy.utils.LogUtils;
 
 import org.json.JSONArray;
@@ -19,7 +20,7 @@ import java.lang.ref.WeakReference;
 import java.util.HashMap;
 import java.util.Map;
 
-public class Inspector {
+public class Inspector implements BatchListener {
 
   private static final String TAG = "Inspector";
 
@@ -28,6 +29,7 @@ public class Inspector {
   private Map<String, InspectorDomain> mDomainMap = new HashMap<>();
   private DebugWebSocketClient mDebugWebSocketClient;
   private WeakReference<HippyEngineContext> mContextRef;
+  private boolean needBatchUpdateDom = true;
 
   public static synchronized Inspector getInstance(HippyEngineContext context) {
     if (sInspector == null) {
@@ -45,7 +47,7 @@ public class Inspector {
     mDomainMap.put(pageDomain.getDomainName(), pageDomain);
     DomManager domManager = context.getDomManager();
     if (domManager != null) {
-      domManager.setOnBatchListener(domDomain);
+      domManager.setOnBatchListener(this);
     }
   }
 
@@ -110,6 +112,17 @@ public class Inspector {
 
     LogUtils.d(TAG, "sendEventToFrontend, eventJson=" + eventJson);
     mDebugWebSocketClient.sendMessage(eventJson);
+  }
+
+  public void setNeedBatchUpdateDom(boolean needBatchUpdate) {
+    needBatchUpdateDom = needBatchUpdate;
+  }
+
+  @Override public void onBatch() {
+    if (needBatchUpdateDom) {
+      DomDomain domDomain = (DomDomain) mDomainMap.get(DomDomain.DOM_DOMAIN_NAME);
+      domDomain.sendUpdateEvent();
+    }
   }
 
 }

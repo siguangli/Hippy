@@ -3,6 +3,7 @@ package com.tencent.mtt.hippy.devsupport.inspector.model;
 import com.tencent.mtt.hippy.HippyEngineContext;
 import com.tencent.mtt.hippy.HippyRootView;
 import com.tencent.mtt.hippy.common.HippyMap;
+import com.tencent.mtt.hippy.devsupport.inspector.domain.CSSDomain;
 import com.tencent.mtt.hippy.dom.node.DomNode;
 import com.tencent.mtt.hippy.dom.node.NodeProps;
 import com.tencent.mtt.hippy.uimanager.RenderNode;
@@ -27,6 +28,7 @@ public class CSSModel {
   }
 
   /**
+   * 显示的样式，全部使用内联样式来展示，当前无法区分内联和非内联、继承样式等关系
    * @return 显示的样式
    */
   public JSONObject getMatchedStyles(HippyEngineContext context, int nodeId) {
@@ -43,6 +45,7 @@ public class CSSModel {
   }
 
   /**
+   * 内联样式先不单独在标签里展示，可以在 {@link #getMatchedStyles} 中显示到
    * @return 标签里内联的样式
    */
   public JSONObject getInlineStyles(HippyEngineContext context, int nodeId) {
@@ -51,53 +54,56 @@ public class CSSModel {
   }
 
   /**
+   * CSS 最终应用生效的样式：属性和盒子模型
    * @return 最终生效的样式
    */
   public JSONObject getComputedStyle(HippyEngineContext context, int nodeId) {
     JSONObject computedStyle = new JSONObject();
     try {
-      JSONArray computedArray = new JSONArray();
-
-      // property style
       HippyMap style = context.getDomManager().getNode(nodeId).getDomainData().style;
-      if (style != null) {
-        for (Map.Entry entry : style.entrySet()) {
-          String key = (String) entry.getKey();
-          if (!isCanHandleStyle(key) || NodeProps.WIDTH.equals(key) || NodeProps.HEIGHT
-            .equals(key)) {
-            continue;
-          }
-          String value = entry.getValue().toString();
-          computedArray.put(getStyleProperty(kebabize(key), value));
-        }
-
-        // box model property
-        Map<String, String> boxModelRequireMap = getBoxModelRequireMap();
-        for (Map.Entry<String, String> entry : boxModelRequireMap.entrySet()) {
-          if (!style.containsKey(entry.getKey())) {
-            computedArray.put(getStyleProperty(kebabize(entry.getKey()), entry.getValue()));
-          }
-        }
-        RenderNode renderNode = context.getRenderManager().getRenderNode(nodeId);
-        if (renderNode != null) {
-          computedArray.put(getStyleProperty(kebabize(NodeProps.WIDTH), String.valueOf(renderNode.getWidth())));
-          computedArray.put(getStyleProperty(kebabize(NodeProps.HEIGHT), String.valueOf(renderNode.getHeight())));
-        }
-      }
-
-      computedStyle.put("computedStyle", computedArray);
+      computedStyle.put("computedStyle", getComputedStyle(context, nodeId, style));
     } catch (Exception e) {
       LogUtils.e(TAG, "getComputedStyle, Exception: ", e);
     }
     return computedStyle;
   }
 
+  private JSONArray getComputedStyle(HippyEngineContext context, int nodeId, HippyMap style) throws JSONException {
+    JSONArray computedArray = new JSONArray();
+    if (style != null) {
+      // property style
+      for (Map.Entry entry : style.entrySet()) {
+        String key = (String) entry.getKey();
+        if (!isCanHandleStyle(key) || NodeProps.WIDTH.equals(key) || NodeProps.HEIGHT
+          .equals(key)) {
+          continue;
+        }
+        String value = entry.getValue().toString();
+        computedArray.put(getStyleProperty(unCamelize(key), value));
+      }
+
+      // box model property
+      Map<String, String> boxModelRequireMap = getBoxModelRequireMap();
+      for (Map.Entry<String, String> entry : boxModelRequireMap.entrySet()) {
+        if (!style.containsKey(entry.getKey())) {
+          computedArray.put(getStyleProperty(unCamelize(entry.getKey()), entry.getValue()));
+        }
+      }
+      RenderNode renderNode = context.getRenderManager().getRenderNode(nodeId);
+      if (renderNode != null) {
+        computedArray.put(getStyleProperty(unCamelize(NodeProps.WIDTH), String.valueOf(renderNode.getWidth())));
+        computedArray.put(getStyleProperty(unCamelize(NodeProps.HEIGHT), String.valueOf(renderNode.getHeight())));
+      }
+    }
+    return computedArray;
+  }
+
   /**
-   * 设置样式 List
+   * 设置样式，并触发 DOM 更新
    *
    * @return 设置后的样式
    */
-  public JSONObject setStyleTexts(HippyEngineContext context, JSONArray editArray) {
+  public JSONObject setStyleTexts(HippyEngineContext context, JSONArray editArray, CSSDomain cssDomain) {
     JSONObject styleObject = new JSONObject();
     try {
       JSONArray styleList = new JSONArray();
@@ -112,7 +118,10 @@ public class CSSModel {
 
       /// 更新样式集合不为空，就批量更新节点样式
       if (styleList.length() > 0) {
+        // 避免更新 CSS 时，触发 DOM 监听 batch 的更新，同时避免入侵 DomManager 的结构，加个变量控制下
+        cssDomain.setNeedBatchUpdateDom(false);
         context.getDomManager().batch();
+        cssDomain.setNeedBatchUpdateDom(true);
       }
       styleObject.put("styles", styleList);
     } catch (Exception e) {
@@ -169,7 +178,7 @@ public class CSSModel {
           continue;
         }
 
-        String cssName = kebabize(key);
+        String cssName = unCamelize(key);
         String cssValue = entry.getValue().toString();
         String cssText = "cssName" + ":" + cssValue;
         JSONObject cssProperty = getCSSProperty(cssName, cssValue,
@@ -245,6 +254,9 @@ public class CSSModel {
     return options[0];
   }
 
+  /**
+   * 可接收 css 样式显示的初始化
+   */
   private void initTransformValue() {
     transformDoubleMap.add(NodeProps.FLEX);
     transformDoubleMap.add(NodeProps.FLEX_GROW);
@@ -349,7 +361,7 @@ public class CSSModel {
   }
 
   /**
-   * a-b to aB
+   * a-b to aB 转为驼峰
    */
   public static String camelize(String str) {
     StringBuilder result = new StringBuilder();
@@ -368,9 +380,9 @@ public class CSSModel {
   }
 
   /**
-   * aB to a-b
+   * aB to a-b 驼峰还原中线连接
    */
-  public static String kebabize(String str) {
+  public static String unCamelize(String str) {
     StringBuilder result = new StringBuilder();
     String[] splitStr = str.split("(?=(?!^)[A-Z])");
     boolean skipFirst = true;
