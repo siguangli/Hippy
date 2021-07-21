@@ -59,6 +59,7 @@ public class DomManager implements HippyInstanceLifecycleEventListener, HippyEng
 	private final HippyEngineContext					mContext;
 	private volatile boolean							mIsDestroyed			= false;
 	private volatile boolean							mEnginePaused			= false;
+	private BatchListener                 mBatchListener;
 
 	public DomManager(HippyEngineContext context)
 	{
@@ -975,6 +976,10 @@ public class DomManager implements HippyInstanceLifecycleEventListener, HippyEng
 		}
 		mPaddingNulUITasks.clear();
 		mUITasks.clear();
+
+		if (mBatchListener != null) {
+      mBatchListener.onBatch();
+    }
 	}
 
 	void flushPendingBatches()
@@ -1071,5 +1076,13 @@ public class DomManager implements HippyInstanceLifecycleEventListener, HippyEng
 			flushPendingBatches();
 		}
 	}
+
+	public void setOnBatchListener(BatchListener listener) {
+	  mBatchListener = listener;
+  }
+
+	public interface BatchListener {
+	  void onBatch();
+  }
 
 }

@@ -9,11 +9,13 @@ import com.tencent.mtt.hippy.devsupport.inspector.domain.DomDomain;
 import com.tencent.mtt.hippy.devsupport.inspector.domain.InspectorDomain;
 import com.tencent.mtt.hippy.devsupport.inspector.domain.PageDomain;
 import com.tencent.mtt.hippy.devsupport.inspector.model.InspectEvent;
+import com.tencent.mtt.hippy.dom.DomManager;
 import com.tencent.mtt.hippy.utils.LogUtils;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.lang.ref.WeakReference;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -25,21 +27,26 @@ public class Inspector {
 
   private Map<String, InspectorDomain> mDomainMap = new HashMap<>();
   private DebugWebSocketClient mDebugWebSocketClient;
+  private WeakReference<HippyEngineContext> mContextRef;
 
-  public static synchronized Inspector getInstance() {
+  public static synchronized Inspector getInstance(HippyEngineContext context) {
     if (sInspector == null) {
-      sInspector = new Inspector();
+      sInspector = new Inspector(context);
     }
     return sInspector;
   }
 
-  private Inspector() {
+  private Inspector(HippyEngineContext context) {
     DomDomain domDomain = new DomDomain(this);
     CssDomain cssDomain = new CssDomain(this);
     PageDomain pageDomain = new PageDomain(this);
     mDomainMap.put(domDomain.getDomainName(), domDomain);
     mDomainMap.put(cssDomain.getDomainName(), cssDomain);
     mDomainMap.put(pageDomain.getDomainName(), pageDomain);
+    DomManager domManager = context.getDomManager();
+    if (domManager != null) {
+      domManager.setOnBatchListener(domDomain);
+    }
   }
 
   public Inspector setWebSocketClient(DebugWebSocketClient client) {

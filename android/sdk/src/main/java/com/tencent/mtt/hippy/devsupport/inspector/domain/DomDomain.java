@@ -3,9 +3,13 @@ package com.tencent.mtt.hippy.devsupport.inspector.domain;
 import com.tencent.mtt.hippy.HippyEngineContext;
 import com.tencent.mtt.hippy.devsupport.inspector.Inspector;
 import com.tencent.mtt.hippy.devsupport.inspector.model.DomModel;
+import com.tencent.mtt.hippy.devsupport.inspector.model.InspectEvent;
+import com.tencent.mtt.hippy.dom.DomManager;
+import com.tencent.mtt.hippy.utils.LogUtils;
+
 import org.json.JSONObject;
 
-public class DomDomain extends InspectorDomain {
+public class DomDomain extends InspectorDomain implements DomManager.BatchListener {
 
   private static final String TAG = "DomDomain";
 
@@ -62,5 +66,14 @@ public class DomDomain extends InspectorDomain {
     sendRspToFrontend(id, nodeInfo);
   }
 
+  @Override
+  public void onBatch() {
+    LogUtils.d(TAG, "onBatch");
+    sendUpdateEvent();
+  }
 
+  private void sendUpdateEvent() {
+    InspectEvent updateEvent = new InspectEvent("DOM.documentUpdated", new JSONObject());
+    sendEventToFrontend(updateEvent);
+  }
 }
