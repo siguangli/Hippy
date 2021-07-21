@@ -358,7 +358,7 @@ public class DomModel {
     return hitNode != null ? hitNode : rootNode;
   }
 
-  public JSONObject getNodeInfoForLocation(HippyEngineContext context, JSONObject paramsObj) {
+  public JSONObject getNodeForLocation(HippyEngineContext context, JSONObject paramsObj) {
     if (context == null || paramsObj == null) return new JSONObject();
     try {
       int x = paramsObj.optInt("x", 0);

@@ -1,10 +1,24 @@
 package com.tencent.mtt.hippy.devsupport.inspector.domain;
 
+import android.os.Build;
+import android.os.Handler;
+import android.os.HandlerThread;
+import android.os.Looper;
+import android.os.Message;
+
+import androidx.annotation.NonNull;
+
 import com.tencent.mtt.hippy.HippyEngineContext;
+import com.tencent.mtt.hippy.common.HippyHandlerThread;
+import com.tencent.mtt.hippy.common.ThreadExecutorManager;
 import com.tencent.mtt.hippy.devsupport.inspector.Inspector;
+import com.tencent.mtt.hippy.devsupport.inspector.model.InspectEvent;
+import com.tencent.mtt.hippy.devsupport.inspector.model.PageModel;
+import com.tencent.mtt.hippy.utils.LogUtils;
+
 import org.json.JSONObject;
 
-public class PageDomain extends InspectorDomain {
+public class PageDomain extends InspectorDomain implements Handler.Callback {
 
   private static final String TAG = "PageDomain";
 
@@ -12,8 +26,17 @@ public class PageDomain extends InspectorDomain {
   private static final String METHOD_STOP_SCREEN_CAST = "stopScreencast";
   private static final String METHOD_SCREEN_FRAME_ACK = "screencastFrameAck";
 
+  private static final int MSG_START_SCREEN_CAST = 0x01;
+  private static final int MSG_SCREEN_CAST_ACK   = 0x02;
+
+  private static final long FRAME_CALLBACK_INTERVAL = 32L;
+
+  private PageModel mPageModel;
+  private ScreenCastHandlerThread mHandlerThread;
+
   public PageDomain(Inspector inspector) {
     super(inspector);
+    mPageModel = new PageModel();
   }
 
   @Override public String getDomainName() {
@@ -24,13 +47,103 @@ public class PageDomain extends InspectorDomain {
   public void handleRequest(HippyEngineContext context, String method, int id, JSONObject paramsObj) {
     switch (method) {
       case METHOD_START_SCREEN_CAST:
+        handleStartScreenCast(context, id, paramsObj);
         break;
       case METHOD_STOP_SCREEN_CAST:
+        handleStopScreenCast(context, id, paramsObj);
         break;
       case METHOD_SCREEN_FRAME_ACK:
+        handleScreenFrameAck(context, id, paramsObj);
         break;
       default:
         break;
+    }
+  }
+
+  private void handleStartScreenCast(HippyEngineContext context, int id, JSONObject paramsObj) {
+    mHandlerThread = new ScreenCastHandlerThread(this);
+    Handler hander = mHandlerThread.getHandler();
+    Message msg = hander.obtainMessage(MSG_START_SCREEN_CAST);
+    msg.obj = context;
+    hander.sendMessage(msg);
+  }
+
+  private void handleStopScreenCast(HippyEngineContext context, int id, JSONObject paramsObj) {
+    mPageModel.stopScreenCast();
+    if (mHandlerThread != null) {
+      Handler hander = mHandlerThread.getHandler();
+      hander.removeMessages(MSG_START_SCREEN_CAST);
+      hander.removeMessages(MSG_SCREEN_CAST_ACK);
+      mHandlerThread.quit();
+      mHandlerThread = null;
+    }
+  }
+
+  private void handleScreenFrameAck(final HippyEngineContext context, final int id, final JSONObject paramsObj) {
+    if (mHandlerThread != null && paramsObj != null) {
+      Handler hander = mHandlerThread.getHandler();
+      Message msg = hander.obtainMessage(MSG_SCREEN_CAST_ACK);
+      msg.obj = context;
+      msg.arg1 = paramsObj.optInt("sessionId");
+      hander.removeMessages(MSG_SCREEN_CAST_ACK);
+      hander.sendMessageDelayed(msg, FRAME_CALLBACK_INTERVAL);
+    }
+  }
+
+  @Override
+  public boolean handleMessage(Message message) {
+    switch (message.what) {
+      case MSG_START_SCREEN_CAST: {
+        HippyEngineContext context = (HippyEngineContext) message.obj;
+        JSONObject result = mPageModel.startScreenCast(context);
+        InspectEvent event = new InspectEvent("Page.screencastFrame", result);
+        sendEventToFrontend(event);
+        break;
+      }
+      case MSG_SCREEN_CAST_ACK: {
+        HippyEngineContext context = (HippyEngineContext) message.obj;
+        int sessionId = message.arg1;
+        JSONObject result = mPageModel.screenFrameAck(context, sessionId);
+        InspectEvent event = new InspectEvent("Page.screencastFrame", result);
+        sendEventToFrontend(event);
+        break;
+      }
+    }
+    return false;
+  }
+
+  final static class ScreenCastHandlerThread extends HandlerThread {
+
+    final Handler mHandler;
+
+    public ScreenCastHandlerThread(Handler.Callback callback) {
+      super("");
+      setPriority(Thread.NORM_PRIORITY);
+      start();
+      mHandler = new Handler(getLooper(), callback);
+    }
+
+    public boolean isThreadAlive() {
+      return (mHandler != null && getLooper() != null && isAlive());
+    }
+
+    @Override
+    public boolean quit() {
+      if (Build.VERSION.SDK_INT > Build.VERSION_CODES.JELLY_BEAN_MR2) {
+        return super.quitSafely();
+      } else {
+        mHandler.post(new Runnable() {
+          @Override
+          public void run() {
+            ScreenCastHandlerThread.super.quit();
+          }
+        });
+      }
+      return true;
+    }
+
+    public Handler getHandler() {
+      return mHandler;
     }
   }
 

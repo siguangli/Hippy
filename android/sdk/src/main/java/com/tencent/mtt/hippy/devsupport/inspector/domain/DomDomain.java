@@ -40,7 +40,7 @@ public class DomDomain extends InspectorDomain implements DomManager.BatchListen
         handleGetBoxModel(context, id, paramsObj);
         break;
       case METHOD_GET_NODE_FOR_LOCATION:
-        handleNodeInfoForLocation(context, id, paramsObj);
+        handleGetNodeForLocation(context, id, paramsObj);
         break;
       case METHOD_REMOVE_NODE:
         break;
@@ -61,8 +61,8 @@ public class DomDomain extends InspectorDomain implements DomManager.BatchListen
     sendRspToFrontend(id, boxModel);
   }
 
-  private void handleNodeInfoForLocation(HippyEngineContext context, int id, JSONObject paramsObj) {
-    JSONObject nodeInfo = domModel.getNodeInfoForLocation(context, paramsObj);
+  private void handleGetNodeForLocation(HippyEngineContext context, int id, JSONObject paramsObj) {
+    JSONObject nodeInfo = domModel.getNodeForLocation(context, paramsObj);
     sendRspToFrontend(id, nodeInfo);
   }
 
