@@ -329,6 +329,7 @@ public class DomModel {
   }
 
   private int getRenderNodeY(HippyEngineContext context, RenderNode renderNode) {
+    // ListItemRenderNode的y是0，需要找到对应的view拿到真实的y
     int y = renderNode.getY();
     if (renderNode instanceof ListItemRenderNode) {
       y = getListItemRenderNodeY(context, renderNode.getId());

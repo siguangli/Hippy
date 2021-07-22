@@ -80,14 +80,14 @@ public class PageDomain extends InspectorDomain implements Handler.Callback {
   }
 
   private void handleScreenFrameAck(final HippyEngineContext context, final JSONObject paramsObj) {
-//    if (mHandlerThread != null && paramsObj != null) {
-//      Handler hander = mHandlerThread.getHandler();
-//      Message msg = hander.obtainMessage(MSG_SCREEN_CAST_ACK);
-//      msg.obj = context;
-//      msg.arg1 = paramsObj.optInt("sessionId");
-//      hander.removeMessages(MSG_SCREEN_CAST_ACK);
-//      hander.sendMessageDelayed(msg, FRAME_CALLBACK_INTERVAL);
-//    }
+    if (mHandlerThread != null && paramsObj != null) {
+      Handler hander = mHandlerThread.getHandler();
+      Message msg = hander.obtainMessage(MSG_SCREEN_CAST_ACK);
+      msg.obj = context;
+      msg.arg1 = paramsObj.optInt("sessionId");
+      hander.removeMessages(MSG_SCREEN_CAST_ACK);
+      hander.sendMessageDelayed(msg, FRAME_CALLBACK_INTERVAL);
+    }
   }
 
   @Override
