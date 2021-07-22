@@ -289,15 +289,7 @@ public class DomModel {
         DomNode domNode = domManager.getNode(nodeId);
         RenderNode renderNode = renderManager.getRenderNode(nodeId);
         if (domNode != null && domNode.getDomainData() != null && renderNode != null) {
-          int y = renderNode.getY();
-          if (renderNode instanceof ListItemRenderNode) {
-            y = getListItemRenderNodeY(context, nodeId, y);
-          } else {
-            RenderNode parentNode = renderNode.getParent();
-            if (parentNode instanceof ListItemRenderNode) {
-              y = y + getListItemRenderNodeY(context, parentNode.getId(), y);
-            }
-          }
+          int y = getRenderNodeY(context, renderNode);
           JSONArray border = getBorder(renderNode.getX(), y,
             renderNode.getWidth(), renderNode.getHeight());
           HippyMap style = domNode.getDomainData().style;
@@ -322,23 +314,37 @@ public class DomModel {
     return new JSONObject();
   }
 
-  private int getListItemRenderNodeY(HippyEngineContext context, int nodeId, int y) {
+  private int getListItemRenderNodeY(HippyEngineContext context, int nodeId) {
+    int y = 0;
     ControllerManager controllerManager = context.getRenderManager().getControllerManager();
     if (controllerManager != null) {
       View view = controllerManager.findView(nodeId);
       if (view != null) {
         int[] viewLocation = new int[2];
         view.getLocationInWindow(viewLocation);
-        y = viewLocation[1];
+        y = viewLocation[1] - ControllerManager.getStatusBarHeightFromSystem();
       }
     }
     return y;
   }
 
-  private boolean isLocationHitRenderNode(int x, int y, RenderNode renderNode) {
+  private int getRenderNodeY(HippyEngineContext context, RenderNode renderNode) {
+    int y = renderNode.getY();
+    if (renderNode instanceof ListItemRenderNode) {
+      y = getListItemRenderNodeY(context, renderNode.getId());
+    } else {
+      RenderNode parentNode = renderNode.getParent();
+      if (parentNode instanceof ListItemRenderNode) {
+        y = y + getListItemRenderNodeY(context, parentNode.getId());
+      }
+    }
+    return y;
+  }
+
+  private boolean isLocationHitRenderNode(HippyEngineContext context, int x, int y, RenderNode renderNode) {
     if (renderNode == null) return false;
     int dx = renderNode.getX();
-    int dy = renderNode.getY();
+    int dy = getRenderNodeY(context, renderNode);
     int width = renderNode.getWidth();
     int height = renderNode.getHeight();
     boolean isInTopOffset = x >= dx && y >= dy;
@@ -373,16 +379,16 @@ public class DomModel {
    * @param rootNode
    * @return
    */
-  private RenderNode getMaxDepthAndMinAreaHitRenderNode(int x, int y, RenderNode rootNode) {
-    if (rootNode == null || !isLocationHitRenderNode(x, y, rootNode)) {
+  private RenderNode getMaxDepthAndMinAreaHitRenderNode(HippyEngineContext context, int x, int y, RenderNode rootNode) {
+    if (rootNode == null || !isLocationHitRenderNode(context, x, y, rootNode)) {
       return null;
     }
 
     RenderNode hitNode = null;
     for (int i = 0, size = rootNode.getChildCount(); i < size; i++) {
       RenderNode childNode = rootNode.getChildAt(i);
-      if (isLocationHitRenderNode(x, y, childNode)) {
-        RenderNode newHitNode = getMaxDepthAndMinAreaHitRenderNode(x, y, childNode);
+      if (isLocationHitRenderNode(context, x, y, childNode)) {
+        RenderNode newHitNode = getMaxDepthAndMinAreaHitRenderNode(context, x, y, childNode);
         hitNode = getSmallerAreaRenderNode(hitNode, newHitNode);
       }
     }
@@ -403,7 +409,7 @@ public class DomModel {
         if (renderNode.getChildCount() > 0) {
           RenderNode firstChildNode = renderNode.getChildAt(0);
           if (firstChildNode != null) {
-            RenderNode hitRenderNode = getMaxDepthAndMinAreaHitRenderNode(x, y, firstChildNode);
+            RenderNode hitRenderNode = getMaxDepthAndMinAreaHitRenderNode(context, x, y, firstChildNode);
             JSONObject result = new JSONObject();
             if (hitRenderNode != null) {
               result.put("backendId", hitRenderNode.getId());
