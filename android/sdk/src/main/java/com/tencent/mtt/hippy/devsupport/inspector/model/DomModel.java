@@ -169,20 +169,22 @@ public class DomModel {
 
   private JSONArray getPadding(JSONArray border, HippyMap style) {
     int borderTop = 0;
-    if (style.containsKey(NodeProps.BORDER_WIDTH)) {
-      borderTop = ((Double) style.get(NodeProps.BORDER_WIDTH)).intValue();
-    }
     int borderRight = 0;
-    if (style.containsKey(NodeProps.BORDER_RIGHT_WIDTH)) {
-      borderTop = ((Double) style.get(NodeProps.BORDER_RIGHT_WIDTH)).intValue();
-    }
     int borderBottom = 0;
-    if (style.containsKey(NodeProps.BORDER_BOTTOM_WIDTH)) {
-      borderBottom = ((Double) style.get(NodeProps.BORDER_BOTTOM_WIDTH)).intValue();
-    }
     int borderLeft = 0;
-    if (style.containsKey(NodeProps.BORDER_LEFT_WIDTH)) {
-      borderLeft = ((Double) style.get(NodeProps.BORDER_LEFT_WIDTH)).intValue();
+    if (style != null) {
+      if (style.containsKey(NodeProps.BORDER_WIDTH)) {
+        borderTop = (int) style.get(NodeProps.BORDER_WIDTH);
+      }
+      if (style.containsKey(NodeProps.BORDER_RIGHT_WIDTH)) {
+        borderRight = (int) style.get(NodeProps.BORDER_RIGHT_WIDTH);
+      }
+      if (style.containsKey(NodeProps.BORDER_BOTTOM_WIDTH)) {
+        borderBottom = (int) style.get(NodeProps.BORDER_BOTTOM_WIDTH);
+      }
+      if (style.containsKey(NodeProps.BORDER_LEFT_WIDTH)) {
+        borderLeft = (int) style.get(NodeProps.BORDER_LEFT_WIDTH);
+      }
     }
 
     JSONArray padding = new JSONArray();
@@ -203,20 +205,22 @@ public class DomModel {
 
   private JSONArray getContent(JSONArray padding, HippyMap style) {
     int paddingTop = 0;
-    if (style.containsKey(NodeProps.PADDING_TOP)) {
-      paddingTop = ((Double) style.get(NodeProps.PADDING_TOP)).intValue();
-    }
     int paddingRight = 0;
-    if (style.containsKey(NodeProps.PADDING_RIGHT)) {
-      paddingRight = ((Double) style.get(NodeProps.PADDING_RIGHT)).intValue();
-    }
     int paddingBottom = 0;
-    if (style.containsKey(NodeProps.PADDING_BOTTOM)) {
-      paddingBottom = ((Double) style.get(NodeProps.PADDING_BOTTOM)).intValue();
-    }
     int paddingLeft = 0;
-    if (style.containsKey(NodeProps.PADDING_LEFT)) {
-      paddingLeft = ((Double) style.get(NodeProps.PADDING_LEFT)).intValue();
+    if (style != null) {
+      if (style.containsKey(NodeProps.PADDING_TOP)) {
+        paddingTop = (int) style.get(NodeProps.PADDING_TOP);
+      }
+      if (style.containsKey(NodeProps.PADDING_RIGHT)) {
+        paddingRight = (int) style.get(NodeProps.PADDING_RIGHT);
+      }
+      if (style.containsKey(NodeProps.PADDING_BOTTOM)) {
+        paddingBottom = (int) style.get(NodeProps.PADDING_BOTTOM);
+      }
+      if (style.containsKey(NodeProps.PADDING_LEFT)) {
+        paddingLeft = (int) style.get(NodeProps.PADDING_LEFT);
+      }
     }
 
     JSONArray content = new JSONArray();
@@ -237,20 +241,22 @@ public class DomModel {
 
   private JSONArray getMargin(JSONArray border, HippyMap style) {
     int marginTop = 0;
-    if (style.containsKey(NodeProps.MARGIN_TOP)) {
-      marginTop = ((Double) style.get(NodeProps.MARGIN_TOP)).intValue();
-    }
     int marginRight = 0;
-    if (style.containsKey(NodeProps.MARGIN_RIGHT)) {
-      marginRight = ((Double) style.get(NodeProps.MARGIN_RIGHT)).intValue();
-    }
     int marginBottom = 0;
-    if (style.containsKey(NodeProps.MARGIN_BOTTOM)) {
-      marginBottom = ((Double) style.get(NodeProps.MARGIN_BOTTOM)).intValue();
-    }
     int marginLeft = 0;
-    if (style.containsKey(NodeProps.MARGIN_LEFT)) {
-      marginLeft = ((Double) style.get(NodeProps.MARGIN_LEFT)).intValue();
+    if (style != null) {
+      if (style.containsKey(NodeProps.MARGIN_TOP)) {
+        marginTop = (int) style.get(NodeProps.MARGIN_TOP);
+      }
+      if (style.containsKey(NodeProps.MARGIN_RIGHT)) {
+        marginRight = (int) style.get(NodeProps.MARGIN_RIGHT);
+      }
+      if (style.containsKey(NodeProps.MARGIN_BOTTOM)) {
+        marginBottom = (int) style.get(NodeProps.MARGIN_BOTTOM);
+      }
+      if (style.containsKey(NodeProps.MARGIN_LEFT)) {
+        marginLeft = (int) style.get(NodeProps.MARGIN_LEFT);
+      }
     }
 
     JSONArray margin = new JSONArray();
@@ -278,7 +284,7 @@ public class DomModel {
       if (domManager != null && renderManager != null) {
         DomNode domNode = domManager.getNode(nodeId);
         RenderNode renderNode = renderManager.getRenderNode(nodeId);
-        if (domNode != null && renderNode != null) {
+        if (domNode != null && domNode.getDomainData() != null && renderNode != null) {
           JSONArray border = getBorder(renderNode.getX(), renderNode.getY(),
             renderNode.getWidth(), renderNode.getHeight());
           HippyMap style = domNode.getDomainData().style;
