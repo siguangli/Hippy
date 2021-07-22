@@ -334,9 +334,14 @@ public class DomModel {
     if (renderNode instanceof ListItemRenderNode) {
       y = getListItemRenderNodeY(context, renderNode.getId());
     } else {
+      // 找到父节点中是ListItem的
       RenderNode parentNode = renderNode.getParent();
-      if (parentNode instanceof ListItemRenderNode) {
-        y = y + getListItemRenderNodeY(context, parentNode.getId());
+      while (parentNode != null) {
+        if (parentNode instanceof ListItemRenderNode) {
+          y = y + getListItemRenderNodeY(context, parentNode.getId());
+          break;
+        }
+        parentNode = parentNode.getParent();
       }
     }
     return y;
