@@ -1,6 +1,7 @@
 package com.tencent.mtt.hippy.devsupport.inspector.model;
 
 import android.graphics.Bitmap;
+import android.graphics.Canvas;
 import android.text.TextUtils;
 import android.util.Base64;
 import android.util.DisplayMetrics;
@@ -43,9 +44,9 @@ public class PageModel {
     DomManager domManager = context.getDomManager();
     int rootNodeId = domManager.getRootNodeId();
     HippyRootView hippyRootView = context.getInstance(rootNodeId);
-    hippyRootView.setDrawingCacheEnabled(true);
-    hippyRootView.buildDrawingCache();
-    Bitmap bitmap = hippyRootView.getDrawingCache();
+    Bitmap bitmap = Bitmap.createBitmap(hippyRootView.getWidth(), hippyRootView.getHeight(), Bitmap.Config.ARGB_8888);
+    Canvas canvas = new Canvas(bitmap);
+    hippyRootView.draw(canvas);
     String bitmapBase64Str = bitmapToBase64Str(bitmap);
     JSONObject result = new JSONObject();
     try {
