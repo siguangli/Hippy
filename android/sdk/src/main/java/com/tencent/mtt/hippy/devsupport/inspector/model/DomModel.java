@@ -1,12 +1,15 @@
 package com.tencent.mtt.hippy.devsupport.inspector.model;
 
 import android.text.TextUtils;
+import android.view.View;
 
 import com.tencent.mtt.hippy.HippyEngineContext;
 import com.tencent.mtt.hippy.common.HippyMap;
 import com.tencent.mtt.hippy.dom.DomManager;
 import com.tencent.mtt.hippy.dom.node.DomNode;
 import com.tencent.mtt.hippy.dom.node.NodeProps;
+import com.tencent.mtt.hippy.uimanager.ControllerManager;
+import com.tencent.mtt.hippy.uimanager.ListItemRenderNode;
 import com.tencent.mtt.hippy.uimanager.RenderManager;
 import com.tencent.mtt.hippy.uimanager.RenderNode;
 import com.tencent.mtt.hippy.utils.LogUtils;
@@ -20,6 +23,7 @@ public class DomModel {
   private static final String TAG = "DomModel";
 
   private static final String DEFAULT_FRAME_ID = "main_frame";
+  private DomNode mInspectNode;
 
   private JSONObject getNode(HippyEngineContext context, int nodeId) {
     JSONArray childrenArray = new JSONArray();
@@ -285,7 +289,16 @@ public class DomModel {
         DomNode domNode = domManager.getNode(nodeId);
         RenderNode renderNode = renderManager.getRenderNode(nodeId);
         if (domNode != null && domNode.getDomainData() != null && renderNode != null) {
-          JSONArray border = getBorder(renderNode.getX(), renderNode.getY(),
+          int y = renderNode.getY();
+          if (renderNode instanceof ListItemRenderNode) {
+            y = getListItemRenderNodeY(context, nodeId, y);
+          } else {
+            RenderNode parentNode = renderNode.getParent();
+            if (parentNode instanceof ListItemRenderNode) {
+              y = y + getListItemRenderNodeY(context, parentNode.getId(), y);
+            }
+          }
+          JSONArray border = getBorder(renderNode.getX(), y,
             renderNode.getWidth(), renderNode.getHeight());
           HippyMap style = domNode.getDomainData().style;
           JSONArray padding = getPadding(border, style);
@@ -307,6 +320,19 @@ public class DomModel {
       LogUtils.e(TAG, "getDocument, exception:", e);
     }
     return new JSONObject();
+  }
+
+  private int getListItemRenderNodeY(HippyEngineContext context, int nodeId, int y) {
+    ControllerManager controllerManager = context.getRenderManager().getControllerManager();
+    if (controllerManager != null) {
+      View view = controllerManager.findView(nodeId);
+      if (view != null) {
+        int[] viewLocation = new int[2];
+        view.getLocationInWindow(viewLocation);
+        y = viewLocation[1];
+      }
+    }
+    return y;
   }
 
   private boolean isLocationHitRenderNode(int x, int y, RenderNode renderNode) {
@@ -390,6 +416,23 @@ public class DomModel {
       }
     } catch (Exception e) {
       LogUtils.e(TAG, "getDocument, exception:", e);
+    }
+    return new JSONObject();
+  }
+
+  public JSONObject setInspectMode(HippyEngineContext context, JSONObject paramsObj) {
+    if (context == null || paramsObj == null) return new JSONObject();
+    try {
+      int nodeId = paramsObj.optInt("nodeId", 0);
+      DomManager domManager = context.getDomManager();
+      if (domManager != null) {
+        DomNode domNode = domManager.getNode(nodeId);
+        if (domNode != null) {
+          mInspectNode = domNode;
+        }
+      }
+    } catch (Exception e) {
+      LogUtils.e(TAG, "setInspectMode, exception:", e);
     }
     return new JSONObject();
   }

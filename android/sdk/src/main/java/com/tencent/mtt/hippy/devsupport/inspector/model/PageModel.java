@@ -53,7 +53,7 @@ public class PageModel {
       final int sessionId = (int) (System.currentTimeMillis() / 1000);
       JSONObject meta = new JSONObject();
       meta.put("offsetTop", 0);
-      meta.put("pageScaleFactor", 0);
+      meta.put("pageScaleFactor", 1);
       meta.put("deviceWidth", windowDisplayMetrics.widthPixels);
       meta.put("deviceHeight", windowDisplayMetrics.heightPixels);
       meta.put("scrollOffsetX", 0);

@@ -46,6 +46,7 @@ public class DomDomain extends InspectorDomain {
       case METHOD_REMOVE_NODE:
         break;
       case METHOD_SET_INSPECT_NODE:
+        handleSetInspectMode(context, id, paramsObj);
         break;
       default:
         break;
@@ -53,18 +54,23 @@ public class DomDomain extends InspectorDomain {
   }
 
   private void handleGetDocument(HippyEngineContext context, int id) {
-    JSONObject document = domModel.getDocument(context);
-    sendRspToFrontend(id, document);
+    JSONObject result = domModel.getDocument(context);
+    sendRspToFrontend(id, result);
   }
 
   private void handleGetBoxModel(HippyEngineContext context, int id, JSONObject paramsObj) {
-    JSONObject boxModel = domModel.getBoxModel(context, paramsObj);
-    sendRspToFrontend(id, boxModel);
+    JSONObject result = domModel.getBoxModel(context, paramsObj);
+    sendRspToFrontend(id, result);
   }
 
   private void handleGetNodeForLocation(HippyEngineContext context, int id, JSONObject paramsObj) {
-    JSONObject nodeInfo = domModel.getNodeForLocation(context, paramsObj);
-    sendRspToFrontend(id, nodeInfo);
+    JSONObject result = domModel.getNodeForLocation(context, paramsObj);
+    sendRspToFrontend(id, result);
+  }
+
+  private void handleSetInspectMode(HippyEngineContext context, int id, JSONObject paramsObj) {
+    JSONObject result = domModel.setInspectMode(context, paramsObj);
+    sendRspToFrontend(id, result);
   }
 
   public void sendUpdateEvent() {
