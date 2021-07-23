@@ -1,6 +1,7 @@
 package com.tencent.mtt.hippy.devsupport.inspector.domain;
 
 import android.os.Build;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
@@ -31,6 +32,8 @@ public class PageDomain extends InspectorDomain implements Handler.Callback {
 
   private static final long FRAME_CALLBACK_INTERVAL = 1000L;
 
+  public static final String BUNDLE_KEY_PARAM = "params";
+
   private PageModel mPageModel;
   private ScreenCastHandlerThread mHandlerThread;
 
@@ -47,7 +50,7 @@ public class PageDomain extends InspectorDomain implements Handler.Callback {
   public void handleRequest(HippyEngineContext context, String method, int id, JSONObject paramsObj) {
     switch (method) {
       case METHOD_START_SCREEN_CAST:
-        handleStartScreenCast(context);
+        handleStartScreenCast(context, id, paramsObj);
         break;
       case METHOD_STOP_SCREEN_CAST:
         handleStopScreenCast();
@@ -60,11 +63,16 @@ public class PageDomain extends InspectorDomain implements Handler.Callback {
     }
   }
 
-  private void handleStartScreenCast(HippyEngineContext context) {
+  private void handleStartScreenCast(HippyEngineContext context, int id, JSONObject paramsObj) {
     mHandlerThread = new ScreenCastHandlerThread(this);
     Handler hander = mHandlerThread.getHandler();
     Message msg = hander.obtainMessage(MSG_START_SCREEN_CAST);
     msg.obj = context;
+    if (paramsObj != null) {
+      Bundle bundle = new Bundle();
+      bundle.putString(BUNDLE_KEY_PARAM, paramsObj.toString());
+      msg.setData(bundle);
+    }
     hander.sendMessage(msg);
   }
 
@@ -95,7 +103,16 @@ public class PageDomain extends InspectorDomain implements Handler.Callback {
     switch (message.what) {
       case MSG_START_SCREEN_CAST: {
         HippyEngineContext context = (HippyEngineContext) message.obj;
-        JSONObject result = mPageModel.startScreenCast(context);
+        JSONObject paramsObj = null;
+        Bundle bundle = message.getData();
+        if (bundle != null) {
+          try {
+            paramsObj = new JSONObject(bundle.getString(BUNDLE_KEY_PARAM));
+          } catch (Exception e) {
+            LogUtils.e(TAG, "handleMessage, MSG_START_SCREEN_CAST paramObj parse exception=", e);
+          }
+        }
+        JSONObject result = mPageModel.startScreenCast(context, paramsObj);
         InspectEvent event = new InspectEvent("Page.screencastFrame", result);
         sendEventToFrontend(event);
         break;

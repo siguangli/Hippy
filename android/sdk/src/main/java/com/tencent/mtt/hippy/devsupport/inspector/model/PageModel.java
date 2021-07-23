@@ -2,6 +2,7 @@ package com.tencent.mtt.hippy.devsupport.inspector.model;
 
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.graphics.Matrix;
 import android.text.TextUtils;
 import android.util.Base64;
 import android.util.DisplayMetrics;
@@ -23,13 +24,31 @@ public class PageModel {
   private volatile boolean isFramingScreenCast;
   private long lastSessionId;
 
-  public JSONObject startScreenCast(HippyEngineContext context) {
+  private JSONObject paramObj;
+  private String format;
+  private int quality;
+  private int maxWidth;
+  private int maxHeight;
+  private Bitmap screenBitmap;
+
+  public JSONObject startScreenCast(HippyEngineContext context, final JSONObject paramsObj) {
     isFramingScreenCast = true;
+    this.paramObj = paramsObj;
+    if (paramsObj != null) {
+      format = paramsObj.optString("format");
+      quality = paramsObj.optInt("quality");
+      maxWidth = paramsObj.optInt("maxWidth");
+      maxHeight = paramsObj.optInt("maxHeight");
+    }
     return getScreenCastData(context);
   }
 
   public void stopScreenCast() {
     isFramingScreenCast = false;
+    if (screenBitmap != null && !screenBitmap.isRecycled()) {
+      screenBitmap.recycle();
+      screenBitmap = null;
+    }
   }
 
   public JSONObject screenFrameAck(HippyEngineContext context, int sessionId) {
@@ -41,15 +60,33 @@ public class PageModel {
   }
 
   private JSONObject getScreenCastData(HippyEngineContext context) {
-    DomManager domManager = context.getDomManager();
-    int rootNodeId = domManager.getRootNodeId();
-    HippyRootView hippyRootView = context.getInstance(rootNodeId);
-    Bitmap bitmap = Bitmap.createBitmap(hippyRootView.getWidth(), hippyRootView.getHeight(), Bitmap.Config.ARGB_8888);
-    Canvas canvas = new Canvas(bitmap);
-    hippyRootView.draw(canvas);
-    String bitmapBase64Str = bitmapToBase64Str(bitmap);
     JSONObject result = new JSONObject();
     try {
+      DomManager domManager = context.getDomManager();
+      int rootNodeId = domManager.getRootNodeId();
+      HippyRootView hippyRootView = context.getInstance(rootNodeId);
+      int viewWidth = hippyRootView.getWidth();
+      int viewHeight = hippyRootView.getHeight();
+      float scale = 1.0f;
+      if (paramObj != null) {
+        float scaleX = (float) this.maxWidth / (float) viewWidth;
+        float scaleY = (float) this.maxHeight / (float) viewHeight;
+        scale = Math.min(scaleX, scaleY);
+      }
+      Bitmap bitmap = screenBitmap;
+      if (bitmap == null) {
+        bitmap = Bitmap.createBitmap(viewWidth, viewHeight, Bitmap.Config.ARGB_8888);
+        screenBitmap = bitmap;
+      }
+      Canvas canvas = new Canvas(bitmap);
+      hippyRootView.draw(canvas);
+      if (scale != 1.0f) {
+        Matrix matrix = new Matrix();
+        matrix.postScale(scale, scale);
+        Bitmap scaledBitmap = Bitmap.createBitmap(bitmap, 0, 0, viewWidth, viewHeight, matrix, true);
+        bitmap = scaledBitmap;
+      }
+      String bitmapBase64Str = bitmapToBase64Str(bitmap);
       DisplayMetrics windowDisplayMetrics = hippyRootView.getContext().getResources().getDisplayMetrics();
       final int sessionId = (int) (System.currentTimeMillis() / 1000);
       JSONObject meta = new JSONObject();
@@ -71,17 +108,28 @@ public class PageModel {
     return result;
   }
 
-  public static String bitmapToBase64Str(Bitmap bitmap) {
+  private String bitmapToBase64Str(Bitmap bitmap) {
     String result = null;
     ByteArrayOutputStream baos = null;
     try {
       if (bitmap != null) {
         baos = new ByteArrayOutputStream();
-        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
-
+        Bitmap.CompressFormat format = Bitmap.CompressFormat.JPEG;
+        int quality = 80;
+        // 工具如果没传参数，使用默认值
+        if (paramObj != null ) {
+          if (!TextUtils.isEmpty(this.format)) {
+            if ("jpeg".equalsIgnoreCase(this.format)) {
+              format = Bitmap.CompressFormat.JPEG;
+            } else if ("png".equalsIgnoreCase(this.format)) {
+              format = Bitmap.CompressFormat.PNG;
+            }
+          }
+          quality = this.quality;
+        }
+        bitmap.compress(format, quality, baos);
         baos.flush();
         baos.close();
-
         byte[] bitmapBytes = baos.toByteArray();
         result = Base64.encodeToString(bitmapBytes, Base64.DEFAULT);
       }
