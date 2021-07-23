@@ -290,6 +290,9 @@ public class DomModel {
         RenderNode renderNode = renderManager.getRenderNode(nodeId);
         if (domNode != null && domNode.getDomainData() != null && renderNode != null) {
           int[] viewLocation = getRenderViewLocation(context, renderNode);
+          // 没找到view，还未创建
+          if (viewLocation == null) return new JSONObject();
+
           JSONArray border = getBorder(viewLocation[0], viewLocation[1], renderNode.getWidth(), renderNode.getHeight());
           HippyMap style = domNode.getDomainData().style;
           JSONArray padding = getPadding(border, style);
@@ -323,6 +326,8 @@ public class DomModel {
       if (view != null) {
         view.getLocationInWindow(viewLocation);
         viewLocation[1] = viewLocation[1] - ControllerManager.getStatusBarHeightFromSystem();
+      } else {
+        return null;
       }
     }
     return viewLocation;
@@ -331,6 +336,7 @@ public class DomModel {
   private boolean isLocationHitRenderNode(HippyEngineContext context, int x, int y, RenderNode renderNode) {
     if (renderNode == null) return false;
     int[] viewLocation = getRenderViewLocation(context, renderNode);
+    if (viewLocation == null) return false;
     int dx = viewLocation[0];
     int dy = viewLocation[1];
     int width = renderNode.getWidth();
