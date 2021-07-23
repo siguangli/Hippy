@@ -290,7 +290,7 @@ public class DomManager implements HippyInstanceLifecycleEventListener, HippyEng
 	{
 		if (!mRenderBatchStarted)
 		{
-			batch();
+			batch(true);
 		}
 	}
 
@@ -933,6 +933,11 @@ public class DomManager implements HippyInstanceLifecycleEventListener, HippyEng
 	}
 
 	public void batch()
+  {
+	  batch(false);
+  }
+
+	public void batch(boolean isAnimation)
 	{
 		int rootNodeCount = mNodeRegistry.getRootNodeCount();
 
@@ -978,7 +983,7 @@ public class DomManager implements HippyInstanceLifecycleEventListener, HippyEng
 		mUITasks.clear();
 
 		if (mBatchListener != null) {
-      mBatchListener.onBatch();
+      mBatchListener.onBatch(isAnimation);
     }
 	}
 
@@ -1082,7 +1087,7 @@ public class DomManager implements HippyInstanceLifecycleEventListener, HippyEng
   }
 
 	public interface BatchListener {
-	  void onBatch();
+	  void onBatch(boolean isAnimation);
   }
 
 }

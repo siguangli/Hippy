@@ -131,8 +131,8 @@ public class Inspector implements BatchListener {
     needBatchUpdateDom = needBatchUpdate;
   }
 
-  @Override public void onBatch() {
-    if (needBatchUpdateDom) {
+  @Override public void onBatch(boolean isAnimation) {
+    if (needBatchUpdateDom && !isAnimation) {
       DomDomain domDomain = (DomDomain) mDomainMap.get(DomDomain.DOM_DOMAIN_NAME);
       domDomain.sendUpdateEvent();
     }
