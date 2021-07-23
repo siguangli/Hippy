@@ -24,6 +24,8 @@ public class Inspector implements BatchListener {
 
   private static final String TAG = "Inspector";
 
+  private static final String CHROME_SOCKET_CLOSED = "chrome_socket_closed";
+
   private static Inspector sInspector;
 
   private Map<String, InspectorDomain> mDomainMap = new HashMap<>();
@@ -64,6 +66,11 @@ public class Inspector implements BatchListener {
 
     LogUtils.d(TAG, "dispatchReqFromFrontend, msg=" + msg);
 
+    if (CHROME_SOCKET_CLOSED.equals(msg)) {
+      onFrontendClosed();
+      return false;
+    }
+
     try {
       JSONObject msgObj = new JSONObject(msg);
       String methodParam = msgObj.optString("method");
@@ -87,6 +94,12 @@ public class Inspector implements BatchListener {
       LogUtils.e(TAG, "dispatchReqFromFrontend, exception:", e);
     }
     return false;
+  }
+
+  private void onFrontendClosed() {
+    for (Map.Entry<String, InspectorDomain> entry : mDomainMap.entrySet()) {
+      entry.getValue().onFrontendClosed();
+    }
   }
 
   public void rspToFrontend(int id, JSONObject result) {

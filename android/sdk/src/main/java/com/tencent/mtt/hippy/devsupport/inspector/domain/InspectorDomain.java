@@ -85,4 +85,9 @@ public abstract class InspectorDomain {
     }
   }
 
+  /**
+   * devtools关闭时，清理资源
+   */
+  public void onFrontendClosed() {}
+
 }

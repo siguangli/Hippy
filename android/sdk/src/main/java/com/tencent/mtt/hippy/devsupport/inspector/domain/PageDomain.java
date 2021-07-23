@@ -23,6 +23,8 @@ public class PageDomain extends InspectorDomain implements Handler.Callback {
 
   private static final String TAG = "PageDomain";
 
+  public static final String PAGE_DOMAIN_NAME = "Page";
+
   private static final String METHOD_START_SCREEN_CAST = "startScreencast";
   private static final String METHOD_STOP_SCREEN_CAST = "stopScreencast";
   private static final String METHOD_SCREEN_FRAME_ACK = "screencastFrameAck";
@@ -43,7 +45,7 @@ public class PageDomain extends InspectorDomain implements Handler.Callback {
   }
 
   @Override public String getDomainName() {
-    return "Page";
+    return PAGE_DOMAIN_NAME;
   }
 
   @Override
@@ -85,6 +87,12 @@ public class PageDomain extends InspectorDomain implements Handler.Callback {
       mHandlerThread.quit();
       mHandlerThread = null;
     }
+  }
+
+  @Override
+  public void onFrontendClosed() {
+    handleStopScreenCast();
+    mPageModel.clear();
   }
 
   private void handleScreenFrameAck(final HippyEngineContext context, final JSONObject paramsObj) {

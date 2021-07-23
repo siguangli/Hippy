@@ -45,6 +45,9 @@ public class PageModel {
 
   public void stopScreenCast() {
     isFramingScreenCast = false;
+  }
+
+  public void clear() {
     if (screenBitmap != null && !screenBitmap.isRecycled()) {
       screenBitmap.recycle();
       screenBitmap = null;
