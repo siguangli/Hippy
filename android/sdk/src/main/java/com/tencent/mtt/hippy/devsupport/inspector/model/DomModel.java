@@ -289,9 +289,8 @@ public class DomModel {
         DomNode domNode = domManager.getNode(nodeId);
         RenderNode renderNode = renderManager.getRenderNode(nodeId);
         if (domNode != null && domNode.getDomainData() != null && renderNode != null) {
-          int y = getRenderNodeY(context, renderNode);
-          JSONArray border = getBorder(renderNode.getX(), y,
-            renderNode.getWidth(), renderNode.getHeight());
+          int[] viewLocation = getRenderViewLocation(context, renderNode);
+          JSONArray border = getBorder(viewLocation[0], viewLocation[1], renderNode.getWidth(), renderNode.getHeight());
           HippyMap style = domNode.getDomainData().style;
           JSONArray padding = getPadding(border, style);
           JSONArray content = getContent(padding, style);
@@ -314,43 +313,26 @@ public class DomModel {
     return new JSONObject();
   }
 
-  private int getListItemRenderNodeY(HippyEngineContext context, int nodeId) {
-    int y = 0;
+  private int[] getRenderViewLocation(HippyEngineContext context, RenderNode renderNode) {
+    int[] viewLocation = new int[2];
+    viewLocation[0] = renderNode.getX();
+    viewLocation[1] = renderNode.getY();
     ControllerManager controllerManager = context.getRenderManager().getControllerManager();
     if (controllerManager != null) {
-      View view = controllerManager.findView(nodeId);
+      View view = controllerManager.findView(renderNode.getId());
       if (view != null) {
-        int[] viewLocation = new int[2];
         view.getLocationInWindow(viewLocation);
-        y = viewLocation[1] - ControllerManager.getStatusBarHeightFromSystem();
+        viewLocation[1] = viewLocation[1] - ControllerManager.getStatusBarHeightFromSystem();
       }
     }
-    return y;
-  }
-
-  private int getRenderNodeY(HippyEngineContext context, RenderNode renderNode) {
-    // ListItemRenderNode的y是0，需要找到对应的view拿到真实的y
-    int y = renderNode.getY();
-    if (renderNode instanceof ListItemRenderNode) {
-      y = getListItemRenderNodeY(context, renderNode.getId());
-    } else {
-      // 找到父节点中是ListItem的
-      RenderNode parentNode = renderNode.getParent();
-      while (parentNode != null) {
-        if (parentNode instanceof ListItemRenderNode) {
-          y = y + getListItemRenderNodeY(context, parentNode.getId());
-          break;
-        }
-        parentNode = parentNode.getParent();
-      }
-    }
-    return y;
+    return viewLocation;
   }
 
   private boolean isLocationHitRenderNode(HippyEngineContext context, int x, int y, RenderNode renderNode) {
     if (renderNode == null) return false;
-    int dx = renderNode.getX();
-    int dy = getRenderNodeY(context, renderNode);
+    int[] viewLocation = getRenderViewLocation(context, renderNode);
+    int dx = viewLocation[0];
+    int dy = viewLocation[1];
     int width = renderNode.getWidth();
     int height = renderNode.getHeight();
     boolean isInTopOffset = x >= dx && y >= dy;
