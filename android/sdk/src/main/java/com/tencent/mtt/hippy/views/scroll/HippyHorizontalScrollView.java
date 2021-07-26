@@ -23,6 +23,7 @@ import android.widget.HorizontalScrollView;
 import com.tencent.mtt.hippy.common.HippyMap;
 import com.tencent.mtt.hippy.uimanager.HippyViewBase;
 import com.tencent.mtt.hippy.uimanager.NativeGestureDispatcher;
+import com.tencent.mtt.hippy.utils.I18nUtil;
 import com.tencent.mtt.hippy.utils.LogUtils;
 import com.tencent.mtt.hippy.utils.PixelUtil;
 import com.tencent.mtt.supportui.views.ScrollChecker;
@@ -68,6 +69,14 @@ public class HippyHorizontalScrollView extends HorizontalScrollView implements H
     super(context);
     mHippyOnScrollHelper = new HippyOnScrollHelper();
     setHorizontalScrollBarEnabled(false);
+    if (I18nUtil.isRTL()) {
+      // 默认展示最右侧
+      this.postDelayed(new Runnable() {
+        public void run() {
+          HippyHorizontalScrollView.this.fullScroll(HorizontalScrollView.FOCUS_RIGHT);
+        }
+      }, 100L);
+    }
   }
 
   public void setScrollEnabled(boolean enabled) {
