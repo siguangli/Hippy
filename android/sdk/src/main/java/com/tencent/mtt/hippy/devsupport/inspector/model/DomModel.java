@@ -324,8 +324,12 @@ public class DomModel {
     if (controllerManager != null) {
       View view = controllerManager.findView(renderNode.getId());
       if (view != null) {
-        view.getLocationInWindow(viewLocation);
-        viewLocation[1] = viewLocation[1] - ControllerManager.getStatusBarHeightFromSystem();
+        view.getLocationOnScreen(viewLocation);
+        int statusBarHeight = ControllerManager.getStatusBarHeightFromSystem();
+        if (statusBarHeight > 0)
+        {
+          viewLocation[1] = viewLocation[1] - statusBarHeight;
+        }
       } else {
         return null;
       }
@@ -401,9 +405,9 @@ public class DomModel {
         int rootId = domManager.getRootNodeId();
         RenderNode renderNode = renderManager.getRenderNode(rootId);
         if (renderNode.getChildCount() > 0) {
-          RenderNode firstChildNode = renderNode.getChildAt(0);
-          if (firstChildNode != null) {
-            RenderNode hitRenderNode = getMaxDepthAndMinAreaHitRenderNode(context, x, y, firstChildNode);
+          RenderNode rootNode = getRootRenderNode(renderNode, x, y);
+          if (rootNode != null) {
+            RenderNode hitRenderNode = getMaxDepthAndMinAreaHitRenderNode(context, x, y, rootNode);
             JSONObject result = new JSONObject();
             if (hitRenderNode != null) {
               result.put("backendId", hitRenderNode.getId());
@@ -418,6 +422,24 @@ public class DomModel {
       LogUtils.e(TAG, "getDocument, exception:", e);
     }
     return new JSONObject();
+  }
+
+  private RenderNode getRootRenderNode(RenderNode rootNode, int x, int y) {
+    if (rootNode.getWidth() > 0 && rootNode.getHeight() > 0) {
+      return rootNode;
+    }
+    // 当 rootNode 没有宽、高信息时，返回一个包含x,y的子节点
+    RenderNode resultNode = null;
+    for (int i = 0; i < rootNode.getChildCount(); i++) {
+      RenderNode childNode = rootNode.getChildAt(i);
+      if (resultNode == null || childNode.getX() <= x && childNode.getY() <= y
+        && resultNode.getHeight() <= childNode.getHeight()
+        && resultNode.getWidth() <= childNode.getWidth()) {
+        // 选择一个范围更大的，且起始点在 x,y 的左上方
+        resultNode = rootNode.getChildAt(i);
+      }
+    }
+    return resultNode;
   }
 
   public JSONObject setInspectMode(HippyEngineContext context, JSONObject paramsObj) {
