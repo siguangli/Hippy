@@ -1,9 +1,13 @@
 package com.tencent.mtt.hippy.devsupport.inspector.model;
 
+import android.app.Activity;
+import android.os.Build;
 import android.text.TextUtils;
 import android.view.View;
 
+import android.view.WindowManager;
 import com.tencent.mtt.hippy.HippyEngineContext;
+import com.tencent.mtt.hippy.HippyRootView;
 import com.tencent.mtt.hippy.common.HippyMap;
 import com.tencent.mtt.hippy.dom.DomManager;
 import com.tencent.mtt.hippy.dom.node.DomNode;
@@ -326,9 +330,10 @@ public class DomModel {
       if (view != null) {
         view.getLocationOnScreen(viewLocation);
         int statusBarHeight = ControllerManager.getStatusBarHeightFromSystem();
-        if (statusBarHeight > 0)
-        {
-          viewLocation[1] = viewLocation[1] - statusBarHeight;
+        viewLocation[1] = viewLocation[1] - statusBarHeight;
+        if (isTranslucentStatus(context)) {
+          // 沉浸式，需要加回状态栏的高度
+          viewLocation[1] = viewLocation[1] + statusBarHeight;
         }
       } else {
         return null;
@@ -349,6 +354,28 @@ public class DomModel {
     boolean isInBottomOffset = x <= (dx + width) && y <= (dy + height);
     boolean isHit = isInTopOffset && isInBottomOffset;
     return isHit;
+  }
+
+  /**
+   * @return 是否是沉浸式状态栏
+   */
+  private boolean isTranslucentStatus(HippyEngineContext context) {
+    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) {
+      return false;
+    }
+    int rootId = context.getDomManager().getRootNodeId();
+    HippyRootView rootView = context.getInstance(rootId);
+    if (rootView == null || !(rootView.getHost() instanceof Activity)) {
+      return false;
+    }
+    int flag = ((Activity) rootView.getHost()).getWindow().getAttributes().flags;
+    if ((WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS & flag) == WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS) {
+      return true;
+    }
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP && (WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS & flag) == WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS) {
+      return true;
+    }
+    return false;
   }
 
   /**
