@@ -9,6 +9,7 @@ import com.tencent.mtt.hippy.annotation.HippyControllerProps;
 import com.tencent.mtt.hippy.common.HippyArray;
 import com.tencent.mtt.hippy.common.HippyMap;
 import com.tencent.mtt.hippy.uimanager.HippyGroupController;
+import com.tencent.mtt.hippy.utils.I18nUtil;
 import com.tencent.mtt.hippy.utils.PixelUtil;
 
 @SuppressWarnings({"deprecation", "unused", "rawtypes"})
@@ -112,6 +113,12 @@ public class HippyScrollViewController<T extends ViewGroup & HippyScrollView> ex
         int destY = Math.round(PixelUtil.dp2px(args.getDouble(1)));
         boolean animated = args.getBoolean(2);
 
+        // flip x-axis value on rtl horizontal scrollview
+        if (I18nUtil.isRTL() && HippyHorizontalScrollView.class.isInstance(view)) {
+          int contentWidth = ((HippyHorizontalScrollView)view).getChildCount() > 0 ? ((HippyHorizontalScrollView)view).getChildAt(0).getWidth() : view.getWidth();
+          destX = contentWidth - view.getWidth() - destX;
+        }
+
         if (animated) {
           ((HippyScrollView) view).callSmoothScrollTo(destX, destY, 0);//用默认的动画事件
         } else {
@@ -123,6 +130,13 @@ public class HippyScrollViewController<T extends ViewGroup & HippyScrollView> ex
         HippyMap hippyMap = args.getMap(0); //取第一个元素
         int destX = Math.round(PixelUtil.dp2px(hippyMap.getInt("x")));
         int destY = Math.round(PixelUtil.dp2px(hippyMap.getInt("y")));
+
+        // flip x-axis value on rtl horizontal scrollview
+        if (I18nUtil.isRTL() && HippyHorizontalScrollView.class.isInstance(view)) {
+          int contentWidth = ((HippyHorizontalScrollView)view).getChildCount() > 0 ? ((HippyHorizontalScrollView)view).getChildAt(0).getWidth() : view.getWidth();
+          destX = contentWidth - view.getWidth() - destX;
+        }
+
         int duration = hippyMap.getInt("duration");
         if (duration > 0) {
           ((HippyScrollView) view).callSmoothScrollTo(destX, destY, duration);//用默认的动画事件

@@ -21,6 +21,7 @@ import com.tencent.mtt.hippy.HippyEngineContext;
 import com.tencent.mtt.hippy.HippyInstanceContext;
 import com.tencent.mtt.hippy.common.HippyMap;
 import com.tencent.mtt.hippy.modules.javascriptmodules.EventDispatcher;
+import com.tencent.mtt.hippy.utils.I18nUtil;
 import com.tencent.mtt.hippy.utils.PixelUtil;
 
 @SuppressWarnings({"deprecation", "unused"})
@@ -64,12 +65,20 @@ public class HippyScrollViewEventHelper {
     contentInset.pushDouble("right", 0);
 
     HippyMap contentOffset = new HippyMap();
-    contentOffset.pushDouble("x", PixelUtil.px2dp(view.getScrollX()));
+
+    int contentWidth = view.getChildCount() > 0 ? view.getChildAt(0).getWidth() : view.getWidth();
+
+    // flip x-axis value on rtl horizontal scrollview
+    if (I18nUtil.isRTL() && HippyHorizontalScrollView.class.isInstance(view)) {
+      contentOffset.pushDouble("x", PixelUtil.px2dp(contentWidth - view.getWidth() - view.getScrollX()));
+    } else {
+      contentOffset.pushDouble("x", PixelUtil.px2dp(view.getScrollX()));
+    }
+
     contentOffset.pushDouble("y", PixelUtil.px2dp(view.getScrollY()));
 
     HippyMap contentSize = new HippyMap();
-    contentSize.pushDouble("width", PixelUtil
-        .px2dp(view.getChildCount() > 0 ? view.getChildAt(0).getWidth() : view.getWidth()));
+    contentSize.pushDouble("width", PixelUtil.px2dp(contentWidth));
     contentSize.pushDouble("height", PixelUtil
         .px2dp(view.getChildCount() > 0 ? view.getChildAt(0).getHeight() : view.getHeight()));
 
