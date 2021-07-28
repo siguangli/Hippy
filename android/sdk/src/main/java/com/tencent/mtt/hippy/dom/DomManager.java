@@ -331,17 +331,20 @@ public class DomManager implements HippyInstanceLifecycleEventListener, HippyEng
 
 			node.setLazy(parentNode.isLazy() || mContext.getRenderManager().getControllerManager().isControllerLazy(className));
 			node.setProps(map);
-			DomNode.DomDomainData domainData = new DomNode.DomDomainData();
-			domainData.id = id;
-			domainData.rootId = rootId;
-			domainData.pid = pid;
-			domainData.name = className;
-			domainData.tagName = tagName;
-			if (map != null) {
-				domainData.style = map.getMap(NodeProps.STYLE);
-				domainData.attributes = map.getMap(NodeProps.ATTRIBUTES);
+
+			if (mContext.getDevSupportManager().isSupportDev()) {
+				DomNode.DomDomainData domainData = new DomNode.DomDomainData();
+				domainData.id = id;
+				domainData.rootId = rootId;
+				domainData.pid = pid;
+				domainData.name = className;
+				domainData.tagName = tagName;
+				if (map != null) {
+					domainData.style = map.getMap(NodeProps.STYLE);
+					domainData.attributes = map.getMap(NodeProps.ATTRIBUTES);
+				}
+				node.setDomainData(domainData);
 			}
-			node.setDomainData(domainData);
 
 			//		boolean isLayoutOnly=false;
 			boolean isLayoutOnly = (NodeProps.VIEW_CLASS_NAME.equals(node.getViewClass())) && jsJustLayout((HippyMap) props.get(NodeProps.STYLE))

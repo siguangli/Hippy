@@ -62,4 +62,8 @@ public class DevSupportManager
 	public String getDevInstanceUUID() {
 	  return mInstanceUUID.toString();
   }
+
+  public boolean isSupportDev() {
+	  return mSupportDev;
+  }
 }
