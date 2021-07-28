@@ -270,9 +270,6 @@ public class DomNode extends FlexNode
 		this.mShouldNotifyOnlayout = shouldNotifyOnLayout;
 	}
 
-  /**
-   * devtools domain data for element inspect
-   */
 	public static class DomDomainData {
 
 		public int id;
