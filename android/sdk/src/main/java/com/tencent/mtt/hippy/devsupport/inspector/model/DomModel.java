@@ -372,7 +372,8 @@ public class DomModel {
     if ((WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS & flag) == WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS) {
       return true;
     }
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP && (WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS & flag) == WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS) {
+    int options = ((Activity) rootView.getHost()).getWindow().getDecorView().getSystemUiVisibility();
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP && (View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN & options) == View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN) {
       return true;
     }
     return false;
