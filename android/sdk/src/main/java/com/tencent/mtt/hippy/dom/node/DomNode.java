@@ -37,7 +37,7 @@ public class DomNode extends FlexNode
 
 	boolean					mIsLazy			= false;
 
-  private DomDomainData mDomainData;
+	private DomDomainData			mDomainData;
 
 	public void setLazy(boolean lazy)
 	{
@@ -62,7 +62,7 @@ public class DomNode extends FlexNode
 			mLastWidth = getLayoutWidth();
 			mLastHeight = getLayoutHeight();
 
-      updateDomainData();
+			updateDomainData();
 		}
 
 		return res;
@@ -120,22 +120,22 @@ public class DomNode extends FlexNode
 		mTotalProps = props;
 	}
 
-  public void setDomainData(DomDomainData domainData) {
-    mDomainData = domainData;
-  }
+	public void setDomainData(DomDomainData domainData) {
+		mDomainData = domainData;
+	}
 
-  public DomDomainData getDomainData() {
-    return mDomainData;
-  }
+	public DomDomainData getDomainData() {
+		return mDomainData;
+	}
 
-  private void updateDomainData() {
-	  if (mDomainData != null) {
-      mDomainData.layoutX = mLastX;
-      mDomainData.layoutY = mLastY;
-      mDomainData.width = mLastWidth;
-      mDomainData.height = mLastHeight;
-    }
-  }
+	private void updateDomainData() {
+		if (mDomainData != null) {
+			mDomainData.layoutX = mLastX;
+			mDomainData.layoutY = mLastY;
+			mDomainData.width = mLastWidth;
+			mDomainData.height = mLastHeight;
+		}
+	}
 
 	@Override
 	public void dirty()
@@ -273,19 +273,19 @@ public class DomNode extends FlexNode
   /**
    * devtools domain data for element inspect
    */
-  public static class DomDomainData {
+	public static class DomDomainData {
 
-    public int id;
-    public int rootId;
-    public int pid;
-    public String name;
-    public String tagName;
-    public double layoutX;
-    public double layoutY;
-    public double width;
-    public double height;
-    public String text;
-    public HippyMap style;
-    public HippyMap attributes;
-  }
+		public int id;
+		public int rootId;
+		public int pid;
+		public String name;
+		public String tagName;
+		public double layoutX;
+		public double layoutY;
+		public double width;
+		public double height;
+		public String text;
+		public HippyMap style;
+		public HippyMap attributes;
+	}
 }

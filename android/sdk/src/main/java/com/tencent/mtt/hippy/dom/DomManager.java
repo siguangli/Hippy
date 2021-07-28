@@ -290,7 +290,7 @@ public class DomManager implements HippyInstanceLifecycleEventListener, HippyEng
 	{
 		if (!mRenderBatchStarted)
 		{
-      batch(true);
+			batch(true);
 		}
 	}
 
@@ -298,10 +298,10 @@ public class DomManager implements HippyInstanceLifecycleEventListener, HippyEng
 		return mNodeRegistry.getNode(id);
   }
 
-  public int getRootNodeId() {
-    int count = mNodeRegistry.getRootNodeCount();
-    return count >= 1 ? mNodeRegistry.getRootTag(0) : 0;
-  }
+	public int getRootNodeId() {
+		int count = mNodeRegistry.getRootNodeCount();
+		return count >= 1 ? mNodeRegistry.getRootTag(0) : 0;
+	}
 
 	public void createNode(final HippyRootView hippyRootView, int rootId, final int id, int pid, int index, final String className, String tagName, HippyMap map)
 	{
@@ -331,17 +331,17 @@ public class DomManager implements HippyInstanceLifecycleEventListener, HippyEng
 
 			node.setLazy(parentNode.isLazy() || mContext.getRenderManager().getControllerManager().isControllerLazy(className));
 			node.setProps(map);
-      DomNode.DomDomainData domainData = new DomNode.DomDomainData();
-      domainData.id = id;
-      domainData.rootId = rootId;
-      domainData.pid = pid;
-      domainData.name = className;
-      domainData.tagName = tagName;
-      if (map != null) {
-        domainData.style = map.getMap(NodeProps.STYLE);
-        domainData.attributes = map.getMap(NodeProps.ATTRIBUTES);
-      }
-      node.setDomainData(domainData);
+			DomNode.DomDomainData domainData = new DomNode.DomDomainData();
+			domainData.id = id;
+			domainData.rootId = rootId;
+			domainData.pid = pid;
+			domainData.name = className;
+			domainData.tagName = tagName;
+			if (map != null) {
+				domainData.style = map.getMap(NodeProps.STYLE);
+				domainData.attributes = map.getMap(NodeProps.ATTRIBUTES);
+			}
+			node.setDomainData(domainData);
 
 			//		boolean isLayoutOnly=false;
 			boolean isLayoutOnly = (NodeProps.VIEW_CLASS_NAME.equals(node.getViewClass())) && jsJustLayout((HippyMap) props.get(NodeProps.STYLE))
@@ -930,9 +930,10 @@ public class DomManager implements HippyInstanceLifecycleEventListener, HippyEng
 		}
 	}
 
-  public void batch() {
-    batch(false);
-  }
+	public void batch()
+	{
+		batch(false);
+	}
 
 	public void batch(boolean isAnimation)
 	{
@@ -979,9 +980,9 @@ public class DomManager implements HippyInstanceLifecycleEventListener, HippyEng
 		mPaddingNulUITasks.clear();
 		mUITasks.clear();
 
-    if (mBatchListener != null) {
-      mBatchListener.onBatch(isAnimation);
-    }
+		if (mBatchListener != null) {
+			mBatchListener.onBatch(isAnimation);
+		}
 	}
 
 	void flushPendingBatches()
@@ -1079,13 +1080,13 @@ public class DomManager implements HippyInstanceLifecycleEventListener, HippyEng
 		}
 	}
 
-  public void setOnBatchListener(BatchListener listener) {
-    mBatchListener = listener;
-  }
+	public void setOnBatchListener(BatchListener listener) {
+		mBatchListener = listener;
+	}
 
-  public interface BatchListener {
+	public interface BatchListener {
 
-    void onBatch(boolean isAnimation);
-  }
+		void onBatch(boolean isAnimation);
+	}
 
 }
