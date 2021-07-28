@@ -37,7 +37,7 @@ public class DomNode extends FlexNode
 
 	boolean					mIsLazy			= false;
 
-  private DomDomainData mDomainData;
+	private DomDomainData			mDomainData;
 
 	public void setLazy(boolean lazy)
 	{
@@ -62,7 +62,7 @@ public class DomNode extends FlexNode
 			mLastWidth = getLayoutWidth();
 			mLastHeight = getLayoutHeight();
 
-      updateDomainData();
+			updateDomainData();
 		}
 
 		return res;
@@ -129,7 +129,7 @@ public class DomNode extends FlexNode
   }
 
   private void updateDomainData() {
-	  if (mDomainData != null) {
+    if (mDomainData != null) {
       mDomainData.layoutX = mLastX;
       mDomainData.layoutY = mLastY;
       mDomainData.width = mLastWidth;
