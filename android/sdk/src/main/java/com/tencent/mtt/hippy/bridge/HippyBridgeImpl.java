@@ -40,7 +40,6 @@ import com.tencent.mtt.hippy.utils.FileUtils;
 import com.tencent.mtt.hippy.utils.LogUtils;
 import com.tencent.mtt.hippy.utils.HippyBuffer;
 import java.nio.ByteOrder;
-import java.util.UUID;
 
 @SuppressWarnings("JavaJniMissingFunction")
 public class HippyBridgeImpl implements HippyBridge, DevRemoteDebugProxy.OnReceiveDataListener
@@ -105,7 +104,8 @@ public class HippyBridgeImpl implements HippyBridge, DevRemoteDebugProxy.OnRecei
 			if (TextUtils.isEmpty(mDebugServerHost)) {
 				mDebugServerHost = "localhost:38989";
 			}
-			mDebugWebSocketClient.connect(String.format(Locale.US, "ws://%s/debugger-proxy?role=android_client&clientId=%s", mDebugServerHost, UUID.randomUUID()),
+			String clientId = mContext.getDevSupportManager().getDevInstanceUUID();  // 方便区分不同的 Hippy 调试页面
+			mDebugWebSocketClient.connect(String.format(Locale.US, "ws://%s/debugger-proxy?role=android_client&clientId=%s", mDebugServerHost, clientId),
 					new DebugWebSocketClient.JSDebuggerCallback() {
 				@SuppressWarnings("unused")
 				@Override
