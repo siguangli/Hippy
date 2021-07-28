@@ -1,7 +1,6 @@
 package com.tencent.mtt.hippy.devsupport.inspector;
 
 import android.text.TextUtils;
-
 import com.tencent.mtt.hippy.HippyEngineContext;
 import com.tencent.mtt.hippy.devsupport.DebugWebSocketClient;
 import com.tencent.mtt.hippy.devsupport.inspector.domain.CSSDomain;
@@ -12,13 +11,10 @@ import com.tencent.mtt.hippy.devsupport.inspector.model.InspectEvent;
 import com.tencent.mtt.hippy.dom.DomManager;
 import com.tencent.mtt.hippy.dom.DomManager.BatchListener;
 import com.tencent.mtt.hippy.utils.LogUtils;
-
-import org.json.JSONArray;
-import org.json.JSONObject;
-
 import java.lang.ref.WeakReference;
 import java.util.HashMap;
 import java.util.Map;
+import org.json.JSONObject;
 
 public class Inspector implements BatchListener {
 
@@ -131,7 +127,8 @@ public class Inspector implements BatchListener {
     needBatchUpdateDom = needBatchUpdate;
   }
 
-  @Override public void onBatch(boolean isAnimation) {
+  @Override
+  public void onBatch(boolean isAnimation) {
     if (needBatchUpdateDom && !isAnimation) {
       DomDomain domDomain = (DomDomain) mDomainMap.get(DomDomain.DOM_DOMAIN_NAME);
       domDomain.sendUpdateEvent();

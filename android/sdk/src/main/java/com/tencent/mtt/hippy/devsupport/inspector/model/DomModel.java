@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.os.Build;
 import android.text.TextUtils;
 import android.view.View;
-
 import android.view.WindowManager;
 import com.tencent.mtt.hippy.HippyEngineContext;
 import com.tencent.mtt.hippy.HippyRootView;
@@ -13,14 +12,12 @@ import com.tencent.mtt.hippy.dom.DomManager;
 import com.tencent.mtt.hippy.dom.node.DomNode;
 import com.tencent.mtt.hippy.dom.node.NodeProps;
 import com.tencent.mtt.hippy.uimanager.ControllerManager;
-import com.tencent.mtt.hippy.uimanager.ListItemRenderNode;
 import com.tencent.mtt.hippy.uimanager.RenderManager;
 import com.tencent.mtt.hippy.uimanager.RenderNode;
 import com.tencent.mtt.hippy.utils.LogUtils;
+import java.util.Map;
 import org.json.JSONArray;
 import org.json.JSONObject;
-
-import java.util.Map;
 
 public class DomModel {
 
@@ -35,7 +32,9 @@ public class DomModel {
     DomManager domManager = context.getDomManager();
     if (domManager != null) {
       DomNode domNode = domManager.getNode(nodeId);
-      if (domNode == null) return null;
+      if (domNode == null) {
+        return null;
+      }
 
       DomNode.DomDomainData domainData = domNode.getDomainData();
       // rootNode domainData为空
@@ -74,7 +73,9 @@ public class DomModel {
   }
 
   private JSONObject getNodeJson(DomNode.DomDomainData domainData, int nodeType) {
-    if (domainData == null) return null;
+    if (domainData == null) {
+      return null;
+    }
     JSONObject result = new JSONObject();
     try {
       result.put("nodeId", domainData.id);
@@ -97,7 +98,7 @@ public class DomModel {
       for (Map.Entry<String, Object> entry : attributes.entrySet()) {
         String key = entry.getKey();
         Object value = entry.getValue();
-        if (DomNode.PROP_STYLE.equals(key) && value instanceof HippyMap) {
+        if (NodeProps.STYLE.equals(key) && value instanceof HippyMap) {
           value = getInlineStyle((HippyMap) value);
         }
         if (value == null || (value instanceof String && TextUtils.isEmpty((String) value))) {
@@ -127,7 +128,9 @@ public class DomModel {
   }
 
   public JSONObject getDocument(HippyEngineContext context) {
-    if (context == null) return new JSONObject();
+    if (context == null) {
+      return new JSONObject();
+    }
     try {
       JSONObject result = new JSONObject();
       JSONObject root = new JSONObject();
@@ -284,7 +287,9 @@ public class DomModel {
   }
 
   public JSONObject getBoxModel(HippyEngineContext context, JSONObject paramsObj) {
-    if (context == null || paramsObj == null) return new JSONObject();
+    if (context == null || paramsObj == null) {
+      return new JSONObject();
+    }
     try {
       int nodeId = paramsObj.optInt("nodeId", -1);
       DomManager domManager = context.getDomManager();
@@ -295,9 +300,12 @@ public class DomModel {
         if (domNode != null && domNode.getDomainData() != null && renderNode != null) {
           int[] viewLocation = getRenderViewLocation(context, renderNode);
           // 没找到view，还未创建
-          if (viewLocation == null) return new JSONObject();
+          if (viewLocation == null) {
+            return new JSONObject();
+          }
 
-          JSONArray border = getBorder(viewLocation[0], viewLocation[1], renderNode.getWidth(), renderNode.getHeight());
+          JSONArray border = getBorder(viewLocation[0], viewLocation[1], renderNode.getWidth(),
+            renderNode.getHeight());
           HippyMap style = domNode.getDomainData().style;
           JSONArray padding = getPadding(border, style);
           JSONArray content = getContent(padding, style);
@@ -342,10 +350,15 @@ public class DomModel {
     return viewLocation;
   }
 
-  private boolean isLocationHitRenderNode(HippyEngineContext context, int x, int y, RenderNode renderNode) {
-    if (renderNode == null) return false;
+  private boolean isLocationHitRenderNode(HippyEngineContext context, int x, int y,
+    RenderNode renderNode) {
+    if (renderNode == null) {
+      return false;
+    }
     int[] viewLocation = getRenderViewLocation(context, renderNode);
-    if (viewLocation == null) return false;
+    if (viewLocation == null) {
+      return false;
+    }
     int dx = viewLocation[0];
     int dy = viewLocation[1];
     int width = renderNode.getWidth();
@@ -369,11 +382,15 @@ public class DomModel {
       return false;
     }
     int flag = ((Activity) rootView.getHost()).getWindow().getAttributes().flags;
-    if ((WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS & flag) == WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS) {
+    if ((WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS & flag)
+      == WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS) {
       return true;
     }
-    int options = ((Activity) rootView.getHost()).getWindow().getDecorView().getSystemUiVisibility();
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP && (View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN & options) == View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN) {
+    int options = ((Activity) rootView.getHost()).getWindow().getDecorView()
+      .getSystemUiVisibility();
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP
+      && (View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN & options)
+      == View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN) {
       return true;
     }
     return false;
@@ -381,6 +398,7 @@ public class DomModel {
 
   /**
    * 获取面积更小的渲染节点
+   *
    * @param oldNode
    * @param newNode
    * @return
@@ -400,12 +418,14 @@ public class DomModel {
 
   /**
    * 获取当前坐标(x, y)所在的最深层级且面积最小的RenderNode节点
+   *
    * @param x
    * @param y
    * @param rootNode
    * @return
    */
-  private RenderNode getMaxDepthAndMinAreaHitRenderNode(HippyEngineContext context, int x, int y, RenderNode rootNode) {
+  private RenderNode getMaxDepthAndMinAreaHitRenderNode(HippyEngineContext context, int x, int y,
+    RenderNode rootNode) {
     if (rootNode == null || !isLocationHitRenderNode(context, x, y, rootNode)) {
       return null;
     }
@@ -423,7 +443,9 @@ public class DomModel {
   }
 
   public JSONObject getNodeForLocation(HippyEngineContext context, JSONObject paramsObj) {
-    if (context == null || paramsObj == null) return new JSONObject();
+    if (context == null || paramsObj == null) {
+      return new JSONObject();
+    }
     try {
       int x = paramsObj.optInt("x", 0);
       int y = paramsObj.optInt("y", 0);
@@ -471,7 +493,9 @@ public class DomModel {
   }
 
   public JSONObject setInspectMode(HippyEngineContext context, JSONObject paramsObj) {
-    if (context == null || paramsObj == null) return new JSONObject();
+    if (context == null || paramsObj == null) {
+      return new JSONObject();
+    }
     try {
       int nodeId = paramsObj.optInt("nodeId", 0);
       DomManager domManager = context.getDomManager();
@@ -488,9 +512,10 @@ public class DomModel {
   }
 
   /**
-   *  https://dom.spec.whatwg.org/#dom-node-nodetype
+   * https://dom.spec.whatwg.org/#dom-node-nodetype
    */
   public static class NodeType {
+
     public static final int ELEMENT_NODE = 1;
     public static final int ATTRIBUTE_NODE = 2;
     public static final int TEXT_NODE = 3;

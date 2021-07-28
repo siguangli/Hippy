@@ -4,9 +4,6 @@ import com.tencent.mtt.hippy.HippyEngineContext;
 import com.tencent.mtt.hippy.devsupport.inspector.Inspector;
 import com.tencent.mtt.hippy.devsupport.inspector.model.DomModel;
 import com.tencent.mtt.hippy.devsupport.inspector.model.InspectEvent;
-import com.tencent.mtt.hippy.dom.DomManager;
-import com.tencent.mtt.hippy.utils.LogUtils;
-
 import org.json.JSONObject;
 
 public class DomDomain extends InspectorDomain {
@@ -27,12 +24,14 @@ public class DomDomain extends InspectorDomain {
     domModel = new DomModel();
   }
 
-  @Override public String getDomainName() {
+  @Override
+  public String getDomainName() {
     return DOM_DOMAIN_NAME;
   }
 
   @Override
-  public void handleRequest(HippyEngineContext context, String method, int id, JSONObject paramsObj) {
+  public void handleRequest(HippyEngineContext context, String method, int id,
+    JSONObject paramsObj) {
     switch (method) {
       case METHOD_GET_DOCUMENT:
         handleGetDocument(context, id);

@@ -59,7 +59,7 @@ public class DomManager implements HippyInstanceLifecycleEventListener, HippyEng
 	private final HippyEngineContext					mContext;
 	private volatile boolean							mIsDestroyed			= false;
 	private volatile boolean							mEnginePaused			= false;
-	private BatchListener                 mBatchListener;
+	private BatchListener						mBatchListener;
 
 	public DomManager(HippyEngineContext context)
 	{
@@ -290,7 +290,7 @@ public class DomManager implements HippyInstanceLifecycleEventListener, HippyEng
 	{
 		if (!mRenderBatchStarted)
 		{
-			batch(true);
+      batch(true);
 		}
 	}
 
@@ -338,10 +338,8 @@ public class DomManager implements HippyInstanceLifecycleEventListener, HippyEng
       domainData.name = className;
       domainData.tagName = tagName;
       if (map != null) {
-        String text = map.getString(DomNode.PROP_TEXT);
-        domainData.text = TextUtils.isEmpty(text) ? "" : text;
-        domainData.style = map.getMap(DomNode.PROP_STYLE);
-        domainData.attributes = map.getMap(DomNode.PROP_ATTRIBUTES);
+        domainData.style = map.getMap(NodeProps.STYLE);
+        domainData.attributes = map.getMap(NodeProps.ATTRIBUTES);
       }
       node.setDomainData(domainData);
 
@@ -932,9 +930,8 @@ public class DomManager implements HippyInstanceLifecycleEventListener, HippyEng
 		}
 	}
 
-	public void batch()
-  {
-	  batch(false);
+  public void batch() {
+    batch(false);
   }
 
 	public void batch(boolean isAnimation)
@@ -982,7 +979,7 @@ public class DomManager implements HippyInstanceLifecycleEventListener, HippyEng
 		mPaddingNulUITasks.clear();
 		mUITasks.clear();
 
-		if (mBatchListener != null) {
+    if (mBatchListener != null) {
       mBatchListener.onBatch(isAnimation);
     }
 	}
@@ -1082,12 +1079,13 @@ public class DomManager implements HippyInstanceLifecycleEventListener, HippyEng
 		}
 	}
 
-	public void setOnBatchListener(BatchListener listener) {
-	  mBatchListener = listener;
+  public void setOnBatchListener(BatchListener listener) {
+    mBatchListener = listener;
   }
 
-	public interface BatchListener {
-	  void onBatch(boolean isAnimation);
+  public interface BatchListener {
+
+    void onBatch(boolean isAnimation);
   }
 
 }

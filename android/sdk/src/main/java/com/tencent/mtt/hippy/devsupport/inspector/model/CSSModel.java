@@ -29,6 +29,7 @@ public class CSSModel {
 
   /**
    * 显示的样式，全部使用内联样式来展示，当前无法区分内联和非内联、继承样式等关系
+   *
    * @return 显示的样式
    */
   public JSONObject getMatchedStyles(HippyEngineContext context, int nodeId) {
@@ -46,6 +47,7 @@ public class CSSModel {
 
   /**
    * 内联样式先不单独在标签里展示，可以在 {@link #getMatchedStyles} 中显示到
+   *
    * @return 标签里内联的样式
    */
   public JSONObject getInlineStyles(HippyEngineContext context, int nodeId) {
@@ -55,6 +57,7 @@ public class CSSModel {
 
   /**
    * CSS 最终应用生效的样式：属性和盒子模型
+   *
    * @return 最终生效的样式
    */
   public JSONObject getComputedStyle(HippyEngineContext context, int nodeId) {
@@ -68,7 +71,8 @@ public class CSSModel {
     return computedStyle;
   }
 
-  private JSONArray getComputedStyle(HippyEngineContext context, int nodeId, HippyMap style) throws JSONException {
+  private JSONArray getComputedStyle(HippyEngineContext context, int nodeId, HippyMap style)
+    throws JSONException {
     JSONArray computedArray = new JSONArray();
     if (style != null) {
       // property style
@@ -91,8 +95,10 @@ public class CSSModel {
       }
       RenderNode renderNode = context.getRenderManager().getRenderNode(nodeId);
       if (renderNode != null) {
-        computedArray.put(getStyleProperty(unCamelize(NodeProps.WIDTH), String.valueOf(renderNode.getWidth())));
-        computedArray.put(getStyleProperty(unCamelize(NodeProps.HEIGHT), String.valueOf(renderNode.getHeight())));
+        computedArray.put(
+          getStyleProperty(unCamelize(NodeProps.WIDTH), String.valueOf(renderNode.getWidth())));
+        computedArray.put(
+          getStyleProperty(unCamelize(NodeProps.HEIGHT), String.valueOf(renderNode.getHeight())));
       }
     }
     return computedArray;
@@ -103,7 +109,8 @@ public class CSSModel {
    *
    * @return 设置后的样式
    */
-  public JSONObject setStyleTexts(HippyEngineContext context, JSONArray editArray, CSSDomain cssDomain) {
+  public JSONObject setStyleTexts(HippyEngineContext context, JSONArray editArray,
+    CSSDomain cssDomain) {
     JSONObject styleObject = new JSONObject();
     try {
       JSONArray styleList = new JSONArray();
@@ -346,7 +353,7 @@ public class CSSModel {
   /**
    * 判断是否可以转换
    *
-   * @param key css key
+   * @param key   css key
    * @param value css value
    * @return 转换的 value
    */

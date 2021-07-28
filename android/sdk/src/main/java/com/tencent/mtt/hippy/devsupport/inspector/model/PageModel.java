@@ -6,16 +6,13 @@ import android.graphics.Matrix;
 import android.text.TextUtils;
 import android.util.Base64;
 import android.util.DisplayMetrics;
-
 import com.tencent.mtt.hippy.HippyEngineContext;
 import com.tencent.mtt.hippy.HippyRootView;
 import com.tencent.mtt.hippy.dom.DomManager;
 import com.tencent.mtt.hippy.utils.LogUtils;
-
-import org.json.JSONObject;
-
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import org.json.JSONObject;
 
 public class PageModel {
 
@@ -86,11 +83,13 @@ public class PageModel {
       if (scale != 1.0f) {
         Matrix matrix = new Matrix();
         matrix.postScale(scale, scale);
-        Bitmap scaledBitmap = Bitmap.createBitmap(bitmap, 0, 0, viewWidth, viewHeight, matrix, true);
+        Bitmap scaledBitmap = Bitmap
+          .createBitmap(bitmap, 0, 0, viewWidth, viewHeight, matrix, true);
         bitmap = scaledBitmap;
       }
       String bitmapBase64Str = bitmapToBase64Str(bitmap);
-      DisplayMetrics windowDisplayMetrics = hippyRootView.getContext().getResources().getDisplayMetrics();
+      DisplayMetrics windowDisplayMetrics = hippyRootView.getContext().getResources()
+        .getDisplayMetrics();
       final int sessionId = (int) (System.currentTimeMillis() / 1000);
       JSONObject meta = new JSONObject();
       meta.put("offsetTop", 0);
@@ -120,7 +119,7 @@ public class PageModel {
         Bitmap.CompressFormat format = Bitmap.CompressFormat.JPEG;
         int quality = 80;
         // 工具如果没传参数，使用默认值
-        if (paramObj != null ) {
+        if (paramObj != null) {
           if (!TextUtils.isEmpty(this.format)) {
             if ("jpeg".equalsIgnoreCase(this.format)) {
               format = Bitmap.CompressFormat.JPEG;

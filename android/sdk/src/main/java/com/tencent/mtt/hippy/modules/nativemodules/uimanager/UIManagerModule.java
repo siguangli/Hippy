@@ -39,8 +39,8 @@ public class UIManagerModule extends HippyNativeModuleBase
 	final String				ID								= "id";
 	final String				PID								= "pId";
 	final String				INDEX							= "index";
-  final String				NAME							= "name";
-  final String				TAG_NAME		  		= "tagName";
+	final String				NAME							= "name";
+	final String				TAG_NAME		  		= "tagName";
 	final String				PROPS							= "props";
 
 	public UIManagerModule(HippyEngineContext context)

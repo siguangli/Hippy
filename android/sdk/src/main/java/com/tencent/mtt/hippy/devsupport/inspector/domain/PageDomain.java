@@ -4,19 +4,12 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
-import android.os.Looper;
 import android.os.Message;
-
-import androidx.annotation.NonNull;
-
 import com.tencent.mtt.hippy.HippyEngineContext;
-import com.tencent.mtt.hippy.common.HippyHandlerThread;
-import com.tencent.mtt.hippy.common.ThreadExecutorManager;
 import com.tencent.mtt.hippy.devsupport.inspector.Inspector;
 import com.tencent.mtt.hippy.devsupport.inspector.model.InspectEvent;
 import com.tencent.mtt.hippy.devsupport.inspector.model.PageModel;
 import com.tencent.mtt.hippy.utils.LogUtils;
-
 import org.json.JSONObject;
 
 public class PageDomain extends InspectorDomain implements Handler.Callback {
@@ -30,7 +23,7 @@ public class PageDomain extends InspectorDomain implements Handler.Callback {
   private static final String METHOD_SCREEN_FRAME_ACK = "screencastFrameAck";
 
   private static final int MSG_START_SCREEN_CAST = 0x01;
-  private static final int MSG_SCREEN_CAST_ACK   = 0x02;
+  private static final int MSG_SCREEN_CAST_ACK = 0x02;
 
   private static final long FRAME_CALLBACK_INTERVAL = 1000L;
 
@@ -44,12 +37,14 @@ public class PageDomain extends InspectorDomain implements Handler.Callback {
     mPageModel = new PageModel();
   }
 
-  @Override public String getDomainName() {
+  @Override
+  public String getDomainName() {
     return PAGE_DOMAIN_NAME;
   }
 
   @Override
-  public void handleRequest(HippyEngineContext context, String method, int id, JSONObject paramsObj) {
+  public void handleRequest(HippyEngineContext context, String method, int id,
+    JSONObject paramsObj) {
     switch (method) {
       case METHOD_START_SCREEN_CAST:
         handleStartScreenCast(context, id, paramsObj);

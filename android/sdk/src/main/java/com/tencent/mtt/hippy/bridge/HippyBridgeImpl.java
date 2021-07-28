@@ -334,10 +334,11 @@ public class HippyBridgeImpl implements HippyBridge, DevRemoteDebugProxy.OnRecei
 	{
 		if(this.mIsDevModule)
 		{
-		  boolean isInspectMsg = Inspector.getInstance(mContext).setWebSocketClient(mDebugWebSocketClient).dispatchReqFromFrontend(mContext, msg);
+      boolean isInspectMsg = Inspector.getInstance(mContext)
+        .setWebSocketClient(mDebugWebSocketClient).dispatchReqFromFrontend(mContext, msg);
       if (!isInspectMsg) {
         final byte[] bytes = msg.getBytes();
-        callFunction("onWebsocketMsg", bytes, 0, bytes.length , mV8RuntimeId, null);
+        callFunction("onWebsocketMsg", bytes, 0, bytes.length, mV8RuntimeId, null);
       }
 		}
 	}

@@ -22,7 +22,8 @@ public class CSSDomain extends InspectorDomain {
     cssModel = new CSSModel();
   }
 
-  @Override public String getDomainName() {
+  @Override
+  public String getDomainName() {
     return "CSS";
   }
 

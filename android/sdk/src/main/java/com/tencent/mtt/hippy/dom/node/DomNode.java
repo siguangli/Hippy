@@ -24,10 +24,6 @@ import java.util.Map;
 public class DomNode extends FlexNode
 {
 
-  public static final String PROP_TEXT = "text";
-  public static final String PROP_STYLE = "style";
-  public static final String PROP_ATTRIBUTES = "attributes";
-
 	private int				mID;
 	private String			mViewClassName;
 	private boolean			mNodeUpdated	= true;
@@ -41,7 +37,7 @@ public class DomNode extends FlexNode
 
 	boolean					mIsLazy			= false;
 
-	private DomDomainData mDomainData;
+  private DomDomainData mDomainData;
 
 	public void setLazy(boolean lazy)
 	{
@@ -124,12 +120,12 @@ public class DomNode extends FlexNode
 		mTotalProps = props;
 	}
 
-	public void setDomainData(DomDomainData domainData) {
-	  mDomainData = domainData;
+  public void setDomainData(DomDomainData domainData) {
+    mDomainData = domainData;
   }
 
   public DomDomainData getDomainData() {
-	  return mDomainData;
+    return mDomainData;
   }
 
   private void updateDomainData() {
@@ -274,8 +270,12 @@ public class DomNode extends FlexNode
 		this.mShouldNotifyOnlayout = shouldNotifyOnLayout;
 	}
 
-	public static class DomDomainData {
-	  public int id;
+  /**
+   * devtools domain data for element inspect
+   */
+  public static class DomDomainData {
+
+    public int id;
     public int rootId;
     public int pid;
     public String name;

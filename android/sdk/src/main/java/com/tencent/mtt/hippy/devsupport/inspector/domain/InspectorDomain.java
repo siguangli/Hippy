@@ -4,10 +4,8 @@ import com.tencent.mtt.hippy.HippyEngineContext;
 import com.tencent.mtt.hippy.devsupport.inspector.Inspector;
 import com.tencent.mtt.hippy.devsupport.inspector.model.InspectEvent;
 import com.tencent.mtt.hippy.utils.LogUtils;
-
-import org.json.JSONObject;
-
 import java.lang.ref.WeakReference;
+import org.json.JSONObject;
 
 public abstract class InspectorDomain {
 
@@ -24,7 +22,8 @@ public abstract class InspectorDomain {
     mInspectorRef = new WeakReference<>(inspector);
   }
 
-  public void handleRequestFromBackend(HippyEngineContext context, String method, int id, JSONObject paramsObj) {
+  public void handleRequestFromBackend(HippyEngineContext context, String method, int id,
+    JSONObject paramsObj) {
     if (mInspectorRef == null) {
       LogUtils.e(TAG, "handleRequestFromBackend, mInspectorRef null");
       return;
@@ -50,21 +49,25 @@ public abstract class InspectorDomain {
 
   /**
    * 处理 frontend 的 method 调用
-   * @param method 调用方法
-   * @param id 调用唯一自增ID
+   *
+   * @param method    调用方法
+   * @param id        调用唯一自增ID
    * @param paramsObj 参数
    */
-  protected abstract void handleRequest(HippyEngineContext context, String method, int id, JSONObject paramsObj);
+  protected abstract void handleRequest(HippyEngineContext context, String method, int id,
+    JSONObject paramsObj);
 
   /**
    * 获取 domain
+   *
    * @return domain 名称
    */
   public abstract String getDomainName();
 
   /**
    * 回包给 frontend
-   * @param id 调用过来的自增id
+   *
+   * @param id     调用过来的自增id
    * @param result 回包数据 json
    */
   protected void sendRspToFrontend(int id, JSONObject result) {
@@ -76,6 +79,7 @@ public abstract class InspectorDomain {
 
   /**
    * 主动抛事件给 frontend
+   *
    * @param event 事件数据
    */
   protected void sendEventToFrontend(InspectEvent event) {
@@ -88,6 +92,7 @@ public abstract class InspectorDomain {
   /**
    * devtools关闭时，清理资源
    */
-  public void onFrontendClosed() {}
+  public void onFrontendClosed() {
+  }
 
 }
