@@ -17,6 +17,7 @@ package com.tencent.mtt.hippy.dom.node;
 
 import com.tencent.mtt.hippy.HippyEngineContext;
 import com.tencent.mtt.hippy.common.HippyMap;
+import com.tencent.mtt.hippy.devsupport.inspector.data.DomDomainData;
 import com.tencent.smtt.flexbox.FlexNode;
 
 import java.util.Map;
@@ -130,10 +131,7 @@ public class DomNode extends FlexNode
 
 	private void updateDomainData() {
 		if (mDomainData != null) {
-			mDomainData.layoutX = mLastX;
-			mDomainData.layoutY = mLastY;
-			mDomainData.width = mLastWidth;
-			mDomainData.height = mLastHeight;
+		  mDomainData.updateLayout(mLastX, mLastY, mLastWidth, mLastHeight);
 		}
 	}
 
@@ -268,21 +266,5 @@ public class DomNode extends FlexNode
 	public void setShouldNotifyOnLayout(boolean shouldNotifyOnLayout)
 	{
 		this.mShouldNotifyOnlayout = shouldNotifyOnLayout;
-	}
-
-	public static class DomDomainData {
-
-		public int id;
-		public int rootId;
-		public int pid;
-		public String name;
-		public String tagName;
-		public double layoutX;
-		public double layoutY;
-		public double width;
-		public double height;
-		public String text;
-		public HippyMap style;
-		public HippyMap attributes;
 	}
 }

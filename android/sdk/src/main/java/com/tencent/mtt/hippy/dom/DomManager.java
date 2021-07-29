@@ -25,6 +25,7 @@ import com.tencent.mtt.hippy.HippyInstanceLifecycleEventListener;
 import com.tencent.mtt.hippy.HippyRootView;
 import com.tencent.mtt.hippy.common.HippyArray;
 import com.tencent.mtt.hippy.common.HippyMap;
+import com.tencent.mtt.hippy.devsupport.inspector.data.DomDomainData;
 import com.tencent.mtt.hippy.dom.flex.FlexSpacing;
 import com.tencent.mtt.hippy.dom.node.*;
 import com.tencent.mtt.hippy.modules.Promise;
@@ -333,17 +334,7 @@ public class DomManager implements HippyInstanceLifecycleEventListener, HippyEng
 			node.setProps(map);
 
 			if (mContext.getDevSupportManager().isSupportDev()) {
-				DomNode.DomDomainData domainData = new DomNode.DomDomainData();
-				domainData.id = id;
-				domainData.rootId = rootId;
-				domainData.pid = pid;
-				domainData.name = className;
-				domainData.tagName = tagName;
-				if (map != null) {
-					domainData.style = map.getMap(NodeProps.STYLE);
-					domainData.attributes = map.getMap(NodeProps.ATTRIBUTES);
-				}
-				node.setDomainData(domainData);
+				node.setDomainData(new DomDomainData(id, rootId, pid, className, tagName, map));
 			}
 
 			//		boolean isLayoutOnly=false;

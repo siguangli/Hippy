@@ -8,6 +8,7 @@ import android.view.WindowManager;
 import com.tencent.mtt.hippy.HippyEngineContext;
 import com.tencent.mtt.hippy.HippyRootView;
 import com.tencent.mtt.hippy.common.HippyMap;
+import com.tencent.mtt.hippy.devsupport.inspector.data.DomDomainData;
 import com.tencent.mtt.hippy.dom.DomManager;
 import com.tencent.mtt.hippy.dom.node.DomNode;
 import com.tencent.mtt.hippy.dom.node.NodeProps;
@@ -36,7 +37,7 @@ public class DomModel {
         return null;
       }
 
-      DomNode.DomDomainData domainData = domNode.getDomainData();
+      DomDomainData domainData = domNode.getDomainData();
       // rootNode domainData为空
       if (domainData != null && !TextUtils.isEmpty(domainData.text)) {
         childrenArray.put(getTextNodeJson(domainData));
@@ -61,7 +62,7 @@ public class DomModel {
     return result;
   }
 
-  private JSONObject getTextNodeJson(DomNode.DomDomainData domainData) {
+  private JSONObject getTextNodeJson(DomDomainData domainData) {
     JSONObject result = getNodeJson(domainData, NodeType.TEXT_NODE);
     try {
       result.put("childNodeCount", 0);
@@ -72,7 +73,7 @@ public class DomModel {
     return result;
   }
 
-  private JSONObject getNodeJson(DomNode.DomDomainData domainData, int nodeType) {
+  private JSONObject getNodeJson(DomDomainData domainData, int nodeType) {
     if (domainData == null) {
       return null;
     }
