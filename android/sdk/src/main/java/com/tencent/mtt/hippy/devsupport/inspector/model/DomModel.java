@@ -8,7 +8,7 @@ import android.view.WindowManager;
 import com.tencent.mtt.hippy.HippyEngineContext;
 import com.tencent.mtt.hippy.HippyRootView;
 import com.tencent.mtt.hippy.common.HippyMap;
-import com.tencent.mtt.hippy.devsupport.inspector.data.DomDomainData;
+import com.tencent.mtt.hippy.dom.node.DomDomainData;
 import com.tencent.mtt.hippy.dom.DomManager;
 import com.tencent.mtt.hippy.dom.node.DomNode;
 import com.tencent.mtt.hippy.dom.node.NodeProps;

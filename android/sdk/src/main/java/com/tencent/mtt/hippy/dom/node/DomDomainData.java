@@ -1,4 +1,4 @@
-package com.tencent.mtt.hippy.devsupport.inspector.data;
+package com.tencent.mtt.hippy.dom.node;
 
 import com.tencent.mtt.hippy.common.HippyMap;
 import com.tencent.mtt.hippy.dom.node.NodeProps;

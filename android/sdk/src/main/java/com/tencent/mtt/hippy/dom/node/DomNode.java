@@ -17,10 +17,7 @@ package com.tencent.mtt.hippy.dom.node;
 
 import com.tencent.mtt.hippy.HippyEngineContext;
 import com.tencent.mtt.hippy.common.HippyMap;
-import com.tencent.mtt.hippy.devsupport.inspector.data.DomDomainData;
 import com.tencent.smtt.flexbox.FlexNode;
-
-import java.util.Map;
 
 public class DomNode extends FlexNode
 {

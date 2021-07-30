@@ -25,7 +25,7 @@ import com.tencent.mtt.hippy.HippyInstanceLifecycleEventListener;
 import com.tencent.mtt.hippy.HippyRootView;
 import com.tencent.mtt.hippy.common.HippyArray;
 import com.tencent.mtt.hippy.common.HippyMap;
-import com.tencent.mtt.hippy.devsupport.inspector.data.DomDomainData;
+import com.tencent.mtt.hippy.dom.node.DomDomainData;
 import com.tencent.mtt.hippy.dom.flex.FlexSpacing;
 import com.tencent.mtt.hippy.dom.node.*;
 import com.tencent.mtt.hippy.modules.Promise;
