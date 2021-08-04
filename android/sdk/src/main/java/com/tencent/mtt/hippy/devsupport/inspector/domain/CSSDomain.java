@@ -28,24 +28,25 @@ public class CSSDomain extends InspectorDomain {
   }
 
   @Override
-  public void handleRequest(HippyEngineContext context, String method, int id,
+  public boolean handleRequest(HippyEngineContext context, String method, int id,
     JSONObject paramsObj) {
     switch (method) {
       case METHOD_GET_MATCHED_STYLES_FOR_NODE:
         handleGetMatchedStyles(context, id, paramsObj);
-        break;
+        return true;
       case METHOD_GET_COMPUTED_STYLE_FOR_NODE:
         handleGetComputedStyle(context, id, paramsObj);
-        break;
+        return true;
       case METHOD_GET_INLINE_STYLES_FOR_NODE:
         handleGetInlineStyles(context, id, paramsObj);
-        break;
+        return true;
       case METHOD_SET_STYLE_TEXTS:
         handleSetStyleTexts(context, id, paramsObj);
-        break;
+        return true;
       default:
         break;
     }
+    return false;
   }
 
   private void handleGetMatchedStyles(HippyEngineContext context, int id, JSONObject paramsObj) {

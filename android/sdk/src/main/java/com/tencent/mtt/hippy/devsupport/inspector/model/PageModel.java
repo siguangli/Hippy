@@ -3,15 +3,20 @@ package com.tencent.mtt.hippy.devsupport.inspector.model;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Matrix;
+import android.os.Build;
 import android.text.TextUtils;
 import android.util.Base64;
 import android.util.DisplayMetrics;
+import android.view.ViewTreeObserver;
+
 import com.tencent.mtt.hippy.HippyEngineContext;
 import com.tencent.mtt.hippy.HippyRootView;
 import com.tencent.mtt.hippy.dom.DomManager;
 import com.tencent.mtt.hippy.utils.LogUtils;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.lang.ref.WeakReference;
+
 import org.json.JSONObject;
 
 public class PageModel {
@@ -27,6 +32,8 @@ public class PageModel {
   private int maxWidth;
   private int maxHeight;
   private Bitmap screenBitmap;
+  private WeakReference<FrameUpdateListener> mFrameUpdateListenerRef;
+  private ViewTreeObserver.OnDrawListener mOnDrawListener;
 
   public JSONObject startScreenCast(HippyEngineContext context, final JSONObject paramsObj) {
     isFramingScreenCast = true;
@@ -37,11 +44,53 @@ public class PageModel {
       maxWidth = paramsObj.optInt("maxWidth");
       maxHeight = paramsObj.optInt("maxHeight");
     }
+
+    // 开始截屏时，监听重绘变化
+    listenFrameUpdate(context);
     return getScreenCastData(context);
   }
 
-  public void stopScreenCast() {
+  public boolean canListenFrameUpdate() {
+    return Build.VERSION.SDK_INT >= 16;
+  }
+
+  private void listenFrameUpdate(final HippyEngineContext context) {
+    if (canListenFrameUpdate()) {
+      HippyRootView hippyRootView = getHippyRootView(context);
+      if (mOnDrawListener == null) {
+        mOnDrawListener = new ViewTreeObserver.OnDrawListener() {
+          @Override
+          public void onDraw() {
+            LogUtils.d(TAG, "HippyRootView, onDraw");
+            if (mFrameUpdateListenerRef != null) {
+              FrameUpdateListener listener = mFrameUpdateListenerRef.get();
+              if (listener != null) {
+                listener.onFrameUpdate(context);
+              }
+            }
+          }
+        };
+      }
+      hippyRootView.getViewTreeObserver().removeOnDrawListener(mOnDrawListener);
+      hippyRootView.getViewTreeObserver().addOnDrawListener(mOnDrawListener);
+    }
+  }
+
+  public void setFrameUpdateListener(FrameUpdateListener listener) {
+    if (listener != null) {
+      mFrameUpdateListenerRef = new WeakReference<>(listener);
+    } else {
+      mFrameUpdateListenerRef = null;
+    }
+  }
+
+  public void stopScreenCast(HippyEngineContext context) {
     isFramingScreenCast = false;
+
+    if (canListenFrameUpdate()) {
+      HippyRootView hippyRootView = getHippyRootView(context);
+      hippyRootView.getViewTreeObserver().removeOnDrawListener(mOnDrawListener);
+    }
   }
 
   public void clear() {
@@ -59,12 +108,17 @@ public class PageModel {
     return null;
   }
 
+  private HippyRootView getHippyRootView(HippyEngineContext context) {
+    DomManager domManager = context.getDomManager();
+    int rootNodeId = domManager.getRootNodeId();
+    HippyRootView hippyRootView = context.getInstance(rootNodeId);
+    return hippyRootView;
+  }
+
   private JSONObject getScreenCastData(HippyEngineContext context) {
     JSONObject result = new JSONObject();
     try {
-      DomManager domManager = context.getDomManager();
-      int rootNodeId = domManager.getRootNodeId();
-      HippyRootView hippyRootView = context.getInstance(rootNodeId);
+      HippyRootView hippyRootView = getHippyRootView(context);
       int viewWidth = hippyRootView.getWidth();
       int viewHeight = hippyRootView.getHeight();
       float scale = 1.0f;
@@ -148,5 +202,9 @@ public class PageModel {
       }
     }
     return result;
+  }
+
+  public interface FrameUpdateListener {
+    void onFrameUpdate(HippyEngineContext context);
   }
 }
