@@ -63,7 +63,7 @@ public class Inspector implements BatchListener {
     LogUtils.d(TAG, "dispatchReqFromFrontend, msg=" + msg);
 
     if (CHROME_SOCKET_CLOSED.equals(msg)) {
-      onFrontendClosed();
+      onFrontendClosed(context);
       return false;
     }
 
@@ -80,8 +80,7 @@ public class Inspector implements BatchListener {
               String method = methodParamArray[1];
               int id = msgObj.optInt("id");
               JSONObject paramsObj = msgObj.optJSONObject("params");
-              inspectorDomain.handleRequestFromBackend(context, method, id, paramsObj);
-              return true;
+              return inspectorDomain.handleRequestFromBackend(context, method, id, paramsObj);
             }
           }
         }
@@ -92,9 +91,9 @@ public class Inspector implements BatchListener {
     return false;
   }
 
-  private void onFrontendClosed() {
+  private void onFrontendClosed(HippyEngineContext context) {
     for (Map.Entry<String, InspectorDomain> entry : mDomainMap.entrySet()) {
-      entry.getValue().onFrontendClosed();
+      entry.getValue().onFrontendClosed(context);
     }
   }
 

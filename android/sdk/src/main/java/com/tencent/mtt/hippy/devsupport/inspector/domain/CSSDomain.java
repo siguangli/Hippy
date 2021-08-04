@@ -28,7 +28,7 @@ public class CSSDomain extends InspectorDomain {
   }
 
   @Override
-  public void handleRequest(HippyEngineContext context, String method, int id,
+  public boolean handleRequest(HippyEngineContext context, String method, int id,
     JSONObject paramsObj) {
     switch (method) {
       case METHOD_GET_MATCHED_STYLES_FOR_NODE:
@@ -44,8 +44,9 @@ public class CSSDomain extends InspectorDomain {
         handleSetStyleTexts(context, id, paramsObj);
         break;
       default:
-        break;
+        return false;
     }
+    return true;
   }
 
   private void handleGetMatchedStyles(HippyEngineContext context, int id, JSONObject paramsObj) {

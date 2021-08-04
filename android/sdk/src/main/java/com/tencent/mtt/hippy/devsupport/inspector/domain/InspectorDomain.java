@@ -22,39 +22,45 @@ public abstract class InspectorDomain {
     mInspectorRef = new WeakReference<>(inspector);
   }
 
-  public void handleRequestFromBackend(HippyEngineContext context, String method, int id,
+  public boolean handleRequestFromBackend(HippyEngineContext context, String method, int id,
     JSONObject paramsObj) {
     if (mInspectorRef == null) {
       LogUtils.e(TAG, "handleRequestFromBackend, mInspectorRef null");
-      return;
+      return false;
     }
 
     Inspector inspector = mInspectorRef.get();
     if (inspector == null) {
       LogUtils.e(TAG, "handleRequestFromBackend, inspector null");
-      return;
+      return false;
     }
     if (METHOD_ENABLE.equals(method)) {
       isEnable = true;
       inspector.rspToFrontend(id, null);
+      return true;
     } else if (METHOD_DISABLE.equals(method)) {
       isEnable = false;
       inspector.rspToFrontend(id, null);
-    }
-
-    if (isEnable) {
-      handleRequest(context, method, id, paramsObj);
+      return true;
+    } else {
+      if (isEnable) {
+        return handleRequest(context, method, id, paramsObj);
+      } else {
+        return false;
+      }
     }
   }
 
   /**
    * 处理 frontend 的 method 调用
    *
+   * 注意：未处理的method，请返回false
+   *
    * @param method    调用方法
    * @param id        调用唯一自增ID
    * @param paramsObj 参数
    */
-  protected abstract void handleRequest(HippyEngineContext context, String method, int id,
+  protected abstract boolean handleRequest(HippyEngineContext context, String method, int id,
     JSONObject paramsObj);
 
   /**
@@ -91,8 +97,9 @@ public abstract class InspectorDomain {
 
   /**
    * devtools关闭时，清理资源
+   * @param context
    */
-  public void onFrontendClosed() {
+  public void onFrontendClosed(HippyEngineContext context) {
   }
 
 }

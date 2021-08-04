@@ -30,7 +30,7 @@ public class DomDomain extends InspectorDomain {
   }
 
   @Override
-  public void handleRequest(HippyEngineContext context, String method, int id,
+  public boolean handleRequest(HippyEngineContext context, String method, int id,
     JSONObject paramsObj) {
     switch (method) {
       case METHOD_GET_DOCUMENT:
@@ -42,14 +42,13 @@ public class DomDomain extends InspectorDomain {
       case METHOD_GET_NODE_FOR_LOCATION:
         handleGetNodeForLocation(context, id, paramsObj);
         break;
-      case METHOD_REMOVE_NODE:
-        break;
       case METHOD_SET_INSPECT_NODE:
         handleSetInspectMode(context, id, paramsObj);
         break;
       default:
-        break;
+        return false;
     }
+    return true;
   }
 
   private void handleGetDocument(HippyEngineContext context, int id) {

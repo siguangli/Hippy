@@ -12,7 +12,7 @@ import com.tencent.mtt.hippy.devsupport.inspector.model.PageModel;
 import com.tencent.mtt.hippy.utils.LogUtils;
 import org.json.JSONObject;
 
-public class PageDomain extends InspectorDomain implements Handler.Callback {
+public class PageDomain extends InspectorDomain implements Handler.Callback, PageModel.FrameUpdateListener {
 
   private static final String TAG = "PageDomain";
 
@@ -26,11 +26,14 @@ public class PageDomain extends InspectorDomain implements Handler.Callback {
   private static final int MSG_SCREEN_CAST_ACK = 0x02;
 
   private static final long FRAME_CALLBACK_INTERVAL = 1000L;
+  private static final long DELAY_FOR_FRAME_UPDATE = 100L;
 
   public static final String BUNDLE_KEY_PARAM = "params";
 
   private PageModel mPageModel;
   private ScreenCastHandlerThread mHandlerThread;
+  private volatile boolean mIsFrameUpdate;
+  private int mLastSessionId = -1;
 
   public PageDomain(Inspector inspector) {
     super(inspector);
@@ -43,21 +46,22 @@ public class PageDomain extends InspectorDomain implements Handler.Callback {
   }
 
   @Override
-  public void handleRequest(HippyEngineContext context, String method, int id,
+  public boolean handleRequest(HippyEngineContext context, String method, int id,
     JSONObject paramsObj) {
     switch (method) {
       case METHOD_START_SCREEN_CAST:
         handleStartScreenCast(context, id, paramsObj);
         break;
       case METHOD_STOP_SCREEN_CAST:
-        handleStopScreenCast();
+        handleStopScreenCast(context);
         break;
       case METHOD_SCREEN_FRAME_ACK:
         handleScreenFrameAck(context, paramsObj);
         break;
       default:
-        break;
+        return false;
     }
+    return true;
   }
 
   private void handleStartScreenCast(HippyEngineContext context, int id, JSONObject paramsObj) {
@@ -73,8 +77,8 @@ public class PageDomain extends InspectorDomain implements Handler.Callback {
     hander.sendMessage(msg);
   }
 
-  private void handleStopScreenCast() {
-    mPageModel.stopScreenCast();
+  private void handleStopScreenCast(HippyEngineContext context) {
+    mPageModel.stopScreenCast(context);
     if (mHandlerThread != null) {
       Handler hander = mHandlerThread.getHandler();
       hander.removeMessages(MSG_START_SCREEN_CAST);
@@ -85,19 +89,34 @@ public class PageDomain extends InspectorDomain implements Handler.Callback {
   }
 
   @Override
-  public void onFrontendClosed() {
-    handleStopScreenCast();
+  public void onFrontendClosed(HippyEngineContext context) {
+    handleStopScreenCast(context);
     mPageModel.clear();
   }
 
   private void handleScreenFrameAck(final HippyEngineContext context, final JSONObject paramsObj) {
     if (mHandlerThread != null && paramsObj != null) {
-      Handler hander = mHandlerThread.getHandler();
-      Message msg = hander.obtainMessage(MSG_SCREEN_CAST_ACK);
-      msg.obj = context;
-      msg.arg1 = paramsObj.optInt("sessionId");
-      hander.removeMessages(MSG_SCREEN_CAST_ACK);
-      hander.sendMessageDelayed(msg, FRAME_CALLBACK_INTERVAL);
+      if (!mPageModel.canListenFrameUpdate()) {
+        Handler hander = mHandlerThread.getHandler();
+        Message msg = hander.obtainMessage(MSG_SCREEN_CAST_ACK);
+        msg.obj = context;
+        msg.arg1 = paramsObj.optInt("sessionId");
+        hander.removeMessages(MSG_SCREEN_CAST_ACK);
+        hander.sendMessageDelayed(msg, FRAME_CALLBACK_INTERVAL);
+      } else {
+        int sessionId = paramsObj.optInt("sessionId");
+        if (mIsFrameUpdate) {
+          Handler hander = mHandlerThread.getHandler();
+          Message msg = hander.obtainMessage(MSG_SCREEN_CAST_ACK);
+          msg.obj = context;
+          msg.arg1 = sessionId;
+          hander.removeMessages(MSG_SCREEN_CAST_ACK);
+          hander.sendMessageDelayed(msg, DELAY_FOR_FRAME_UPDATE);
+          mIsFrameUpdate = false;
+        } else {
+          mLastSessionId = sessionId;
+        }
+      }
     }
   }
 
@@ -118,6 +137,9 @@ public class PageDomain extends InspectorDomain implements Handler.Callback {
         JSONObject result = mPageModel.startScreenCast(context, paramsObj);
         InspectEvent event = new InspectEvent("Page.screencastFrame", result);
         sendEventToFrontend(event);
+        if (mPageModel.canListenFrameUpdate()) {
+          mPageModel.setFrameUpdateListener(this);
+        }
         break;
       }
       case MSG_SCREEN_CAST_ACK: {
@@ -133,6 +155,21 @@ public class PageDomain extends InspectorDomain implements Handler.Callback {
       }
     }
     return false;
+  }
+
+  @Override
+  public void onFrameUpdate(HippyEngineContext context) {
+    mIsFrameUpdate = true;
+
+    if (mHandlerThread != null && mLastSessionId != -1) {
+        Handler hander = mHandlerThread.getHandler();
+        Message msg = hander.obtainMessage(MSG_SCREEN_CAST_ACK);
+        msg.obj = context;
+        msg.arg1 = mLastSessionId;
+        hander.removeMessages(MSG_SCREEN_CAST_ACK);
+        hander.sendMessageDelayed(msg, DELAY_FOR_FRAME_UPDATE);
+        mIsFrameUpdate = false;
+      }
   }
 
   final static class ScreenCastHandlerThread extends HandlerThread {
