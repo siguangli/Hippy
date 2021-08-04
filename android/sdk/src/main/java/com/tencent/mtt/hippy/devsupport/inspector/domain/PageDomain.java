@@ -51,17 +51,17 @@ public class PageDomain extends InspectorDomain implements Handler.Callback, Pag
     switch (method) {
       case METHOD_START_SCREEN_CAST:
         handleStartScreenCast(context, id, paramsObj);
-        return true;
+        break;
       case METHOD_STOP_SCREEN_CAST:
         handleStopScreenCast(context);
-        return true;
+        break;
       case METHOD_SCREEN_FRAME_ACK:
         handleScreenFrameAck(context, paramsObj);
-        return true;
-      default:
         break;
+      default:
+        return false;
     }
-    return false;
+    return true;
   }
 
   private void handleStartScreenCast(HippyEngineContext context, int id, JSONObject paramsObj) {

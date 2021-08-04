@@ -33,20 +33,20 @@ public class CSSDomain extends InspectorDomain {
     switch (method) {
       case METHOD_GET_MATCHED_STYLES_FOR_NODE:
         handleGetMatchedStyles(context, id, paramsObj);
-        return true;
+        break;
       case METHOD_GET_COMPUTED_STYLE_FOR_NODE:
         handleGetComputedStyle(context, id, paramsObj);
-        return true;
+        break;
       case METHOD_GET_INLINE_STYLES_FOR_NODE:
         handleGetInlineStyles(context, id, paramsObj);
-        return true;
+        break;
       case METHOD_SET_STYLE_TEXTS:
         handleSetStyleTexts(context, id, paramsObj);
-        return true;
-      default:
         break;
+      default:
+        return false;
     }
-    return false;
+    return true;
   }
 
   private void handleGetMatchedStyles(HippyEngineContext context, int id, JSONObject paramsObj) {

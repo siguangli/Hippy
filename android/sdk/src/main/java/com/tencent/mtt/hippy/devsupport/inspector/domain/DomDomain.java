@@ -35,20 +35,20 @@ public class DomDomain extends InspectorDomain {
     switch (method) {
       case METHOD_GET_DOCUMENT:
         handleGetDocument(context, id);
-        return true;
+        break;
       case METHOD_GET_BOX_MODEL:
         handleGetBoxModel(context, id, paramsObj);
-        return true;
+        break;
       case METHOD_GET_NODE_FOR_LOCATION:
         handleGetNodeForLocation(context, id, paramsObj);
-        return true;
+        break;
       case METHOD_SET_INSPECT_NODE:
         handleSetInspectMode(context, id, paramsObj);
-        return true;
-      default:
         break;
+      default:
+        return false;
     }
-    return false;
+    return true;
   }
 
   private void handleGetDocument(HippyEngineContext context, int id) {

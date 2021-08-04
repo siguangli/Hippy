@@ -122,7 +122,7 @@ public class DomModel {
       if (value instanceof Number) {
         value = String.format("%.1f", ((Number) value).doubleValue());
       }
-      resultBuilder.append(key).append(key).append(":").append(value).append(";");
+      resultBuilder.append(key).append(":").append(value).append(";");
     }
     resultBuilder.deleteCharAt(resultBuilder.length() - 1);
     return resultBuilder.toString();
