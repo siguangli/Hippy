@@ -25,17 +25,17 @@ publishing {
       groupId "com.tencent.mobileqq"
       artifactId "Hippy"
       //version "0.0.2-SNAPSHOT"
-      version "2.6.4"
+      version "2.6.5"
       artifact(OUTPUT_JAR_PATH)     //托管指定路径的包
 
       pom.withXml {
         //properties信息必填，否则合入主干MR不通过
         def propertiesNode = asNode().appendNode('properties')
         propertiesNode.appendNode('jarName', 'hippy.jar')
-        propertiesNode.appendNode('jarDescription', 'Hippy SDK for QQ 8.8.3')
+        propertiesNode.appendNode('jarDescription', 'Hippy SDK for QQ 8.8.20')
         propertiesNode.appendNode('sourceUrl', 'https://github.com/Tencent/Hippy')
         propertiesNode.appendNode('deployUrl', 'https://github.com/Tencent/Hippy')
-        propertiesNode.appendNode('commitId', '2.6.4')
+        propertiesNode.appendNode('commitId', '2.6.5')
       }
     }
   }
