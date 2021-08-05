@@ -133,6 +133,7 @@ public abstract class HippyEngineManagerImpl extends HippyEngineManager implemen
     this.mServerHost = params.debugServerHost;
     this.mGroupId = params.groupId;
     this.mThirdPartyAdapter = params.thirdPartyAdapter;
+    this.mIsTdf = params.isTdf;
   }
 
   /**
@@ -713,7 +714,7 @@ public abstract class HippyEngineManagerImpl extends HippyEngineManager implemen
       mModuleManager = new HippyModuleManagerImpl(this, mAPIProviders);
       mBridgeManager = new HippyBridgeManagerImpl(this, mCoreBundleLoader,
           HippyEngineManagerImpl.this.getBridgeType(),
-          enableV8Serialization, isDevModule, debugServerHost, mGroupId, mThirdPartyAdapter);
+          enableV8Serialization, isDevModule, debugServerHost, mGroupId, mThirdPartyAdapter, mIsTdf);
       mRenderManager = new RenderManager(this, mAPIProviders);
       mDomManager = new DomManager(this);
     }
