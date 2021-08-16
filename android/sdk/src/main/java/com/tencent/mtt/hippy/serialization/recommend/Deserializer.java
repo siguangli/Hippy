@@ -15,7 +15,7 @@
  */
 package com.tencent.mtt.hippy.serialization.recommend;
 
-import androidx.annotation.NonNull;
+import android.support.annotation.NonNull;
 
 import com.tencent.mtt.hippy.serialization.exception.DataCloneOutOfRangeException;
 import com.tencent.mtt.hippy.serialization.exception.DataCloneOutOfValueException;

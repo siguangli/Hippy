@@ -15,7 +15,7 @@
  */
 package com.tencent.mtt.hippy.serialization.string;
 
-import androidx.annotation.NonNull;
+import android.support.annotation.NonNull;
 
 import com.tencent.mtt.hippy.serialization.StringLocation;
 

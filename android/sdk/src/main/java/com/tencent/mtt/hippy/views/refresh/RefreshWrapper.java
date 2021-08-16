@@ -24,6 +24,7 @@ import android.view.animation.AccelerateInterpolator;
 import com.tencent.mtt.hippy.common.HippyMap;
 import com.tencent.mtt.hippy.uimanager.HippyViewEvent;
 import com.tencent.mtt.hippy.utils.PixelUtil;
+import com.tencent.mtt.hippy.views.hippylist.HippyRecyclerViewWrapper;
 import com.tencent.mtt.hippy.views.list.HippyListView;
 import com.tencent.mtt.hippy.views.view.HippyViewGroup;
 
@@ -99,13 +100,19 @@ public class RefreshWrapper extends HippyViewGroup {
   }
 
 
-  float getCompactScrollY() {
-    if (mContentView instanceof HippyListView) {
-      HippyListView hippyListView = (HippyListView) mContentView;
-      return hippyListView.getOffsetY();
-    }
-    return mContentView.getScrollY();
-  }
+	float getCompactScrollY()
+	{
+		if (mContentView instanceof HippyListView)
+		{
+			HippyListView hippyListView = (HippyListView) mContentView;
+			return hippyListView.getOffsetY();
+		}
+		if (mContentView instanceof HippyRecyclerViewWrapper)
+		{
+			return ((HippyRecyclerViewWrapper) mContentView).computeVerticalScrollOffset();
+		}
+		return mContentView.getScrollY();
+	}
 
 
   @Override

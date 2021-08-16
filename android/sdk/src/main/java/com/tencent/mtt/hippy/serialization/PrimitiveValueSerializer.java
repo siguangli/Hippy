@@ -15,7 +15,7 @@
  */
 package com.tencent.mtt.hippy.serialization;
 
-import androidx.annotation.NonNull;
+import android.support.annotation.NonNull;
 
 import com.tencent.mtt.hippy.serialization.utils.IntegerPolyfill;
 import com.tencent.mtt.hippy.serialization.nio.writer.BinaryWriter;

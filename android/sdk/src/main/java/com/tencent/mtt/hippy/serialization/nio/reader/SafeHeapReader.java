@@ -15,7 +15,7 @@
  */
 package com.tencent.mtt.hippy.serialization.nio.reader;
 
-import androidx.annotation.NonNull;
+import android.support.annotation.NonNull;
 
 import java.nio.ByteBuffer;
 

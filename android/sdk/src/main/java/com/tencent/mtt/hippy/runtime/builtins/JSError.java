@@ -15,7 +15,7 @@
  */
 package com.tencent.mtt.hippy.runtime.builtins;
 
-import androidx.annotation.NonNull;
+import android.support.annotation.NonNull;
 import com.tencent.mtt.hippy.runtime.StackTrace;
 
 @SuppressWarnings({"unused"})
