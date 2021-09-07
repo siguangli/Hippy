@@ -314,7 +314,7 @@ public class HippyRecyclerListAdapter<HRCV extends HippyRecyclerView> extends Ad
         ListItemRenderNode childNode = getChildNode(position);
         if (childNode != null) {
             if (childNode.isPullHeader()) {
-                return 0;
+                return headerEventHelper.getVisibleHeight();
             }
             return childNode.getHeight();
         }
