@@ -20,6 +20,8 @@ import android.text.TextUtils;
 
 import android.webkit.CookieManager;
 import android.webkit.CookieSyncManager;
+import android.webkit.ValueCallback;
+
 import androidx.annotation.Nullable;
 import com.tencent.mtt.hippy.common.HippyArray;
 import com.tencent.mtt.hippy.common.HippyMap;
@@ -83,12 +85,27 @@ public class DefaultHttpAdapter implements HippyHttpAdapter {
             return;
         }
         if (!TextUtils.isEmpty(url) && keyValue != null) {
-            if (keyValue.length() == 0) {
-                cookieManager.setCookie(url, keyValue);
+            if (keyValue.trim().length() == 0) {
+                removeCookie();
                 syncCookie();
             } else {
                 saveCookie2Manager(url, keyValue, expires);
             }
+        }
+    }
+
+    protected void removeCookie() {
+        CookieManager cookieManager = getCookieManager();
+        if (cookieManager == null) {
+            return;
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            cookieManager.removeAllCookies(new ValueCallback<Boolean>() {
+                @Override
+                public void onReceiveValue(Boolean aBoolean) {}
+            });
+        } else {
+            cookieManager.removeAllCookie();
         }
     }
 
