@@ -21,7 +21,7 @@
  */
 
 apply plugin: 'com.android.library'
-apply from: './mavencentral.gradle'
+apply from: './maven_for_qb.gradle'
 
 ext {
   CMAKE_PATH = "$projectDir.absolutePath/src/main/jni/CMakeLists.txt"
