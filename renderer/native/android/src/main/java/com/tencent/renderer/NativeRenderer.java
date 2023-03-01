@@ -447,6 +447,8 @@ public class NativeRenderer extends Renderer implements NativeRender, NativeRend
             } catch (NullPointerException e) {
                 throw new NativeRenderException(INVALID_NODE_DATA_ERR, e);
             }
+            LogUtils.e("maxli", "createNode: id=" + nodeId + ", pId=" + nodePid + ", className="
+                    + className);
             // The node id, pid and index should not be negative number.
             if (nodeId < 0 || nodePid < 0 || nodeIndex < 0) {
                 throw new NativeRenderException(INVALID_NODE_DATA_ERR,
