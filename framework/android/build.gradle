@@ -24,7 +24,8 @@ import java.nio.file.Paths
 
 apply plugin: 'com.android.library'
 apply plugin: 'com.kezong.fat-aar'
-apply from: './publish.gradle'
+//apply from: './publish.gradle'
+apply from: "./tencent_video_bintray_publish.gradle"
 
 def mergeCppDefinitions() {
     def cppProps = new Properties()
