@@ -125,7 +125,10 @@ public class NativeGestureDispatcher implements NativeGestureProcessor.Callback 
     }
 
     public static void handleAttachedToWindow(@NonNull View view) {
-        EventUtils.sendComponentEvent(view, NodeProps.ON_ATTACHED_TO_WINDOW, null);
+        long time = System.currentTimeMillis();
+        HashMap timerMap = new HashMap<>();
+        timerMap.put("startTime", time);
+        EventUtils.sendComponentEvent(view, NodeProps.ON_ATTACHED_TO_WINDOW, timerMap);
     }
 
     public static void handleDetachedFromWindow(@NonNull View view) {

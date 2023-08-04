@@ -29,7 +29,7 @@ public class LogUtils {
 
     public static void d(String tag, String msg) {
         if (DEBUG_ENABLE) {
-            Log.d(tag, msg);
+            //Log.d(tag, msg);
         }
     }
 
@@ -56,7 +56,7 @@ public class LogUtils {
 
     public static void d(String tag, String msg, Throwable throwable) {
         if (DEBUG_ENABLE) {
-            Log.d(tag, msg, throwable);
+            //Log.d(tag, msg, throwable);
         }
     }
 
