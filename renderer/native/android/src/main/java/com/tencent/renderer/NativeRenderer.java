@@ -847,6 +847,7 @@ public class NativeRenderer extends Renderer implements NativeRender, NativeRend
             @Override
             public void run() {
                 long start = System.currentTimeMillis();
+                LogUtils.e(TAG_TEST, "executeUITask start " + start);
                 int count = size;
                 while (count > 0) {
                     UITaskExecutor task = mUITaskQueue.poll();
@@ -855,9 +856,10 @@ public class NativeRenderer extends Renderer implements NativeRender, NativeRend
                     }
                     count--;
                 }
-                LogUtils.d(TAG_TEST,
-                        "executeUITask: size " + size + ", time " + (System.currentTimeMillis()
+                LogUtils.e(TAG_TEST,
+                        "executeUITask end size " + size + ", time " + (System.currentTimeMillis()
                                 - start));
+                LogUtils.e(TAG_TEST, "   ");
             }
         });
     }

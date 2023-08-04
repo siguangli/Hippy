@@ -322,6 +322,7 @@ public class NativeRenderProvider {
             mRenderDelegate.endBatch(rootId);
             mLastTime = System.currentTimeMillis();
             LogUtils.e(TAG_TEST, "endBatch end " + mLastTime + ", consume " + (mLastTime - startTime));
+            LogUtils.e(TAG_TEST, "   ");
         } catch (NativeRenderException e) {
             mRenderDelegate.handleRenderException(e);
         }
