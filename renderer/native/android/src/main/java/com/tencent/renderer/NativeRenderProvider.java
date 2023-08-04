@@ -23,6 +23,7 @@ import com.tencent.mtt.hippy.serialization.nio.reader.BinaryReader;
 import com.tencent.mtt.hippy.serialization.nio.reader.SafeHeapReader;
 import com.tencent.mtt.hippy.serialization.nio.writer.SafeHeapWriter;
 import com.tencent.mtt.hippy.serialization.string.InternalizedStringTable;
+import com.tencent.mtt.hippy.utils.LogUtils;
 import com.tencent.mtt.hippy.utils.PixelUtil;
 import com.tencent.renderer.annotation.CalledByNative;
 import com.tencent.renderer.serialization.Deserializer;
@@ -40,6 +41,7 @@ import java.util.List;
  */
 public class NativeRenderProvider {
 
+    public static final String TAG_TEST = "RENDER_TIMER";
     @NonNull
     private final NativeRenderDelegate mRenderDelegate;
     @NonNull
@@ -51,11 +53,13 @@ public class NativeRenderProvider {
     @Nullable
     private SafeHeapWriter mSafeHeapWriter;
     private int mInstanceId;
+    private long mLastTime = 0;
 
     public NativeRenderProvider(@NonNull NativeRenderDelegate renderDelegate) {
         mRenderDelegate = renderDelegate;
         mSerializer = new Serializer();
         mDeserializer = new Deserializer(null, new InternalizedStringTable());
+        mLastTime = System.currentTimeMillis();
     }
 
     public void setInstanceId(int instanceId) {
@@ -125,12 +129,16 @@ public class NativeRenderProvider {
     @CalledByNative
     @SuppressWarnings("unused")
     public void createNode(int rootId, byte[] buffer) {
+        long startTime = System.currentTimeMillis();
+        LogUtils.e(TAG_TEST, "createNode start " + startTime + ", consume " + (startTime - mLastTime));
         // Replay snapshots are executed in the UI thread, which may generate multithreaded problem with
         // the create node of the dom thread, so synchronized with native renderer object here.
         synchronized(mRenderDelegate) {
             try {
                 final List<Object> list = bytesToArgument(ByteBuffer.wrap(buffer));
                 mRenderDelegate.createNode(rootId, list);
+                mLastTime = System.currentTimeMillis();
+                LogUtils.e(TAG_TEST, "createNode end " + mLastTime + ", consume " + (mLastTime - startTime) + ", size " + list.size());
             } catch (NativeRenderException e) {
                 mRenderDelegate.handleRenderException(e);
             }
@@ -146,9 +154,13 @@ public class NativeRenderProvider {
     @CalledByNative
     @SuppressWarnings("unused")
     public void updateNode(int rootId, byte[] buffer) {
+        long startTime = System.currentTimeMillis();
+        LogUtils.e(TAG_TEST, "updateNode start " + startTime + ", consume " + (startTime - mLastTime));
         try {
             final List<Object> list = bytesToArgument(ByteBuffer.wrap(buffer));
             mRenderDelegate.updateNode(rootId, list);
+            mLastTime = System.currentTimeMillis();
+            LogUtils.e(TAG_TEST, "updateNode end " + mLastTime + ", consume " + (mLastTime - startTime) + ", size " + list.size());
         } catch (NativeRenderException e) {
             mRenderDelegate.handleRenderException(e);
         }
@@ -163,8 +175,12 @@ public class NativeRenderProvider {
     @CalledByNative
     @SuppressWarnings("unused")
     public void deleteNode(int rootId, int[] ids) {
+        long startTime = System.currentTimeMillis();
+        LogUtils.e(TAG_TEST, "deleteNode start " + startTime + ", consume " + (startTime - mLastTime));
         try {
             mRenderDelegate.deleteNode(rootId, ids);
+            mLastTime = System.currentTimeMillis();
+            LogUtils.e(TAG_TEST, "deleteNode end " + mLastTime + ", consume " + (mLastTime - startTime));
         } catch (NativeRenderException e) {
             mRenderDelegate.handleRenderException(e);
         }
@@ -224,9 +240,13 @@ public class NativeRenderProvider {
     @CalledByNative
     @SuppressWarnings("unused")
     public void updateLayout(int rootId, byte[] buffer) {
+        long startTime = System.currentTimeMillis();
+        LogUtils.e(TAG_TEST, "updateLayout start " + startTime + ", consume " + (startTime - mLastTime));
         try {
             final List<Object> list = bytesToArgument(ByteBuffer.wrap(buffer));
             mRenderDelegate.updateLayout(rootId, list);
+            mLastTime = System.currentTimeMillis();
+            LogUtils.e(TAG_TEST, "updateLayout end " + mLastTime + ", consume " + (mLastTime - startTime) + ", size " + list.size());
         } catch (NativeRenderException e) {
             mRenderDelegate.handleRenderException(e);
         }
@@ -296,8 +316,12 @@ public class NativeRenderProvider {
     @CalledByNative
     @SuppressWarnings("unused")
     public void endBatch(int rootId) {
+        long startTime = System.currentTimeMillis();
+        LogUtils.e(TAG_TEST, "endBatch start " + startTime + ", consume " + (startTime - mLastTime));
         try {
             mRenderDelegate.endBatch(rootId);
+            mLastTime = System.currentTimeMillis();
+            LogUtils.e(TAG_TEST, "endBatch end " + mLastTime + ", consume " + (mLastTime - startTime));
         } catch (NativeRenderException e) {
             mRenderDelegate.handleRenderException(e);
         }
