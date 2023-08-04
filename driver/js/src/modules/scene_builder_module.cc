@@ -30,6 +30,8 @@
 #include "footstone/string_view.h"
 #include "footstone/string_view_utils.h"
 
+#include <chrono>
+
 template <typename T>
 using ClassTemplate = hippy::ClassTemplate<T>;
 
@@ -424,6 +426,11 @@ std::shared_ptr<ClassTemplate<SceneBuilder>> RegisterSceneBuilder(const std::wea
       return nullptr;
     }
     auto ret = HandleJsValue(scope->GetContext(), arguments[0], scope);
+
+    auto now = std::chrono::system_clock::now();
+    auto timestamp = std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch()).count();
+    FOOTSTONE_LOG(INFO) << "@@Create Node Time start: " << timestamp;
+
     SceneBuilder::Create(scope->GetDomManager(), scope->GetRootNode(), std::move(std::get<2>(ret)));
     return nullptr;
   };
@@ -441,6 +448,11 @@ std::shared_ptr<ClassTemplate<SceneBuilder>> RegisterSceneBuilder(const std::wea
       return nullptr;
     }
     auto ret = HandleJsValue(scope->GetContext(), arguments[0], scope);
+    
+    auto now = std::chrono::system_clock::now();
+    auto timestamp = std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch()).count();
+    FOOTSTONE_LOG(INFO) << "@@Update Node Time start: " << timestamp;
+
     SceneBuilder::Update(scope->GetDomManager(), scope->GetRootNode(), std::move(std::get<2>(ret)));
     return nullptr;
   };
@@ -488,6 +500,11 @@ std::shared_ptr<ClassTemplate<SceneBuilder>> RegisterSceneBuilder(const std::wea
         }
       }
     }
+
+    auto now = std::chrono::system_clock::now();
+    auto timestamp = std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch()).count();
+    FOOTSTONE_LOG(INFO) << "@@Move Node Time start: " << timestamp;
+
     SceneBuilder::Move(weak_dom_manager, scope->GetRootNode(), std::move(dom_infos));
     return nullptr;
   };
@@ -531,6 +548,11 @@ std::shared_ptr<ClassTemplate<SceneBuilder>> RegisterSceneBuilder(const std::wea
             nullptr));
       }
     }
+
+    auto now = std::chrono::system_clock::now();
+    auto timestamp = std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch()).count();
+    FOOTSTONE_LOG(INFO) << "@@Delete Node Time start: " << timestamp;
+
     SceneBuilder::Delete(scope->GetDomManager(), scope->GetRootNode(), std::move(dom_infos));
     return nullptr;
   };
@@ -586,6 +608,11 @@ std::shared_ptr<ClassTemplate<SceneBuilder>> RegisterSceneBuilder(const std::wea
     if (!scope) {
       return nullptr;
     }
+
+    auto now = std::chrono::system_clock::now();
+    auto timestamp = std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch()).count();
+    FOOTSTONE_LOG(INFO) << "@@Build Time start: " << timestamp;
+
     SceneBuilder::Build(scope->GetDomManager(), scope->GetRootNode());
     return nullptr;
   };

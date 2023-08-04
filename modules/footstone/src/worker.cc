@@ -104,6 +104,7 @@ void Worker::BalanceNoLock() {
 }
 
 bool Worker::RunTask() {
+  FOOTSTONE_LOG(INFO) << "@@Run Task started, immediate task size = " << immediate_task_queue_.size();
   auto task = GetNextTask();
   if (!task) {
     return false;

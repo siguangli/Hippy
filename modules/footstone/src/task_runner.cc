@@ -111,6 +111,7 @@ void TaskRunner::PostTask(std::unique_ptr<Task> task) {
   {
     std::lock_guard<std::mutex> lock(queue_mutex_);
     task_queue_.push(std::move(task));
+    FOOTSTONE_LOG(INFO) << "@@Push Task, task size = " << task_queue_.size();
   }
   NotifyWorker();
 }
@@ -121,6 +122,7 @@ void TaskRunner::PostDelayedTask(std::unique_ptr<Task> task, TimeDelta delay) {
 
     TimePoint deadline = TimePoint::Now() + delay;
     delayed_task_queue_.push(std::make_pair(deadline, std::move(task)));
+    FOOTSTONE_LOG(INFO) << "@@Push Delayed Task, task size = " << delayed_task_queue_.size();
   }
   NotifyWorker();
 }
@@ -178,6 +180,7 @@ std::unique_ptr<Task> TaskRunner::GetNext() {
       task = popTaskFromDelayedQueueNoLock(now);
     }
   }
+  FOOTSTONE_LOG(INFO) << "@@Run Task started, running group task size = " << task_queue_.size();
   {
     std::lock_guard<std::mutex> lock(queue_mutex_);
     if (!task_queue_.empty()) {
