@@ -129,6 +129,8 @@ public class NativeRenderer extends Renderer implements NativeRender, NativeRend
     private ExecutorService mBackgroundExecutor;
     @Nullable
     private ImageLoaderAdapter mImageLoader;
+    private long mUITotalTime = 0;
+    private long mLastTime = 0;
 
     public NativeRenderer() {
         mRenderProvider = new NativeRenderProvider(this);
@@ -137,6 +139,7 @@ public class NativeRenderer extends Renderer implements NativeRender, NativeRend
         mUITaskQueue = new LinkedBlockingQueue<>(MAX_UI_TASK_QUEUE_CAPACITY);
         mRenderManager = new RenderManager(this);
         mVirtualNodeManager = new VirtualNodeManager(this);
+        mLastTime = System.currentTimeMillis();
     }
 
     public float getDensity() {
@@ -847,7 +850,8 @@ public class NativeRenderer extends Renderer implements NativeRender, NativeRend
             @Override
             public void run() {
                 long start = System.currentTimeMillis();
-                LogUtils.e(TAG_TEST, "executeUITask start " + start);
+                LogUtils.e(TAG_TEST, "executeUITask start " + start + ", 距离上次执行UI TASK " + (start - mLastTime));
+                mLastTime = start;
                 int count = size;
                 while (count > 0) {
                     UITaskExecutor task = mUITaskQueue.poll();
@@ -856,9 +860,10 @@ public class NativeRenderer extends Renderer implements NativeRender, NativeRend
                     }
                     count--;
                 }
+                long timeConsuming = System.currentTimeMillis() - start;
+                mUITotalTime += timeConsuming;
                 LogUtils.e(TAG_TEST,
-                        "executeUITask end size " + size + ", time " + (System.currentTimeMillis()
-                                - start));
+                        "executeUITask end size " + size + ", 本次执行耗时 " + timeConsuming + ", UI TASK共执行耗时累计 " + mUITotalTime);
                 LogUtils.e(TAG_TEST, "   ");
             }
         });

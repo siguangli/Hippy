@@ -19,6 +19,7 @@ package com.tencent.renderer.node;
 import static com.tencent.mtt.hippy.dom.node.NodeProps.TEXT_SHADOW_COLOR;
 import static com.tencent.mtt.hippy.dom.node.NodeProps.TEXT_SHADOW_OFFSET;
 import static com.tencent.mtt.hippy.dom.node.NodeProps.TEXT_SHADOW_RADIUS;
+import static com.tencent.renderer.NativeRenderProvider.TAG_TEST;
 
 import android.graphics.Color;
 import android.graphics.Typeface;
@@ -42,6 +43,7 @@ import androidx.annotation.RequiresApi;
 import com.tencent.mtt.hippy.annotation.HippyControllerProps;
 import com.tencent.mtt.hippy.dom.node.NodeProps;
 import com.tencent.mtt.hippy.utils.I18nUtil;
+import com.tencent.mtt.hippy.utils.LogUtils;
 import com.tencent.mtt.hippy.utils.PixelUtil;
 import com.tencent.renderer.NativeRender;
 import com.tencent.renderer.component.text.FontAdapter;
@@ -115,6 +117,8 @@ public class TextVirtualNode extends VirtualNode {
     protected final FontAdapter mFontAdapter;
     @Nullable
     protected Layout mLayout;
+    private static int mLayoutCount = 0;
+    private static int mReturnCount = 0;
 
     public TextVirtualNode(int rootId, int id, int pid, int index,
             @NonNull NativeRender nativeRender) {
@@ -449,12 +453,20 @@ public class TextVirtualNode extends VirtualNode {
 
     @NonNull
     protected Layout createLayout(final float width, final FlexMeasureMode widthMode) {
+        mLayoutCount++;
+        LogUtils.e(TAG_TEST, "createLayout 调用次数 " + mLayoutCount + ", id " + getId() +
+            ", last width " + mLastLayoutWidth + ", width " + width + ", dirty " + mDirty + ", span==null " + (mSpanned == null ));
+        if (getId() == 8) {
+            LogUtils.e(TAG_TEST, "=============");
+        }
         if (mSpanned == null || mDirty) {
             mSpanned = createSpan(true);
             mDirty = false;
         } else if (mLayout != null && width > 0 && mLastLayoutWidth == width) {
+            mReturnCount++;
             // If the property of text node no change, and the measure width same as last time,
             // no need to create layout again.
+            LogUtils.e(TAG_TEST, "createLayout 直接return次数 " + mReturnCount);
             return mLayout;
         }
         final TextPaint textPaint = getTextPaint();
