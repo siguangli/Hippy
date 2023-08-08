@@ -1026,7 +1026,6 @@ public abstract class HippyEngineManagerImpl extends HippyEngineManager implemen
             if (!isReload) {
                 mDomManager.destroy();
             }
-            mBridgeManager.destroy();
             mModuleManager.destroy();
             mVfsManager.destroy();
             onDestroyVfs(mVfsManager.getId());
