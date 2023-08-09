@@ -120,6 +120,9 @@ public class TextVirtualNode extends VirtualNode {
     private static int mLayoutCount = 0;
     private static int mReturnCount = 0;
 
+    private static int mLayoutCount2 = 0;
+    private static int mReturnCount2 = 0;
+
     public TextVirtualNode(int rootId, int id, int pid, int index,
             @NonNull NativeRender nativeRender) {
         super(rootId, id, pid, index);
@@ -448,27 +451,36 @@ public class TextVirtualNode extends VirtualNode {
 
     @NonNull
     protected Layout createLayout() {
-        return createLayout(mLastLayoutWidth, FlexMeasureMode.EXACTLY);
+        return createLayout(mLastLayoutWidth, FlexMeasureMode.EXACTLY, false);
     }
 
     @NonNull
-    protected Layout createLayout(final float width, final FlexMeasureMode widthMode) {
-        mLayoutCount++;
-        LogUtils.e(TAG_TEST, "createLayout 调用次数 " + mLayoutCount + ", id " + getId() +
-            ", last width " + mLastLayoutWidth + ", width " + width + ", dirty " + mDirty + ", span==null " + (mSpanned == null ));
-        if (getId() == 8) {
-            LogUtils.e(TAG_TEST, "=============");
+    protected Layout createLayout(final float width, final FlexMeasureMode widthMode, boolean callFromMeasure) {
+        if (callFromMeasure) {
+            mLayoutCount++;
+            LogUtils.e(TAG_TEST, "createLayout A 调用次数 " + mLayoutCount + ", id " + getId() +
+                ", last width " + mLastLayoutWidth + ", width " + width + ", dirty " + mDirty + ", span==null " + (mSpanned == null));
+        } else {
+            mLayoutCount2++;
+            LogUtils.e(TAG_TEST, "createLayout B 调用次数 " + mLayoutCount2 + ", id " + getId() +
+                ", last width " + mLastLayoutWidth + ", width " + width + ", dirty " + mDirty + ", span==null " + (mSpanned == null));
         }
         if (mSpanned == null || mDirty) {
             mSpanned = createSpan(true);
             mDirty = false;
-        } else if (mLayout != null && width > 0 && mLastLayoutWidth == width) {
-            mReturnCount++;
+        } else if (mLayout != null && width >= mLastLayoutWidth && width <= (mLastLayoutWidth + 1)) {
             // If the property of text node no change, and the measure width same as last time,
             // no need to create layout again.
-            LogUtils.e(TAG_TEST, "createLayout 直接return次数 " + mReturnCount);
+            if (callFromMeasure) {
+                mReturnCount++;
+                LogUtils.e(TAG_TEST, "createLayout A 命中缓存次数 " + mReturnCount);
+            } else {
+                mReturnCount2++;
+                LogUtils.e(TAG_TEST, "createLayout B 命中缓存次数 " + mReturnCount2);
+            }
             return mLayout;
         }
+        LogUtils.e(TAG_TEST, "=================================");
         final TextPaint textPaint = getTextPaint();
         Layout layout;
         BoringLayout.Metrics boring = BoringLayout.isBoring(mSpanned, textPaint);

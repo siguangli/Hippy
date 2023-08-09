@@ -159,7 +159,7 @@ public class VirtualNodeManager {
             LogUtils.w(TAG, "VirtualNode updateLayout get padding exception: " + e.getMessage());
         }
         Layout layout = ((TextVirtualNode) node)
-                .createLayout((width - leftPadding - rightPadding), FlexMeasureMode.EXACTLY);
+                .createLayout((width - leftPadding - rightPadding), FlexMeasureMode.EXACTLY, false);
         // Layout has update here, not need to rebuild in end batch, so remove node ref from mUpdateNodes.
         List<VirtualNode> updateNodes = mUpdateNodes.get(rootId);
         if (updateNodes != null) {
@@ -182,7 +182,7 @@ public class VirtualNodeManager {
                             + "only text node and parent==null need do measure");
         }
         TextVirtualNode textNode = (TextVirtualNode) node;
-        Layout layout = textNode.createLayout(width, widthMode);
+        Layout layout = textNode.createLayout(width, widthMode, true);
         return FlexUtils.makeSizeToLong(layout.getWidth(), layout.getHeight());
     }
 

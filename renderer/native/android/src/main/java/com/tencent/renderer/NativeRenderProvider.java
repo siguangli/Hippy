@@ -54,7 +54,7 @@ public class NativeRenderProvider {
     private SafeHeapWriter mSafeHeapWriter;
     private int mInstanceId;
     private long mLastTime = 0;
-    private long mDomTotalTime = 0;
+    private long mMeasureTotalTime = 0;
 
     public NativeRenderProvider(@NonNull NativeRenderDelegate renderDelegate) {
         mRenderDelegate = renderDelegate;
@@ -130,20 +130,16 @@ public class NativeRenderProvider {
     @CalledByNative
     @SuppressWarnings("unused")
     public void createNode(int rootId, byte[] buffer) {
-        long startTime = System.currentTimeMillis();
-        LogUtils.e(TAG_TEST, "createNode start " + startTime + ", 距离上次jni调用 " + (startTime - mLastTime));
-        mLastTime = startTime;
+        long startTime = System.nanoTime()/1000;
         // Replay snapshots are executed in the UI thread, which may generate multithreaded problem with
         // the create node of the dom thread, so synchronized with native renderer object here.
         synchronized(mRenderDelegate) {
             try {
                 final List<Object> list = bytesToArgument(ByteBuffer.wrap(buffer));
                 mRenderDelegate.createNode(rootId, list);
-                long endTime = System.currentTimeMillis();
-                long timeConsuming = endTime - startTime;
-                mDomTotalTime += timeConsuming;
-                LogUtils.e(TAG_TEST, "createNode end " + endTime + ", 本次耗时 " + (endTime - startTime) +
-                    ", 累计耗时 " + mDomTotalTime);
+                long endTime = System.nanoTime()/1000;
+                LogUtils.e(TAG_TEST, "createNode 耗时 " + (endTime - startTime) + ", size " + list.size());
+                LogUtils.e(TAG_TEST, "   ");
             } catch (NativeRenderException e) {
                 mRenderDelegate.handleRenderException(e);
             }
@@ -159,17 +155,9 @@ public class NativeRenderProvider {
     @CalledByNative
     @SuppressWarnings("unused")
     public void updateNode(int rootId, byte[] buffer) {
-        long startTime = System.currentTimeMillis();
-        LogUtils.e(TAG_TEST, "updateNode start " + startTime + ", 距离上次jni调用 " + (startTime - mLastTime));
-        mLastTime = startTime;
         try {
             final List<Object> list = bytesToArgument(ByteBuffer.wrap(buffer));
             mRenderDelegate.updateNode(rootId, list);
-            long endTime = System.currentTimeMillis();
-            long timeConsuming = endTime - startTime;
-            mDomTotalTime += timeConsuming;
-            LogUtils.e(TAG_TEST, "updateNode end " + endTime + ", 本次耗时 " + (endTime - startTime) +
-                ", 累计耗时 " + mDomTotalTime);
         } catch (NativeRenderException e) {
             mRenderDelegate.handleRenderException(e);
         }
@@ -245,17 +233,13 @@ public class NativeRenderProvider {
     @CalledByNative
     @SuppressWarnings("unused")
     public void updateLayout(int rootId, byte[] buffer) {
-        long startTime = System.currentTimeMillis();
-        LogUtils.e(TAG_TEST, "updateLayout start " + startTime + ", 距离上次jni调用 " + (startTime - mLastTime));
-        mLastTime = startTime;
+        long startTime = System.nanoTime()/1000;
         try {
             final List<Object> list = bytesToArgument(ByteBuffer.wrap(buffer));
             mRenderDelegate.updateLayout(rootId, list);
-            long endTime = System.currentTimeMillis();
-            long timeConsuming = endTime - startTime;
-            mDomTotalTime += timeConsuming;
-            LogUtils.e(TAG_TEST, "updateLayout end " + endTime + ", 本次耗时 " + (endTime - startTime) +
-                ", 累计耗时 " + mDomTotalTime);
+            long endTime = System.nanoTime()/1000;
+            LogUtils.e(TAG_TEST, "updateLayout 耗时 " + (endTime - startTime) + ", size " + list.size());
+            LogUtils.e(TAG_TEST, "   ");
         } catch (NativeRenderException e) {
             mRenderDelegate.handleRenderException(e);
         }
@@ -293,16 +277,13 @@ public class NativeRenderProvider {
     @SuppressWarnings("unused")
     public long measure(int rootId, int nodeId, float width, int widthMode, float height,
             int heightMode) {
-        long startTime = System.currentTimeMillis();
-        LogUtils.e(TAG_TEST, "measure start " + startTime + ", 距离上次jni调用 " + (startTime - mLastTime)
-            + ", id " + nodeId + ", width " + width + ", height " + height);
-        mLastTime = startTime;
+        long startTime = System.nanoTime()/1000;
+        LogUtils.e(TAG_TEST, "measure start id " + nodeId + ", width " + width + ", height " + height);
         long size = mRenderDelegate.measure(rootId, nodeId, width, widthMode, height, heightMode);
-        long endTime = System.currentTimeMillis();
+        long endTime = System.nanoTime()/1000;
         long timeConsuming = endTime - startTime;
-        mDomTotalTime += timeConsuming;
-        LogUtils.e(TAG_TEST, "measure end " + endTime + ", 本次耗时 " + (endTime - startTime) +
-            ", 累计耗时 " + mDomTotalTime);
+        mMeasureTotalTime += timeConsuming;
+        LogUtils.e(TAG_TEST, "measure end 本次耗时 " + timeConsuming + ", 累计耗时 " + mMeasureTotalTime);
         return size;
     }
 
@@ -335,16 +316,11 @@ public class NativeRenderProvider {
     @CalledByNative
     @SuppressWarnings("unused")
     public void endBatch(int rootId) {
-        long startTime = System.currentTimeMillis();
-        LogUtils.e(TAG_TEST, "endBatch start " + startTime + ", 距离上次jni调用 " + (startTime - mLastTime));
-        mLastTime = startTime;
+        long startTime = System.nanoTime()/1000;
         try {
             mRenderDelegate.endBatch(rootId);
-            long endTime = System.currentTimeMillis();
-            long timeConsuming = endTime - startTime;
-            mDomTotalTime += timeConsuming;
-            LogUtils.e(TAG_TEST, "endBatch end " + endTime + ", 本次耗时 " + (endTime - startTime) +
-                ", 累计耗时 " + mDomTotalTime);
+            long endTime = System.nanoTime()/1000;
+            LogUtils.e(TAG_TEST, "endBatch 耗时 " + (endTime - startTime));
             LogUtils.e(TAG_TEST, "   ");
         } catch (NativeRenderException e) {
             mRenderDelegate.handleRenderException(e);
