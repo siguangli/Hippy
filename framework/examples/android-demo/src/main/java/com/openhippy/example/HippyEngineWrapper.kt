@@ -119,6 +119,7 @@ class HippyEngineWrapper {
         hippyEngine.destroyModule(hippyRootView) { result, e ->
             hippyEngine.destroyEngine()
         }
+        hippyRootView = null
     }
 
     fun load(context: Context, callback: HippyEngineLoadCallback) {
