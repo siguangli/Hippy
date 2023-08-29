@@ -188,7 +188,8 @@ void DomManager::DoLayout(const std::weak_ptr<RootNode>& weak_root_node) {
 
 void DomManager::PostTask(const Scene&& scene) {
   auto func = [scene = scene] { scene.Build(); };
-  task_runner_->PostTask(std::move(func));
+  auto task = std::make_unique<Task>(func, "DomManager task");
+  task_runner_->PostTask(std::move(task));
 }
 
 uint32_t DomManager::PostDelayedTask(const Scene&& scene, TimeDelta delay) {

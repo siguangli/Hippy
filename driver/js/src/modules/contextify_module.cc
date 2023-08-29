@@ -199,7 +199,8 @@ void ContextifyModule::LoadUntrustedContent(CallbackInfo& info, void* data) {
     };
     auto runner = scope->GetTaskRunner();
     if (runner) {
-      runner->PostTask(std::move(callback));
+      auto task = std::make_unique<footstone::Task>(callback, "ContextifyModule task");
+      runner->PostTask(std::move(task));
     }
   };
 

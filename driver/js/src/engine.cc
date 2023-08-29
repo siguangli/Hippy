@@ -62,7 +62,8 @@ void Engine::AsyncInitialize(std::shared_ptr<TaskRunner> js,
       callback(engine);
     }
   };
-  js_runner_->PostTask(std::move(cb));
+  auto task = std::make_unique<footstone::Task>(cb, "Engine task");
+  js_runner_->PostTask(std::move(task));
 }
 
 std::shared_ptr<Scope> Engine::CreateScope(const std::string& name) {

@@ -112,7 +112,8 @@ void UIManagerModule::CallUIFunction(CallbackInfo& info, void* data) {
       };
       auto runner = scope->GetTaskRunner();
       FOOTSTONE_CHECK(runner);
-      runner->PostTask(std::move(cb));
+      auto task = std::make_unique<footstone::Task>(cb, "UIManagerModule task");
+      runner->PostTask(std::move(task));
     };
   }
   auto dom_manager = scope->GetDomManager().lock();

@@ -39,6 +39,7 @@ if (ANDROID)
 endif()
 # endregion
 
+target_compile_definitions(${PROJECT_NAME} PRIVATE "METRICS_TASK")
 # region source set
 set(SOURCE_SET
     src/base_timer.cc
@@ -54,6 +55,7 @@ set(SOURCE_SET
     src/serializer.cc
     src/string_utils.cc
     src/task.cc
+    src/task_metrics.cc
     src/task_runner.cc
     src/string_view.cc
     src/worker.cc

@@ -110,6 +110,7 @@ bool TaskRunner::RemoveSubTaskRunner(const std::shared_ptr<TaskRunner>& sub_runn
 void TaskRunner::PostTask(std::unique_ptr<Task> task) {
   {
     std::lock_guard<std::mutex> lock(queue_mutex_);
+    if (task_metrics_) task->SetMetrics(task_metrics_);
     task_queue_.push(std::move(task));
   }
   NotifyWorker();

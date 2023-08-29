@@ -165,10 +165,14 @@ void Scope::WillExit() {
         p.set_value(rst);
       });
   auto runner =GetTaskRunner();
+#ifdef METRICS_TASK
+  runner->TaskMetricsInfo();
+#endif
   if (footstone::Worker::IsTaskRunning() && runner == footstone::runner::TaskRunner::GetCurrentTaskRunner()) {
     cb();
   } else {
-    runner->PostTask(std::move(cb));
+    auto task = std::make_unique<footstone::Task>(cb, "Scope WillExit task");
+    runner->PostTask(std::move(task));
   }
 
   future.get();
@@ -501,7 +505,8 @@ void Scope::RunJS(const string_view& data,
   if (footstone::Worker::IsTaskRunning() && runner == footstone::runner::TaskRunner::GetCurrentTaskRunner()) {
     callback();
   } else {
-    runner->PostTask(std::move(callback));
+    auto task = std::make_unique<footstone::Task>(callback, "Scope RunJS task");
+    runner->PostTask(std::move(task));
   }
 }
 
@@ -548,7 +553,8 @@ void Scope::LoadInstance(const std::shared_ptr<HippyValue>& value) {
   if (footstone::Worker::IsTaskRunning() && runner == footstone::runner::TaskRunner::GetCurrentTaskRunner()) {
     cb();
   } else {
-    runner->PostTask(std::move(cb));
+    auto task = std::make_unique<footstone::Task>(cb, "Scope LoadInstance task");
+    runner->PostTask(std::move(task));
   }
 }
 
@@ -576,7 +582,8 @@ void Scope::UnloadInstance(const std::shared_ptr<HippyValue>& value) {
     if (footstone::Worker::IsTaskRunning() && runner == footstone::runner::TaskRunner::GetCurrentTaskRunner()) {
         cb();
     } else {
-        runner->PostTask(std::move(cb));
+      auto task = std::make_unique<footstone::Task>(cb, "Scope UnloadInstance task");
+      runner->PostTask(std::move(task));
     }
 }
 

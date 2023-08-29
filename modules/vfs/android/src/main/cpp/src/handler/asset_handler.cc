@@ -154,7 +154,7 @@ void AssetHandler::LoadByAsset(const string_view& path,
       runner_ = request->GetWorkerManager()->CreateTaskRunner(kRunnerName);
     }
   }
-  runner_->PostTask([path, manager, cb, is_auto_fill] {
+  auto callback = [path, manager, cb, is_auto_fill] {
     UriHandler::bytes content;
     auto j_env = JNIEnvironment::GetInstance()->AttachCurrentThread();
     bool ret = ReadAsset(path,
@@ -166,7 +166,9 @@ void AssetHandler::LoadByAsset(const string_view& path,
     } else {
       cb(std::make_shared<JobResponse>(hippy::JobResponse::RetCode::Failed));
     }
-  });
+  };
+  auto task = std::make_unique<footstone::Task>(callback, "AssetHandler LoadByAsset task");
+  runner_->PostTask(std::move(task));
 }
 
 }

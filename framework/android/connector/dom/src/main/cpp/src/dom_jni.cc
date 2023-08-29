@@ -28,6 +28,7 @@
 #include "footstone/logging.h"
 #include "footstone/persistent_object_map.h"
 #include "footstone/task_runner.h"
+#include "footstone/task_metrics.h"
 #include "footstone/worker_impl.h"
 #include "jni/jni_register.h"
 #include "jni/data_holder.h"
@@ -137,6 +138,10 @@ jint CreateDomManager(__unused JNIEnv* j_env, __unused jobject j_obj) {
   auto worker = std::make_shared<WorkerImpl>(kDomWorkerName, false);
   worker->Start();
   auto runner = std::make_shared<TaskRunner>(kDomRunnerName);
+#ifdef METRICS_TASK
+  auto task_metrics = std::make_shared<footstone::TaskMetrics>();
+  runner->SetTaskMetrics(task_metrics);
+#endif
   runner->SetWorker(worker);
   worker->Bind({runner});
   dom_manager->SetTaskRunner(runner);

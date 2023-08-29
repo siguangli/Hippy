@@ -301,12 +301,14 @@ jboolean RunScriptFromUri(JNIEnv* j_env,
   auto scope = GetScope(j_scope_id);
   auto runner = scope->GetTaskRunner();
   auto ctx = scope->GetContext();
-  runner->PostTask([ctx, base_path] {
+  auto set_global = [ctx, base_path] {
     auto key = ctx->CreateString(kHippyCurDirKey);
     auto value = ctx->CreateString(base_path);
     auto global = ctx->GetGlobalObject();
     ctx->SetProperty(global, key, value);
-  });
+  };
+  auto property_task = std::make_unique<footstone::Task>(set_global, "JsDriverJni RunScriptFromUri SetProperty task");
+  runner->PostTask(std::move(property_task));
 
   std::any vfs_instance;
   auto vfs_id = footstone::checked_numeric_cast<jint, uint32_t>(j_vfs_id);
@@ -355,8 +357,8 @@ jboolean RunScriptFromUri(JNIEnv* j_env,
     }
     return flag;
   };
-
-  runner->PostTask(std::move(func));
+  auto task = std::make_unique<footstone::Task>(func, "JsDriverJni RunScriptFromUri task");
+  runner->PostTask(std::move(task));
 
   return true;
 }

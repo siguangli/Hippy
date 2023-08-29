@@ -226,7 +226,7 @@ void CreateScopeAndAsyncInitialize(const std::shared_ptr<Engine>& engine,
                                    const JsCallback& call_host_callback,
                                    const std::function<void(std::shared_ptr<Scope>)>& scope_initialized_callback) {
   auto scope = engine->CreateScope("");
-  engine->GetJsTaskRunner()->PostTask([global_config, param, scope, call_host_callback, scope_initialized_callback]() {
+  auto callback = [global_config, param, scope, call_host_callback, scope_initialized_callback]() {
     auto engine = scope->GetEngine().lock();
     FOOTSTONE_CHECK(engine);
 #ifdef ENABLE_INSPECTOR
@@ -249,7 +249,9 @@ void CreateScopeAndAsyncInitialize(const std::shared_ptr<Engine>& engine,
     }
 #endif
     scope_initialized_callback(scope);
-  });
+  };
+  auto task = std::make_unique<footstone::Task>(callback, "JsDriver CreateScopeAndAsyncInitialize task");
+  engine->GetJsTaskRunner()->PostTask(std::move(task));
 }
 
 void JsDriverUtils::InitInstance(
@@ -350,7 +352,8 @@ bool JsDriverUtils::RunScript(const std::shared_ptr<Scope>& scope,
       FOOTSTONE_CHECK(engine);
       auto& worker_manager = loader->GetWorkerManager();
       auto worker_task_runner = worker_manager->CreateTaskRunner(kWorkerRunnerName);
-      worker_task_runner->PostTask(std::move(func));
+      auto task = std::make_unique<footstone::Task>(func, "JsDriver RunScript task");
+      worker_task_runner->PostTask(std::move(task));
     }
   }
 #else
@@ -406,7 +409,8 @@ void JsDriverUtils::DestroyInstance(const std::shared_ptr<Engine>& engine,
     }
   }
   auto runner = engine->GetJsTaskRunner();
-  runner->PostTask(std::move(scope_destroy_callback));
+  auto task = std::make_unique<footstone::Task>(scope_destroy_callback, "JsDriver DestroyInstance task");
+  runner->PostTask(std::move(task));
   FOOTSTONE_DLOG(INFO) << "destroy, group = " << group;
 }
 
@@ -482,8 +486,8 @@ void JsDriverUtils::CallJs(const string_view& action,
     context->CallFunction(scope->GetBridgeObject(), context->GetGlobalObject(), 2, argv);
     cb(CALL_FUNCTION_CB_STATE::SUCCESS, "");
   };
-
-  runner->PostTask(std::move(callback));
+  auto task = std::make_unique<footstone::Task>(callback, "JsDriver CallJs task");
+  runner->PostTask(std::move(task));
 }
 
 void JsDriverUtils::CallNative(hippy::napi::CallbackInfo& info, const std::function<void(
@@ -587,7 +591,8 @@ void JsDriverUtils::LoadInstance(const std::shared_ptr<Scope>& scope, byte_strin
       scope->GetContext()->ThrowException("LoadInstance param error");
     }
   };
-  runner->PostTask(std::move(callback));
+  auto task = std::make_unique<footstone::Task>(callback, "JsDriver LoadInstance task");
+  runner->PostTask(std::move(task));
 }
 
 void JsDriverUtils::UnloadInstance(const std::shared_ptr<Scope>& scope, byte_string&& buffer_data) {
@@ -610,7 +615,8 @@ void JsDriverUtils::UnloadInstance(const std::shared_ptr<Scope>& scope, byte_str
             scope->GetContext()->ThrowException("UnloadInstance param error");
         }
     };
-    runner->PostTask(std::move(callback));
+    auto task = std::make_unique<footstone::Task>(callback, "JsDriver UnloadInstance task");
+    runner->PostTask(std::move(task));
 }
 
 }

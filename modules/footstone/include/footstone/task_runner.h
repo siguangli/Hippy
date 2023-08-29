@@ -31,6 +31,7 @@
 #include "footstone/idle_task.h"
 #include "footstone/macros.h"
 #include "footstone/task.h"
+#include "footstone/task_metrics.h"
 #include "footstone/time_delta.h"
 #include "footstone/time_point.h"
 #include "footstone/worker.h"
@@ -109,6 +110,11 @@ class TaskRunner {
   static std::shared_ptr<TaskRunner> GetCurrentTaskRunner();
 
   void PostIdleTask(std::unique_ptr<IdleTask> task);
+
+  void SetTaskMetrics(std::shared_ptr<TaskMetrics> task_metrics) { task_metrics_ = task_metrics; }
+  void TaskMetricsInfo() {
+    if (task_metrics_) task_metrics_->Info();
+  }
  private:
   friend class Worker;
   friend class Scheduler;
@@ -150,6 +156,7 @@ class TaskRunner {
    *  不可调度的TaskRunner不会被迁移，但其所在的Worker还是可以加入其他TaskRunner
    */
   bool is_schedulable_;
+  std::shared_ptr<TaskMetrics> task_metrics_;
 };
 
 }  // namespace runner

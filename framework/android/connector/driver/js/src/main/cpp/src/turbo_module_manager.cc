@@ -23,6 +23,7 @@
 #include "connector/turbo_module_manager.h"
 
 #include <cstdint>
+#include <memory>
 
 #include "connector/java_turbo_module.h"
 #include "jni/data_holder.h"
@@ -172,7 +173,8 @@ int Install(JNIEnv* j_env, jobject j_obj, jlong j_scope_id) {
     auto key = context->CreateString(kTurboKey);
     context->SetProperty(global_object, key, func);
   };
-  runner->PostTask(std::move(callback));
+  auto task = std::make_unique<footstone::Task>(callback, "TurboModuleManager Install task");
+  runner->PostTask(std::move(task));
   return 0;
 }
 

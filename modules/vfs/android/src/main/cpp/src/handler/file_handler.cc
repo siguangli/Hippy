@@ -80,7 +80,7 @@ void FileHandler::LoadByFile(
       runner_ = request->GetWorkerManager()->CreateTaskRunner(kRunnerName);
     }
   }
-  runner_->PostTask([path, cb] {
+  auto callback = [path, cb] {
     UriHandler::bytes content;
     bool ret = HippyFile::ReadFile(path, content, false);
     if (ret) {
@@ -89,7 +89,9 @@ void FileHandler::LoadByFile(
     } else {
       cb(std::make_shared<JobResponse>(hippy::JobResponse::RetCode::Failed));
     }
-  });
+  };
+  auto task = std::make_unique<footstone::Task>(callback, "FileHandler LoadByFile task");
+  runner_->PostTask(std::move(task));
 }
 
 }
