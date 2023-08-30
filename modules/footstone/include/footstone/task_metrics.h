@@ -36,6 +36,7 @@ class TaskMetrics {
 
   void Info();
   void DelayInfo();
+  void Clear();
   void AddTask(const uint32_t id, const std::string& name, const uint64_t create_time);
   void AddStartTime(const uint32_t id, const uint64_t start_time);
   void AddEndTime(const uint32_t id, const uint64_t end_time);
@@ -46,7 +47,6 @@ class TaskMetrics {
   std::unordered_map<uint32_t, uint64_t> task_runtime_by_id_;  // 每个 task 消耗的时间， task id 唯一标识某个 task
   std::unordered_map<uint32_t, std::unordered_map<std::string, uint64_t>>
       task_create_start_end_by_id_;  // 每个 task 的创建时间、执行开始时间， task id 唯一标识某个 task
-  std::chrono::time_point<std::chrono::system_clock> start_time_;  // 统计开始时间
 };
 
 }  // namespace runner

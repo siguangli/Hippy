@@ -32,3 +32,7 @@ global.MetricsInfo = function () {
 global.MetricsDelayInfo = function () {
   return metircs.DelayInfo();
 };
+
+global.MetricsClear = function () {
+  return metircs.Clear();
+};

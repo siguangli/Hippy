@@ -112,12 +112,9 @@ class TaskRunner {
   void PostIdleTask(std::unique_ptr<IdleTask> task);
 
   void SetTaskMetrics(std::shared_ptr<TaskMetrics> task_metrics) { task_metrics_ = task_metrics; }
-  void TaskMetricsInfo() {
-    if (task_metrics_) task_metrics_->Info();
-  }
-  void TaskMetricsDelayInfo() {
-    if (task_metrics_) task_metrics_->DelayInfo();
-  }
+  void TaskMetricsInfo() { if (task_metrics_) task_metrics_->Info(); }
+  void TaskMetricsDelayInfo() { if (task_metrics_) task_metrics_->DelayInfo(); }
+  void TaskMetricsClear() { if (task_metrics_) task_metrics_->Clear(); }
 
  private:
   friend class Worker;

@@ -87,7 +87,9 @@ void TaskMetrics::DelayInfo() {
                            << ", task dealy milliseconds(microseconds) " << (start_time - create_time) / 1000 << "("
                            << start_time - create_time << ")"
                            << ", task create time microseconds " << create_time << ", task start time microseconds "
-                           << start_time << ", task end time microseconds " << end_time;
+                           << start_time << ", task end time microseconds " << end_time
+                           << ", running time milliseconds(microseconds) " << (end_time - start_time) / 1000 << "("
+                           << end_time - start_time << ")";
     } else {
       FOOTSTONE_DLOG(INFO) << "Task id " << id << " Task Name " << task_name
                            << ", task dealy milliseconds(microseconds) " << (start_time - create_time) / 1000 << "("
@@ -97,6 +99,12 @@ void TaskMetrics::DelayInfo() {
     }
   }
   FOOTSTONE_DLOG(INFO) << "******************* Task Metrics End *******************";
+}
+
+void TaskMetrics::Clear() {
+  task_ids_by_name_.clear();
+  task_runtime_by_id_.clear();
+  task_create_start_end_by_id_.clear();
 }
 
 void TaskMetrics::AddTask(const uint32_t id, const std::string& name, uint64_t create_time) {
