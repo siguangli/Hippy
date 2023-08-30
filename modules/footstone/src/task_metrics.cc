@@ -49,10 +49,10 @@ void TaskMetrics::Info() {
       }
     }
     if (is_running) {
-      FOOTSTONE_DLOG(INFO) << "Task Name " << name << ", task is still runing ";
+      FOOTSTONE_DLOG(INFO) << "Task Name " << name << " Task Count " << ids.size() << ", task is still runing ";
     } else {
-      FOOTSTONE_DLOG(INFO) << "Task Name " << name << ", Run task time " << run_time << " microseconds "
-                           << run_time / 1000 << " milliseconds";
+      FOOTSTONE_DLOG(INFO) << "Task Name " << name << " Task Count " << ids.size() << ", Run task time " << run_time
+                           << " microseconds " << run_time / 1000 << " milliseconds";
     }
   }
   FOOTSTONE_DLOG(INFO) << "******************* Task Metrics End *******************";
