@@ -20,6 +20,8 @@
 
 #include "footstone/task_metrics.h"
 
+#include <utility>
+
 #include "footstone/logging.h"
 
 namespace footstone {
@@ -56,17 +58,79 @@ void TaskMetrics::Info() {
   FOOTSTONE_DLOG(INFO) << "******************* Task Metrics End *******************";
 }
 
-void TaskMetrics::AddTask(const uint32_t id, const std::string& name) {
+void TaskMetrics::DelayInfo() {
+  FOOTSTONE_DLOG(INFO) << "******************* Task Metrics Delay Task Start *******************";
+
+  for (const auto& [id, map] : task_create_start_end_by_id_) {
+    auto create_iter = map.find("create");
+    auto start_iter = map.find("start");
+    auto end_iter = map.find("end");
+    auto create_time = create_iter->second;
+    auto start_time = start_iter->second;
+
+    std::string task_name;
+    bool is_break = false;
+    for (const auto& [name, ids] : task_ids_by_name_) {
+      for (const auto& task_id : ids) {
+        if (task_id == id) {
+          task_name = name;
+          is_break = true;
+          break;
+        }
+      }
+      if (is_break) break;
+    }
+
+    if (end_iter != map.end()) {
+      auto end_time = end_iter->second;
+      FOOTSTONE_DLOG(INFO) << "Task id " << id << " Task Name " << task_name
+                           << ", task dealy milliseconds(microseconds) " << (start_time - create_time) / 1000 << "("
+                           << start_time - create_time << ")"
+                           << ", task create time microseconds " << create_time << ", task start time microseconds "
+                           << start_time << ", task end time microseconds " << end_time;
+    } else {
+      FOOTSTONE_DLOG(INFO) << "Task id " << id << " Task Name " << task_name
+                           << ", task dealy milliseconds(microseconds) " << (start_time - create_time) / 1000 << "("
+                           << start_time - create_time << ")"
+                           << ", task create time microseconds " << create_time << ", task start time microseconds "
+                           << start_time << ", task is still running";
+    }
+  }
+  FOOTSTONE_DLOG(INFO) << "******************* Task Metrics End *******************";
+}
+
+void TaskMetrics::AddTask(const uint32_t id, const std::string& name, uint64_t create_time) {
   auto iter = task_ids_by_name_.find(name);
   if (iter == task_ids_by_name_.end()) {
     task_ids_by_name_.insert({name, {id}});
   } else {
     iter->second.push_back(id);
   }
+
+  auto id_iter = task_create_start_end_by_id_.find(id);
+  if (id_iter == task_create_start_end_by_id_.end()) {
+    task_create_start_end_by_id_.insert({{id, {{"create", create_time}}}});
+  }
   return;
 }
 
-void TaskMetrics::AddRuntime(const uint32_t id, uint64_t runtime) {
+void TaskMetrics::AddStartTime(const uint32_t id, const uint64_t start_time) {
+  auto iter = task_create_start_end_by_id_.find(id);
+  if (iter != task_create_start_end_by_id_.end()) {
+    iter->second.insert({{"start", start_time}});
+  }
+  return;
+}
+
+void TaskMetrics::AddEndTime(const uint32_t id, const uint64_t end_time) {
+  auto iter = task_create_start_end_by_id_.find(id);
+  if (iter != task_create_start_end_by_id_.end()) {
+    iter->second.insert({{"end", end_time}});
+  }
+  return;
+}
+
+void TaskMetrics::AddRuntime(const uint32_t id, const uint64_t runtime) {
   auto iter = task_runtime_by_id_.find(id);
   if (iter == task_runtime_by_id_.end()) {
     task_runtime_by_id_.insert({id, runtime});

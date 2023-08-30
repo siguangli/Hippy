@@ -35,6 +35,7 @@ class MetricsModule : public ModuleBase {
 
   MetricsModule();
   void Info(CallbackInfo& info, void* data);
+  void DelayInfo(CallbackInfo& info, void* data);
 
   virtual std::shared_ptr<CtxValue> BindFunction(std::shared_ptr<Scope> scope, std::shared_ptr<CtxValue> rest_args[]) override;
 };

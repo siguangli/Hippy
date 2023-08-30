@@ -41,7 +41,9 @@ class Task {
     auto task_metrics = task_metrics_.lock();
     auto start_time = std::chrono::high_resolution_clock::now();
     if (task_metrics) {
-      task_metrics->AddTask(id_, name_);
+      task_metrics->AddTask(id_, name_, create_time_);
+      auto time_span = std::chrono::duration_cast<std::chrono::microseconds>(start_time.time_since_epoch());
+      task_metrics->AddStartTime(id_, static_cast<uint64_t>(time_span.count()));
     }
     if (unit_) {
       unit_();
@@ -50,6 +52,7 @@ class Task {
       auto end_time = std::chrono::high_resolution_clock::now();
       auto time_span = std::chrono::duration_cast<std::chrono::microseconds>(end_time - start_time);
       task_metrics->AddRuntime(id_, static_cast<uint64_t>(time_span.count()));
+      task_metrics->AddEndTime(id_, static_cast<uint64_t>(std::chrono::duration_cast<std::chrono::microseconds>(end_time.time_since_epoch()).count()));
     }
   }
 
@@ -61,6 +64,7 @@ class Task {
   std::atomic<uint32_t> id_{};
   std::function<void()> unit_;               // A unit of work to be processed
   std::string name_;                         // The name of the task
+  uint64_t create_time_;                     // Create time of task
   std::weak_ptr<TaskMetrics> task_metrics_;  // Weak reference pointer to task metrics for measuring task run time
 };
 

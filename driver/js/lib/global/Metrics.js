@@ -28,3 +28,7 @@ const metircs = internalBinding('MetricsModule');
 global.MetricsInfo = function () {
   return metircs.Info();
 };
+
+global.MetricsDelayInfo = function () {
+  return metircs.DelayInfo();
+};

@@ -33,6 +33,9 @@ Task::Task() : Task(nullptr) {}
 
 Task::Task(std::function<void()> exec_unit, const std::string& name) : unit_(std::move(exec_unit)), name_(std::move(name)) {
   id_ = g_next_task_id.fetch_add(1);
+  auto now = std::chrono::high_resolution_clock::now();
+  auto time_span = std::chrono::duration_cast<std::chrono::microseconds>(now.time_since_epoch());
+  create_time_ = static_cast<uint64_t>(time_span.count());
 }
 
 } // namespace runner

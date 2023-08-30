@@ -33,6 +33,7 @@ inline namespace driver {
 inline namespace module {
 
 GEN_INVOKE_CB(MetricsModule, Info)  // NOLINT(cert-err58-cpp)
+GEN_INVOKE_CB(MetricsModule, DelayInfo)  // NOLINT(cert-err58-cpp)
 
 MetricsModule::MetricsModule() {}
 
@@ -46,6 +47,16 @@ void MetricsModule::Info(CallbackInfo& info, void* data) {
   return;
 }
 
+void MetricsModule::DelayInfo(CallbackInfo& info, void* data) {
+  auto scope_wrapper = reinterpret_cast<ScopeWrapper*>(std::any_cast<void*>(info.GetSlot()));
+  auto scope = scope_wrapper->scope.lock();
+  FOOTSTONE_CHECK(scope);
+  std::shared_ptr<TaskRunner> runner = scope->GetTaskRunner();
+  FOOTSTONE_DCHECK(runner);
+  runner->TaskMetricsDelayInfo();
+  return;
+}
+
 std::shared_ptr<CtxValue> MetricsModule::BindFunction(std::shared_ptr<Scope> scope,
                                                       std::shared_ptr<CtxValue>* rest_args) {
   auto context = scope->GetContext();
@@ -56,6 +67,12 @@ std::shared_ptr<CtxValue> MetricsModule::BindFunction(std::shared_ptr<Scope> sco
   auto value = context->CreateFunction(wrapper);
   scope->SaveFunctionWrapper(std::move(wrapper));
   context->SetProperty(object, key, value);
+
+  auto delay_key = context->CreateString("DelayInfo");
+  auto dealy_wrapper = std::make_unique<hippy::napi::FunctionWrapper>(InvokeMetricsModuleDelayInfo, nullptr);
+  auto delay_value = context->CreateFunction(dealy_wrapper);
+  scope->SaveFunctionWrapper(std::move(dealy_wrapper));
+  context->SetProperty(object, delay_key, delay_value);
 
   return object;
 }

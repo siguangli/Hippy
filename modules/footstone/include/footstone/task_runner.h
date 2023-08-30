@@ -115,6 +115,10 @@ class TaskRunner {
   void TaskMetricsInfo() {
     if (task_metrics_) task_metrics_->Info();
   }
+  void TaskMetricsDelayInfo() {
+    if (task_metrics_) task_metrics_->DelayInfo();
+  }
+
  private:
   friend class Worker;
   friend class Scheduler;
