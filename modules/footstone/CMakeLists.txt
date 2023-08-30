@@ -39,7 +39,6 @@ if (ANDROID)
 endif()
 # endregion
 
-target_compile_definitions(${PROJECT_NAME} PRIVATE "METRICS_TASK")
 # region source set
 set(SOURCE_SET
     src/base_timer.cc

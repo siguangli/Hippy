@@ -39,6 +39,8 @@ require('../../bridge/ios/native2js.js');
 require('../../global/Event.js'); // register global events callback
 require('../../global/ios/requestAnimationFrame.js'); // requestAnimationFrame cancelAnimationFrame
 require('../../global/ios/Turbo.js'); // turbo
+require('../../global/Metrics.js'); // metrics
+
 // alias
 global.localStorage = Hippy.asyncStorage;
 global.turboPromise = Hippy.turboPromise;

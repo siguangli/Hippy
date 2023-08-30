@@ -37,6 +37,7 @@ require('../../bridge/android/native2js.js');
 require('../../global/Event.js'); // register global events callback
 require('../../global/android/requestAnimationFrame.js'); // requestAnimationFrame cancelAnimationFrame
 require('../../global/android/Turbo.js'); // turbo
+require('../../global/Metrics.js'); // metrics
 
 // alias
 global.localStorage = Hippy.asyncStorage;

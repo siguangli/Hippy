@@ -32,6 +32,13 @@ add_library(${PROJECT_NAME} STATIC)
 target_include_directories(${PROJECT_NAME} PUBLIC include)
 target_compile_options(${PROJECT_NAME} PRIVATE ${COMPILE_OPTIONS})
 target_compile_definitions(${PROJECT_NAME} INTERFACE "ANDROID_NATIVE_RENDERER")
+
+if (NOT DEFINED METRICS_TASK)
+  set(METRICS_TASK "NO")
+endif ()
+if ("${METRICS_TASK}" STREQUAL "YES")
+  target_compile_definitions(${PROJECT_NAME} PUBLIC "METRICS_TASK")
+endif()
 # endregion
 
 # region footstone

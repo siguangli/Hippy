@@ -38,14 +38,20 @@ void TaskMetrics::Info() {
     auto name = kv.first;
     auto ids = kv.second;
     uint64_t run_time;
+    bool is_running = true;
     for (auto iter = ids.begin(); iter != ids.end(); ++iter) {
       auto runtime_iter = task_runtime_by_id_.find(*iter);
       if (runtime_iter != task_runtime_by_id_.end()) {
         run_time = runtime_iter->second;
+        is_running = false;
       }
     }
-    FOOTSTONE_DLOG(INFO) << "Task Name " << name << ", Run task time " << run_time << " microseconds "
-                         << run_time / 1000 << " milliseconds";
+    if (is_running) {
+      FOOTSTONE_DLOG(INFO) << "Task Name " << name << ", task is still runing ";
+    } else {
+      FOOTSTONE_DLOG(INFO) << "Task Name " << name << ", Run task time " << run_time << " microseconds "
+                           << run_time / 1000 << " milliseconds";
+    }
   }
   FOOTSTONE_DLOG(INFO) << "******************* Task Metrics End *******************";
 }

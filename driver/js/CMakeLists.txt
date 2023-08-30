@@ -189,6 +189,7 @@ endif ()
 set(SOURCE_SET_STANDALONE
         src/modules/console_module.cc
         src/modules/contextify_module.cc
+        src/modules/metrics_module.cc
         src/modules/performance/performance_entry_module.cc
         src/modules/performance/performance_frame_timing_module.cc
         src/modules/performance/performance_mark_module.cc
