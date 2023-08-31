@@ -34,7 +34,7 @@ target_compile_options(${PROJECT_NAME} PRIVATE ${COMPILE_OPTIONS})
 target_compile_definitions(${PROJECT_NAME} INTERFACE "ANDROID_NATIVE_RENDERER")
 
 if (NOT DEFINED METRICS_TASK)
-  set(METRICS_TASK "NO")
+  set(METRICS_TASK "YES")
 endif ()
 if ("${METRICS_TASK}" STREQUAL "YES")
   target_compile_definitions(${PROJECT_NAME} PUBLIC "METRICS_TASK")

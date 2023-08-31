@@ -28,13 +28,13 @@ namespace footstone {
 inline namespace runner {
 
 void TaskMetrics::Info() {
-  FOOTSTONE_DLOG(INFO) << "******************* Task Metrics Start *******************";
+  FOOTSTONE_LOG(ERROR) << "******************* Task Metrics Start *******************";
   uint32_t task_count = 0;
   for (const auto& kv : task_ids_by_name_) {
     task_count += kv.second.size();
   }
-  FOOTSTONE_DLOG(INFO) << "Task count " << task_count;
-  FOOTSTONE_DLOG(INFO) << "";
+  FOOTSTONE_LOG(ERROR) << "Task count " << task_count;
+  FOOTSTONE_LOG(ERROR) << "";
 
   for (const auto& kv : task_ids_by_name_) {
     auto name = kv.first;
@@ -49,17 +49,17 @@ void TaskMetrics::Info() {
       }
     }
     if (is_running) {
-      FOOTSTONE_DLOG(INFO) << "Task Name " << name << " Task Count " << ids.size() << ", task is still runing ";
+      FOOTSTONE_LOG(ERROR) << "Task Name " << name << " Task Count " << ids.size() << ", task is still runing ";
     } else {
-      FOOTSTONE_DLOG(INFO) << "Task Name " << name << " Task Count " << ids.size() << ", Run task time " << run_time
+      FOOTSTONE_LOG(ERROR) << "Task Name " << name << " Task Count " << ids.size() << ", Run task time " << run_time
                            << " microseconds " << run_time / 1000 << " milliseconds";
     }
   }
-  FOOTSTONE_DLOG(INFO) << "******************* Task Metrics End *******************";
+  FOOTSTONE_LOG(ERROR) << "******************* Task Metrics End *******************";
 }
 
 void TaskMetrics::DelayInfo() {
-  FOOTSTONE_DLOG(INFO) << "******************* Task Metrics Delay Task Start *******************";
+  FOOTSTONE_LOG(ERROR) << "******************* Task Metrics Delay Task Start *******************";
 
   for (const auto& [id, map] : task_create_start_end_by_id_) {
     auto create_iter = map.find("create");
@@ -83,7 +83,7 @@ void TaskMetrics::DelayInfo() {
 
     if (end_iter != map.end()) {
       auto end_time = end_iter->second;
-      FOOTSTONE_DLOG(INFO) << "Task id " << id << " Task Name " << task_name
+      FOOTSTONE_LOG(ERROR) << "Task id " << id << " Task Name " << task_name
                            << ", task dealy milliseconds(microseconds) " << (start_time - create_time) / 1000 << "("
                            << start_time - create_time << ")"
                            << ", task create time microseconds " << create_time << ", task start time microseconds "
@@ -91,14 +91,14 @@ void TaskMetrics::DelayInfo() {
                            << ", running time milliseconds(microseconds) " << (end_time - start_time) / 1000 << "("
                            << end_time - start_time << ")";
     } else {
-      FOOTSTONE_DLOG(INFO) << "Task id " << id << " Task Name " << task_name
+      FOOTSTONE_LOG(ERROR) << "Task id " << id << " Task Name " << task_name
                            << ", task dealy milliseconds(microseconds) " << (start_time - create_time) / 1000 << "("
                            << start_time - create_time << ")"
                            << ", task create time microseconds " << create_time << ", task start time microseconds "
                            << start_time << ", task is still running";
     }
   }
-  FOOTSTONE_DLOG(INFO) << "******************* Task Metrics End *******************";
+  FOOTSTONE_LOG(ERROR) << "******************* Task Metrics End *******************";
 }
 
 void TaskMetrics::Clear() {
