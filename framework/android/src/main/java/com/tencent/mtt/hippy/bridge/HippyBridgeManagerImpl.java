@@ -25,6 +25,7 @@ import android.os.Message;
 import android.text.TextUtils;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import com.openhippy.connector.JsDriver;
 import com.openhippy.connector.JsDriver.V8InitParams;
 import com.openhippy.connector.NativeCallback;
@@ -32,6 +33,7 @@ import com.openhippy.framework.BuildConfig;
 import com.tencent.mtt.hippy.HippyEngine;
 import com.tencent.mtt.hippy.HippyEngine.ModuleLoadStatus;
 import com.tencent.mtt.hippy.HippyEngineContext;
+import com.tencent.mtt.hippy.HippyRootView;
 import com.tencent.mtt.hippy.adapter.thirdparty.HippyThirdPartyAdapter;
 import com.tencent.mtt.hippy.bridge.bundleloader.HippyBundleLoader;
 import com.tencent.mtt.hippy.bridge.jsi.TurboModuleManager;
@@ -48,11 +50,13 @@ import com.tencent.mtt.hippy.serialization.nio.writer.SafeDirectWriter;
 import com.tencent.mtt.hippy.serialization.nio.writer.SafeHeapWriter;
 import com.tencent.mtt.hippy.utils.ArgumentUtils;
 import com.tencent.mtt.hippy.utils.DimensionsUtil;
+import com.tencent.mtt.hippy.utils.HippyEngineMonitorPoint;
 import com.tencent.mtt.hippy.utils.I18nUtil;
 import com.tencent.mtt.hippy.utils.TimeMonitor;
 import com.tencent.mtt.hippy.utils.TimeMonitor.MonitorGroupType;
 
 import java.lang.ref.WeakReference;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.nio.ByteBuffer;
@@ -123,9 +127,9 @@ public class HippyBridgeManagerImpl implements HippyBridgeManager, HippyBridge.B
         if (mCallFunctionCallback == null) {
             mCallFunctionCallback = new NativeCallback(mHandler) {
                 @Override
-                public void Call(long result, Message message, String action, String reason) {
+                public void callback(long result, String reason, @Nullable String payload) {
                     if (result != 0) {
-                        String info = "CallFunction error: action=" + action
+                        String info = "CallFunction error: action=" + payload
                                 + ", result=" + result + ", reason=" + reason;
                         reportException(new Throwable(info));
                     }
@@ -201,7 +205,7 @@ public class HippyBridgeManagerImpl implements HippyBridgeManager, HippyBridge.B
         };
         mHippyBridge.destroy(new NativeCallback(mHandler) {
             @Override
-            public void Call(long result, Message message, String action, String reason) {
+            public void callback(long result, String reason, @Nullable String payload) {
                 boolean success = result == 0;
                 mHippyBridge.onDestroy();
                 RuntimeException exception = null;
@@ -227,8 +231,7 @@ public class HippyBridgeManagerImpl implements HippyBridgeManager, HippyBridge.B
                     try {
                         mHippyBridge.initJSBridge(getGlobalConfigs(), new NativeCallback(mHandler) {
                             @Override
-                            public void Call(long result, Message message, String action,
-                                    String reason) {
+                            public void callback(long result, String reason, @Nullable String payload) {
                                 if (result != 0) {
                                     String info =
                                             "initJSBridge error: result=" + result + ", reason="
@@ -250,13 +253,23 @@ public class HippyBridgeManagerImpl implements HippyBridgeManager, HippyBridge.B
                                 }
                                 if (mCoreBundleLoader != null) {
                                     final TimeMonitor timeMonitor = mContext.getMonitor();
+                                    timeMonitor.addPoint(HippyEngineMonitorPoint.INIT_JS_FRAMEWORK_END);
+                                    timeMonitor.addPoint(HippyEngineMonitorPoint.COMMON_LOAD_SOURCE_START);
                                     timeMonitor.startPoint(MonitorGroupType.ENGINE_INITIALIZE,
                                             TimeMonitor.MONITOR_POINT_LOAD_COMMON_JS);
                                     mCoreBundleLoader
                                             .load(mHippyBridge, new NativeCallback(mHandler) {
                                                 @Override
-                                                public void Call(long result, Message message,
-                                                        String action, String reason) {
+                                                public void callback(long result, String reason, @Nullable String payload) {
+                                                    if (payload != null) {
+                                                        try {
+                                                            long ts = new JSONObject(payload).getLong("load_end_millis");
+                                                            timeMonitor.addPoint(HippyEngineMonitorPoint.COMMON_LOAD_SOURCE_END, ts);
+                                                            timeMonitor.addPoint(HippyEngineMonitorPoint.COMMON_EXECUTE_SOURCE_START, ts);
+                                                        } catch (JSONException ignored) {
+                                                            // do nothing
+                                                        }
+                                                    }
                                                     mInitialized = result == 0;
                                                     RuntimeException exception = null;
                                                     if (!mInitialized) {
@@ -310,8 +323,18 @@ public class HippyBridgeManagerImpl implements HippyBridgeManager, HippyBridge.B
                         final WeakReference<HippyEngineContext> contextWeakRef = new WeakReference<>(mContext);
                         loader.load(mHippyBridge, new NativeCallback(mHandler) {
                             @Override
-                            public void Call(long result, Message message, String action,
-                                    String reason) {
+                            public void callback(long result, String reason, @Nullable String payload) {
+                                final HippyEngineContext context = contextWeakRef.get();
+                                if (context != null && payload != null) {
+                                    try {
+                                        long ts = new JSONObject(payload).getLong("load_end_millis");
+                                        TimeMonitor timeMonitor = context.getMonitor();
+                                        timeMonitor.addPoint(HippyEngineMonitorPoint.SECONDARY_LOAD_SOURCE_END, ts);
+                                        timeMonitor.addPoint(HippyEngineMonitorPoint.SECONDARY_EXECUTE_SOURCE_START, ts);
+                                    } catch (JSONException ignored) {
+                                        // do nothing
+                                    }
+                                }
                                 if (result == 0) {
                                     if (contextWeakRef.get() != null) {
                                         contextWeakRef.get().onLoadModuleCompleted(ModuleLoadStatus.STATUS_OK,
@@ -371,6 +394,8 @@ public class HippyBridgeManagerImpl implements HippyBridgeManager, HippyBridge.B
                     "load module error. HippyBridge not initialized");
             return;
         }
+        TimeMonitor monitor = mContext.getMonitor();
+        monitor.addPoint(HippyEngineMonitorPoint.SECONDARY_LOAD_SOURCE_START);
         Message message = mHandler.obtainMessage(MSG_CODE_RUN_BUNDLE, 0, id, loader);
         mHandler.sendMessage(message);
     }
@@ -380,6 +405,7 @@ public class HippyBridgeManagerImpl implements HippyBridgeManager, HippyBridge.B
         if (!mInitialized) {
             return;
         }
+        mContext.getMonitor().addPoint(HippyEngineMonitorPoint.RUN_APPLICATION_START);
         mContext.getMonitor().startPoint(MonitorGroupType.LOAD_INSTANCE,
                 TimeMonitor.MONITOR_POINT_LOAD_INSTANCE);
         HippyMap map = new HippyMap();

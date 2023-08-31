@@ -27,6 +27,7 @@ import static com.tencent.renderer.NativeRenderException.ExceptionCode.UI_TASK_Q
 import android.content.Context;
 import android.graphics.Rect;
 import android.text.Layout;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -36,6 +37,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.tencent.mtt.hippy.common.Callback;
+import com.tencent.mtt.hippy.dom.node.NodeProps;
 import com.tencent.mtt.hippy.serialization.nio.reader.BinaryReader;
 import com.tencent.mtt.hippy.serialization.nio.reader.SafeHeapReader;
 import com.tencent.mtt.hippy.serialization.nio.writer.SafeHeapWriter;
@@ -393,6 +395,9 @@ public class NativeRenderer extends Renderer implements NativeRender, NativeRend
         if (eventType != EventType.EVENT_TYPE_GESTURE && !mRenderManager.checkRegisteredEvent(
                 rootId, nodeId, lowerCaseEventName)) {
             return;
+        }
+        if (NodeProps.ON_ATTACHED_TO_WINDOW.equals(eventName)) { // TODO pel remove temp code
+            Log.e(TAG, "@@@@ onAttachedToWindow id=" + nodeId + " time=" + System.currentTimeMillis() + " ms");
         }
         LogUtils.d(TAG, "dispatchEvent: id " + nodeId + ", eventName " + eventName
                 + ", eventType " + eventType + ", params " + params + "\n ");

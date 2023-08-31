@@ -16,11 +16,13 @@
 
 package com.tencent.mtt.hippy.utils;
 
+import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class TimeMonitor {
 
@@ -40,6 +42,8 @@ public class TimeMonitor {
     public static final String MONITOR_POINT_FIRST_FRAME = "firstFrame";
     @Nullable
     HashMap<MonitorGroupType, MonitorGroup> mMonitorGroups;
+
+    private final ConcurrentHashMap<HippyEngineMonitorPoint, Long> mStandardPoints = new ConcurrentHashMap<>();
 
     public synchronized void startPoint(@NonNull MonitorGroupType groupType,
             @NonNull String point) {
@@ -72,6 +76,19 @@ public class TimeMonitor {
             return null;
         }
         return (mMonitorGroups == null) ? null : mMonitorGroups.get(groupType);
+    }
+
+    public void addPoint(HippyEngineMonitorPoint eventName) {
+        addPoint(eventName, System.currentTimeMillis());
+    }
+
+    public void addPoint(HippyEngineMonitorPoint eventName, long timeMillis) {
+        Log.e("Monitor", "@@@@ " + eventName + " time=" + timeMillis + " ms");
+        mStandardPoints.put(eventName, timeMillis);
+    }
+
+    public void clearAllPoints() {
+        mStandardPoints.clear();
     }
 
     public static class MonitorGroup {

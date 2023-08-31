@@ -17,6 +17,7 @@ package com.tencent.mtt.hippy;
 
 import android.content.Context;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import androidx.annotation.MainThread;
@@ -51,6 +52,7 @@ import com.tencent.mtt.hippy.modules.javascriptmodules.EventDispatcher;
 import com.tencent.mtt.hippy.modules.nativemodules.deviceevent.DeviceEventModule;
 import com.tencent.mtt.hippy.uimanager.HippyCustomViewCreator;
 import com.tencent.mtt.hippy.utils.DimensionsUtil;
+import com.tencent.mtt.hippy.utils.HippyEngineMonitorPoint;
 import com.tencent.mtt.hippy.utils.LogUtils;
 import com.tencent.mtt.hippy.utils.PixelUtil;
 import com.tencent.mtt.hippy.utils.TimeMonitor;
@@ -217,6 +219,7 @@ public abstract class HippyEngineManagerImpl extends HippyEngineManager implemen
 
     @Override
     public void onFirstViewAdded() {
+        mMonitor.addPoint(HippyEngineMonitorPoint.FIRST_PAINT_END);
         MonitorGroup monitorGroup = mEngineContext.getMonitor()
                 .endGroup(MonitorGroupType.LOAD_INSTANCE);
         if (monitorGroup != null) {
@@ -412,6 +415,7 @@ public abstract class HippyEngineManagerImpl extends HippyEngineManager implemen
                     "load module error wrong state, Engine destroyed");
             return null;
         }
+        mMonitor.addPoint(HippyEngineMonitorPoint.FIRST_PAINT_START);
         mDevSupportManager.attachToHost(loadParams.context, mRootView.getId());
         LogUtils.d(TAG, "internalLoadInstance start...");
         if (mCurrentState == EngineState.INITED) {
@@ -561,6 +565,7 @@ public abstract class HippyEngineManagerImpl extends HippyEngineManager implemen
             mGlobalConfigs.getEngineMonitorAdapter()
                     .onEngineInitialized(statusCode, monitorGroup);
         }
+        mMonitor.addPoint(HippyEngineMonitorPoint.BRIDGE_STARTUP_END);
         for (EngineListener listener : mEventListeners) {
             listener.onInitialized(statusCode, error == null ? null : error.toString());
         }
@@ -576,6 +581,8 @@ public abstract class HippyEngineManagerImpl extends HippyEngineManager implemen
             notifyEngineInitialized(EngineInitStatus.STATUS_WRONG_STATE, new Throwable(errorMsg));
             return;
         }
+        mMonitor.addPoint(HippyEngineMonitorPoint.BRIDGE_STARTUP_START);
+        mMonitor.addPoint(HippyEngineMonitorPoint.INIT_JS_FRAMEWORK_START);
         if (mCurrentState != EngineState.INITING) {
             mCurrentState = EngineState.ONRESTART;
         }
@@ -598,6 +605,7 @@ public abstract class HippyEngineManagerImpl extends HippyEngineManager implemen
         mEngineContext.getBridgeManager().initBridge(new Callback<Boolean>() {
             @Override
             public void callback(Boolean result, Throwable e) {
+                mMonitor.addPoint(HippyEngineMonitorPoint.COMMON_EXECUTE_SOURCE_END);
                 if (mCurrentState != EngineState.INITING
                         && mCurrentState != EngineState.ONRESTART) {
                     LogUtils.e(TAG,
@@ -1004,6 +1012,7 @@ public abstract class HippyEngineManagerImpl extends HippyEngineManager implemen
 
         @Override
         public void onLoadModuleCompleted(ModuleLoadStatus statusCode, @Nullable String msg) {
+            mMonitor.addPoint(HippyEngineMonitorPoint.SECONDARY_EXECUTE_SOURCE_END);
             notifyModuleLoaded(statusCode, msg);
             MonitorGroup monitorGroup = mEngineContext.getMonitor()
                     .endGroup(MonitorGroupType.RUN_JS_BUNDLE);
