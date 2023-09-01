@@ -17,6 +17,7 @@
 package com.tencent.mtt.hippy.uimanager;
 
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewConfiguration;
@@ -125,6 +126,7 @@ public class NativeGestureDispatcher implements NativeGestureProcessor.Callback 
     }
 
     public static void handleAttachedToWindow(@NonNull View view) {
+        Log.e(TAG, "@@@@ onAttachedToWindow id=" + view.getId() + " class=" + view.getClass().getSimpleName() + " time=" + System.currentTimeMillis() + " ms");
         EventUtils.sendComponentEvent(view, NodeProps.ON_ATTACHED_TO_WINDOW, null);
     }
 
