@@ -269,7 +269,11 @@ bool LayerOptimizedRenderManager::IsJustLayoutProp(const char *prop_name) const 
 }
 
 bool LayerOptimizedRenderManager::CanBeEliminated(const std::shared_ptr<DomNode>& node) {
-  return node->IsLayoutOnly() || node->IsVirtual();
+  bool eliminated = (node->IsLayoutOnly() || node->IsVirtual()) && node->IsEnableEliminated();
+  if (!eliminated) {
+    node->SetEnableEliminated(false);
+  }
+  return eliminated;
 }
 
 void LayerOptimizedRenderManager::UpdateRenderInfo(const std::shared_ptr<DomNode>& node) {
