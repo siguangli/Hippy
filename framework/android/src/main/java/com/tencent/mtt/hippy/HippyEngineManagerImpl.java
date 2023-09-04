@@ -144,7 +144,7 @@ public abstract class HippyEngineManagerImpl extends HippyEngineManager implemen
         mGroupId = params.groupId;
         mThirdPartyAdapter = params.thirdPartyAdapter;
         v8InitParams = params.v8InitParams;
-        mMonitor = new TimeMonitor();
+        mMonitor = new TimeMonitor(getEngineId());
     }
 
     @Override

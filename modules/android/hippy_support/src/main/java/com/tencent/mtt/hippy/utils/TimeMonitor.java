@@ -44,6 +44,11 @@ public class TimeMonitor {
     HashMap<MonitorGroupType, MonitorGroup> mMonitorGroups;
 
     private final ConcurrentHashMap<HippyEngineMonitorPoint, Long> mStandardPoints = new ConcurrentHashMap<>();
+    private final int engineId;
+
+    public TimeMonitor(int engineId) {
+        this.engineId = engineId;
+    }
 
     public synchronized void startPoint(@NonNull MonitorGroupType groupType,
             @NonNull String point) {
@@ -83,7 +88,7 @@ public class TimeMonitor {
     }
 
     public void addPoint(HippyEngineMonitorPoint eventName, long timeMillis) {
-        Log.e("Monitor", "@@@@ " + eventName + " time=" + timeMillis + " ms");
+        Log.e("Monitor", "@@@@ " + eventName + " time=" + timeMillis + " ms engine=" + engineId);
         mStandardPoints.put(eventName, timeMillis);
     }
 
