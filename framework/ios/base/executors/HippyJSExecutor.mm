@@ -106,6 +106,7 @@ using WeakCtxValuePtr = std::weak_ptr<hippy::napi::CtxValue>;
     auto engine = [[HippyJSEnginesMapper defaultInstance] createJSEngineResourceForKey:self.enginekey];
     const char *pName = [self.enginekey UTF8String] ?: "";
     auto scope = engine->GetEngine()->CreateScope(pName);
+    scope->SetJsRunner(engine->GetDomManager()->GetJsTaskRunner());
     __weak HippyJSExecutor *weakSelf = self;
     engine->GetEngine()->GetJsTaskRunner()->PostTask([weakSelf](){
         @autoreleasepool {
