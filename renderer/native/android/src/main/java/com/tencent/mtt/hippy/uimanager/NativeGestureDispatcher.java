@@ -27,6 +27,7 @@ import androidx.annotation.Nullable;
 import com.tencent.mtt.hippy.dom.node.NodeProps;
 import com.tencent.mtt.hippy.utils.LogUtils;
 import com.tencent.mtt.hippy.utils.PixelUtil;
+import com.tencent.mtt.hippy.views.hippylist.HippyRecyclerViewWrapper;
 import com.tencent.renderer.NativeRender;
 import com.tencent.renderer.NativeRendererManager;
 

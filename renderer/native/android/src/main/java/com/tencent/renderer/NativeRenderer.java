@@ -761,10 +761,14 @@ public class NativeRenderer extends Renderer implements NativeRender, NativeRend
         }
     }
 
+    private int executeUITaskCount = 0;
+
+    private float executeUITaskTotal = 0;
+
     private void executeUITask() {
         final int size = mUITaskQueue.size();
         UIThreadUtils.runOnUiThread(() -> {
-            //long start = System.currentTimeMillis();
+            long startTime = System.nanoTime();
             int count = size;
             while (count > 0) {
                 UITaskExecutor task = mUITaskQueue.poll();
@@ -773,7 +777,10 @@ public class NativeRenderer extends Renderer implements NativeRender, NativeRend
                 }
                 count--;
             }
-            //LogUtils.d(TAG,"executeUITask: size " + size + ", time " + (System.currentTimeMillis() - start));
+            float endTime = (System.nanoTime() - startTime) / 1000;
+            executeUITaskTotal += (float)(Math.round(endTime*100))/100;
+            LogUtils.e("maxli", "executeUITask: " + (++executeUITaskCount) +
+                ", " + endTime + ", " + Math.round(executeUITaskTotal/1000) + ", " + size);
         });
     }
 

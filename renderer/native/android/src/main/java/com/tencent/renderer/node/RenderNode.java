@@ -34,6 +34,7 @@ import com.tencent.mtt.hippy.dom.node.NodeProps;
 import com.tencent.mtt.hippy.uimanager.ControllerManager;
 import com.tencent.mtt.hippy.uimanager.RenderManager;
 import com.tencent.mtt.hippy.utils.LogUtils;
+import com.tencent.mtt.hippy.views.hippylist.HippyRecyclerViewController;
 import com.tencent.mtt.hippy.views.view.HippyViewGroupController;
 import com.tencent.renderer.NativeRender;
 import com.tencent.renderer.NativeRenderException;
@@ -709,6 +710,10 @@ public class RenderNode {
     }
 
     public void batchComplete() {
+        if (mClassName.equals(HippyRecyclerViewController.CLASS_NAME)) {
+            LogUtils.e("maxli", "#############################################");
+            LogUtils.e("maxli", "child count: " + getChildCount() + "\n ");
+        }
         if (!isDeleted() && !isLazyLoad()) {
             mControllerManager.onBatchComplete(mRootId, mId, mClassName);
             if (mHostViewRef == null || mHostViewRef.get() == null) {

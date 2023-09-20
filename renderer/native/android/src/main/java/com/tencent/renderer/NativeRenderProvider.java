@@ -23,6 +23,7 @@ import com.tencent.mtt.hippy.serialization.nio.reader.BinaryReader;
 import com.tencent.mtt.hippy.serialization.nio.reader.SafeHeapReader;
 import com.tencent.mtt.hippy.serialization.nio.writer.SafeHeapWriter;
 import com.tencent.mtt.hippy.serialization.string.InternalizedStringTable;
+import com.tencent.mtt.hippy.utils.LogUtils;
 import com.tencent.mtt.hippy.utils.PixelUtil;
 import com.tencent.renderer.annotation.CalledByNative;
 import com.tencent.renderer.serialization.Deserializer;
@@ -52,6 +53,22 @@ public class NativeRenderProvider {
     @Nullable
     private SafeHeapWriter mSafeHeapWriter;
     private int mInstanceId;
+
+    private int bytesToArgumentCount = 0;
+    private int createNodeCount = 0;
+    private int updateNodeCount = 0;
+    private int updateLayoutCount = 0;
+    private int updateEventListenerCount = 0;
+    private int measureCount = 0;
+    private int endBatchCount = 0;
+
+    private float bytesToArgumentTotal = 0;
+    private float createNodeTotal = 0;
+    private float updateNodeTotal = 0;
+    private float updateLayoutTotal = 0;
+    private float updateEventListenerTotal = 0;
+    private float measureTotal = 0;
+    private float endBatchTotal = 0;
 
     public NativeRenderProvider(@NonNull NativeRenderDelegate renderDelegate) {
         mRenderDelegateRef = new WeakReference<>(renderDelegate);
@@ -85,6 +102,7 @@ public class NativeRenderProvider {
     @SuppressWarnings({"rawtypes", "unchecked"})
     @NonNull
     List<Object> bytesToArgument(ByteBuffer buffer) {
+        long startTime = System.nanoTime();
         final BinaryReader binaryReader;
         if (mSafeHeapReader == null) {
             mSafeHeapReader = new SafeHeapReader();
@@ -95,6 +113,10 @@ public class NativeRenderProvider {
         mDeserializer.reset();
         mDeserializer.readHeader();
         Object paramsObj = mDeserializer.readValue();
+        float endTime = (System.nanoTime() - startTime) / 1000;
+        bytesToArgumentTotal += (float)(Math.round(endTime*100))/100;
+        LogUtils.e("maxli", "bytesToArgument: " + (++bytesToArgumentCount) +
+            ", " + endTime + ", " + Math.round(bytesToArgumentTotal/1000));
         return (paramsObj instanceof ArrayList) ? (ArrayList) paramsObj : new ArrayList<>();
     }
 
@@ -132,8 +154,13 @@ public class NativeRenderProvider {
         NativeRenderDelegate renderDelegate = mRenderDelegateRef.get();
         if (renderDelegate != null) {
             try {
+                long startTime = System.nanoTime();
                 final List<Object> list = bytesToArgument(ByteBuffer.wrap(buffer));
                 renderDelegate.createNode(rootId, list);
+                float endTime = (System.nanoTime() - startTime) / 1000;
+                createNodeTotal += (float)(Math.round(endTime*100))/100;
+                LogUtils.e("maxli", "createNode: " + (++createNodeCount) +
+                    ", " + endTime + ", " + Math.round(createNodeTotal/1000) + ", " + list.size());
             } catch (NativeRenderException e) {
                 renderDelegate.handleRenderException(e);
             }
@@ -152,8 +179,13 @@ public class NativeRenderProvider {
         NativeRenderDelegate renderDelegate = mRenderDelegateRef.get();
         if (renderDelegate != null) {
             try {
+                long startTime = System.nanoTime();
                 final List<Object> list = bytesToArgument(ByteBuffer.wrap(buffer));
                 renderDelegate.updateNode(rootId, list);
+                float endTime = (System.nanoTime() - startTime) / 1000;
+                updateNodeTotal += (float)(Math.round(endTime*100))/100;
+                LogUtils.e("maxli", "updateNode: " + (++updateNodeCount) +
+                    ", " + endTime + ", " + Math.round(updateNodeTotal/1000) + ", " + list.size());
             } catch (NativeRenderException e) {
                 renderDelegate.handleRenderException(e);
             }
@@ -240,8 +272,13 @@ public class NativeRenderProvider {
         NativeRenderDelegate renderDelegate = mRenderDelegateRef.get();
         if (renderDelegate != null) {
             try {
+                long startTime = System.nanoTime();
                 final List<Object> list = bytesToArgument(ByteBuffer.wrap(buffer));
                 renderDelegate.updateLayout(rootId, list);
+                float endTime = (System.nanoTime() - startTime) / 1000;
+                updateLayoutTotal += (float)(Math.round(endTime*100))/100;
+                LogUtils.e("maxli", "updateLayout: " + (++updateLayoutCount) +
+                    ", " + endTime + ", " + Math.round(updateLayoutTotal/1000) + ", " + list.size());
             } catch (NativeRenderException e) {
                 renderDelegate.handleRenderException(e);
             }
@@ -260,8 +297,13 @@ public class NativeRenderProvider {
         NativeRenderDelegate renderDelegate = mRenderDelegateRef.get();
         if (renderDelegate != null) {
             try {
+                long startTime = System.nanoTime();
                 final List<Object> list = bytesToArgument(ByteBuffer.wrap(buffer));
                 renderDelegate.updateEventListener(rootId, list);
+                float endTime = (System.nanoTime() - startTime) / 1000;
+                updateEventListenerTotal += (float)(Math.round(endTime*100))/100;
+                LogUtils.e("maxli", "updateEventListener: " + (++updateEventListenerCount) +
+                    ", " + endTime + ", " + Math.round(updateEventListenerTotal/1000) + ", " + list.size());
             } catch (NativeRenderException e) {
                 renderDelegate.handleRenderException(e);
             }
@@ -285,7 +327,13 @@ public class NativeRenderProvider {
             int heightMode) {
         NativeRenderDelegate renderDelegate = mRenderDelegateRef.get();
         if (renderDelegate != null) {
-            return renderDelegate.measure(rootId, nodeId, width, widthMode, height, heightMode);
+            long startTime = System.nanoTime();
+            long result = renderDelegate.measure(rootId, nodeId, width, widthMode, height, heightMode);
+            float endTime = (System.nanoTime() - startTime) / 1000;
+            measureTotal += (float)(Math.round(endTime*100))/100;
+            LogUtils.e("maxli", "measure: " + (++measureCount) +
+                ", " + endTime + ", " + Math.round(measureTotal/1000));
+            return result;
         }
         return 0;
     }
@@ -325,7 +373,12 @@ public class NativeRenderProvider {
         NativeRenderDelegate renderDelegate = mRenderDelegateRef.get();
         if (renderDelegate != null) {
             try {
+                long startTime = System.nanoTime();
                 renderDelegate.endBatch(rootId);
+                float endTime = (System.nanoTime() - startTime) / 1000;
+                endBatchTotal += (float)(Math.round(endTime*100))/100;
+                LogUtils.e("maxli", "endBatch: " + (++endBatchCount) +
+                    ", " + endTime + ", " + Math.round(endBatchTotal/1000));
             } catch (NativeRenderException e) {
                 renderDelegate.handleRenderException(e);
             }
