@@ -267,6 +267,7 @@ static BOOL SelectorBelongsToProtocol(SEL selector, Protocol *protocol) {
         _demoLoader->Terminate();
     }
     if (_rootNode) {
+        _nativeRenderManager->RemoveVSyncEventListener(_rootNode);
         _rootNode->ReleaseResources();
     }
 }
