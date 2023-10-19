@@ -428,6 +428,24 @@ function getEventNode(targetNode) {
 }
 
 /**
+ * getEventNode - translate to native node.
+ * @param targetNode
+ */
+function getNativeNode(rootViewId, targetNode, refInfo = {}, style) {
+  const nativeNode = {
+    id: targetNode.nodeId,
+    pId: (targetNode.parentNode && targetNode.parentNode.nodeId) || rootViewId,
+    name: targetNode.meta.component.name,
+    props: {
+      ...getNativeProps(targetNode),
+      style,
+    },
+    tagName: targetNode.tagName,
+  };
+  return [nativeNode, refInfo, { skipStyleDiff: true }];
+}
+
+/**
  * Render Element to native
  */
 function renderToNative(rootViewId, targetNode, refInfo = {}) {
@@ -629,19 +647,41 @@ function moveChild(parentNode, childNode, refInfo = {}) {
   endBatch(app);
 }
 
-function updateChild(parentNode) {
+function updateEvent(parentNode) {
+  if (!parentNode.isMounted) {
+    return;
+  }
+  const app = getApp();
+  const eventNode = getEventNode(parentNode);
+  batchNodes.push({
+    type: NODE_OPERATION_TYPES.updateEvent,
+    nodes: [],
+    eventNodes: [eventNode],
+    printedNodes: [],
+  });
+  endBatch(app);
+}
+
+function updateChild(parentNode, notUpdateStyle = false) {
   if (!parentNode.isMounted) {
     return;
   }
   const app = getApp();
   const { $options: { rootViewId } } = app;
-  const  [nativeNode, eventNode, printedNode] = renderToNative(rootViewId, parentNode);
+  let nativeNode;
+  let eventNode;
+  let printedNode;
+  if (notUpdateStyle) {
+    nativeNode = getNativeNode(rootViewId, parentNode, refInfo);
+  } else {
+    [nativeNode, eventNode, printedNode] = renderToNative(rootViewId, parentNode);
+  }
   if (nativeNode) {
     batchNodes.push({
       type: NODE_OPERATION_TYPES.updateNode,
-      nodes: [nativeNode],
-      eventNodes: [eventNode],
-      printedNodes: isDev() ? [printedNode] : [],
+      nodes: nativeNode ? [nativeNode] : [],
+      eventNodes: eventNode ? [eventNode] : [],
+      printedNodes: isDev() && printedNode ? [printedNode] : [],
     });
     endBatch(app);
   }
