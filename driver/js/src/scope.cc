@@ -58,6 +58,11 @@
 #include "driver/vm/v8/v8_vm.h"
 #endif
 
+#ifdef JS_HERMES
+#include "driver/vm/hermes/hermes_vm.h"
+#include "driver/napi/hermes/hermes_ctx.h"
+#endif
+
 #ifdef ENABLE_INSPECTOR
 #include "devtools/devtools_data_source.h"
 #endif
@@ -483,20 +488,28 @@ void Scope::RunJS(const string_view& data,
                   const string_view& name,
                   bool is_copy) {
   std::weak_ptr<Ctx> weak_context = context_;
-  auto callback = [data, name, is_copy, weak_context] {
 #ifdef JS_V8
+  auto callback = [data, name, is_copy, weak_context] {
     auto context = std::static_pointer_cast<hippy::napi::V8Ctx>(weak_context.lock());
     if (context) {
       context->RunScript(data, name, false, nullptr, is_copy);
     }
-#else
+  };
+#elif JS_HERMES
+  auto callback = [data, name, weak_context] {
     auto context = weak_context.lock();
     if (context) {
       context->RunScript(data, name);
     }
-#endif
   };
-
+#else
+  auto callback = [data, name, weak_context] {
+    auto context = weak_context.lock();
+    if (context) {
+      context->RunScript(data, name);
+    }
+  };
+#endif
   auto runner = GetTaskRunner();
   if (footstone::Worker::IsTaskRunning() && runner == footstone::runner::TaskRunner::GetCurrentTaskRunner()) {
     callback();
