@@ -53,6 +53,8 @@ import com.tencent.mtt.hippy.utils.TimeMonitor;
 import com.tencent.mtt.hippy.utils.TimeMonitor.MonitorGroupType;
 
 import java.lang.ref.WeakReference;
+
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.nio.ByteBuffer;
@@ -174,10 +176,20 @@ public class HippyBridgeManagerImpl implements HippyBridgeManager, HippyBridge.B
                 mHippyBridge.callFunction(functionId, mCallFunctionCallback, buffer.array(), offset,
                         length);
             } else {
-                mStringBuilder.setLength(0);
-                byte[] bytes = ArgumentUtils.objectToJsonOpt(msg.obj, mStringBuilder).getBytes(
+                if (msg.obj instanceof JSValue) {
+                    try {
+                        String str = ((JSValue) msg.obj).dump().toString();
+                        byte[] bytes = str.getBytes(StandardCharsets.UTF_16LE);
+                        mHippyBridge.callFunction(functionId, mCallFunctionCallback, bytes);
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                } else {
+                    mStringBuilder.setLength(0);
+                    byte[] bytes = ArgumentUtils.objectToJsonOpt(msg.obj, mStringBuilder).getBytes(
                         StandardCharsets.UTF_16LE);
-                mHippyBridge.callFunction(functionId, mCallFunctionCallback, bytes);
+                    mHippyBridge.callFunction(functionId, mCallFunctionCallback, bytes);
+                }
             }
         }
     }
