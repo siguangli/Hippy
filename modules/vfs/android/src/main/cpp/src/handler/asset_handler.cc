@@ -74,7 +74,7 @@ bool ReadAsset(const string_view& path,
 #ifdef JS_HERMES
     FOOTSTONE_DLOG(INFO) << "path = " << path << ", len = " << bytes.length();
 #else
-    FOOTSTONE_DLOG(INFO) << "path = " << path << ", len = " << bytes.length();
+    FOOTSTONE_DLOG(INFO) << "path = " << path << ", len = " << bytes.length()
                         << ", file_data = "
                         << reinterpret_cast<const char*>(bytes.c_str());
 #endif
