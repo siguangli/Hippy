@@ -314,9 +314,14 @@ bool JsDriverUtils::RunScript(const std::shared_ptr<Scope>& scope,
     code_cache_content = read_file_future.get();
   }
 
+#ifdef JS_HERMES
+  FOOTSTONE_DLOG(INFO) << "uri = " << uri
+                       << "read_script_flag = " << read_script_flag;
+#else
   FOOTSTONE_DLOG(INFO) << "uri = " << uri
                        << "read_script_flag = " << read_script_flag
                        << ", script content = " << script_content;
+#endif
 
   if (!read_script_flag || StringViewUtils::IsEmpty(script_content)) {
     FOOTSTONE_LOG(WARNING) << "read_script_flag = " << read_script_flag
