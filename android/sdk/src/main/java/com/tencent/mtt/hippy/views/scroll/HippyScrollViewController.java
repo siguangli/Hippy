@@ -51,6 +51,11 @@ public class HippyScrollViewController<T extends ViewGroup & HippyScrollView> ex
     return null;
   }
 
+  @HippyControllerProps(name = "disallowIntercept", defaultType = HippyControllerProps.BOOLEAN, defaultBoolean = true)
+  public void setDisallowIntercept(HippyScrollView view, boolean flag) {
+    view.setDisallowIntercept(flag);
+  }
+
   @HippyControllerProps(name = "scrollEnabled", defaultType = HippyControllerProps.BOOLEAN, defaultBoolean = true)
   public void setScrollEnabled(HippyScrollView view, boolean flag) {
     view.setScrollEnabled(flag);

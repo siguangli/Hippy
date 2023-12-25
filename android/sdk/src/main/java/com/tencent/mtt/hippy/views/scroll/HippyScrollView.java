@@ -5,6 +5,8 @@ import com.tencent.mtt.hippy.common.HippyMap;
 @SuppressWarnings("deprecation")
 public interface HippyScrollView {
 
+  void setDisallowIntercept(boolean disallowIntercept);
+
   void setScrollEnabled(boolean enabled);
 
   void showScrollIndicator(boolean showScrollIndicator);

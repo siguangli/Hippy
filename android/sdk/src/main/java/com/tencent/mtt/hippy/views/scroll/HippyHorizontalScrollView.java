@@ -38,6 +38,8 @@ public class HippyHorizontalScrollView extends HorizontalScrollView implements H
 
   private NativeGestureDispatcher mGestureDispatcher;
 
+  private boolean mDisallowIntercept = true;
+
   private boolean mScrollEnabled = true;
 
   private boolean mDoneFlinging;
@@ -99,6 +101,10 @@ public class HippyHorizontalScrollView extends HorizontalScrollView implements H
     super.onViewAdded(child);
   }
 
+  public void setDisallowIntercept(boolean disallowIntercept) {
+    mDisallowIntercept = disallowIntercept;
+  }
+
   public void setScrollEnabled(boolean enabled) {
     this.mScrollEnabled = enabled;
   }
@@ -154,7 +160,7 @@ public class HippyHorizontalScrollView extends HorizontalScrollView implements H
         HippyScrollViewEventHelper.emitScrollBeginDragEvent(this);
       }
       // 若自己能水平滚动
-      if (canScrollHorizontally(-1) || canScrollHorizontally(1)) {
+      if (mDisallowIntercept && (canScrollHorizontally(-1) || canScrollHorizontally(1))) {
         requestDisallowInterceptTouchEvent(true);
       }
     } else if ((action == MotionEvent.ACTION_UP || action == MotionEvent.ACTION_CANCEL) && mDragging) {

@@ -35,6 +35,8 @@ public class HippyVerticalScrollView extends ScrollView implements HippyViewBase
 
   private NativeGestureDispatcher mGestureDispatcher;
 
+  private boolean mDisallowIntercept = true;
+
   private boolean mScrollEnabled = true;
 
   private boolean mDoneFlinging;
@@ -80,6 +82,10 @@ public class HippyVerticalScrollView extends ScrollView implements HippyViewBase
         mFocusHelper = new HippyVerticalScrollViewFocusHelper(this);
         setFocusableInTouchMode(true);
     }
+  }
+
+  public void setDisallowIntercept(boolean disallowIntercept) {
+    mDisallowIntercept = disallowIntercept;
   }
 
   public void setScrollEnabled(boolean enabled) {
@@ -136,7 +142,9 @@ public class HippyVerticalScrollView extends ScrollView implements HippyViewBase
         HippyScrollViewEventHelper.emitScrollBeginDragEvent(this);
       }
       // 当手指触摸listview时，让父控件交出ontouch权限,不能滚动
-      setParentScrollableIfNeed(false);
+      if (mDisallowIntercept && (canScrollVertically(-1) || canScrollVertically(1))) {
+        getParent().requestDisallowInterceptTouchEvent(true);
+      }
     } else if ((action == MotionEvent.ACTION_UP || action == MotionEvent.ACTION_CANCEL) && mDragging) {
       if (mHasUnsentScrollEvent) {
         sendOnScrollEvent();
@@ -155,7 +163,9 @@ public class HippyVerticalScrollView extends ScrollView implements HippyViewBase
         );
       }
       // 当手指松开时，让父控件重新获取onTouch权限
-      setParentScrollableIfNeed(true);
+      if (mDisallowIntercept && (canScrollVertically(-1) || canScrollVertically(1))) {
+        getParent().requestDisallowInterceptTouchEvent(false);
+      }
       mDragging = false;
     }
 
