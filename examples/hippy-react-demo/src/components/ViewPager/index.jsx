@@ -3,6 +3,7 @@ import {
   StyleSheet,
   View,
   Text,
+  ScrollView,
   ViewPager,
 } from '@hippy/react';
 import { CirclePagerView, SquarePagerView, TrianglePagerView } from '../../shared/PagerItemView';
@@ -31,10 +32,10 @@ const styles = StyleSheet.create({
     // bottom: 16
   },
   selectDot: {
-    backgroundColor: '#000000',
+    backgroundColor: 'red',
   },
   container: {
-    height: 500,
+    height: 800,
   },
   buttonContainer: {
     flexDirection: 'row',
@@ -53,6 +54,38 @@ const styles = StyleSheet.create({
   buttonText: {
     fontSize: 16,
     color: '#fff',
+  },
+  itemStyle: {
+    width: 100,
+    height: 100,
+    lineHeight: 100,
+    borderWidth: 1,
+    borderStyle: 'solid',
+    borderColor: '#4c9afa',
+    fontSize: 80,
+    margin: 20,
+    color: '#4c9afa',
+    textAlign: 'center',
+  },
+  verticalScrollView: {
+    height: 300,
+    width: 140,
+    margin: 20,
+    borderColor: '#eee',
+    borderWidth: 1,
+    borderStyle: 'solid',
+  },
+  itemTitle: {
+    alignItems: 'flex-start',
+    justifyContent: 'center',
+    height: 40,
+    borderWidth: 1,
+    borderStyle: 'solid',
+    borderColor: '#e0e0e0',
+    borderRadius: 2,
+    backgroundColor: '#fafafa',
+    padding: 10,
+    marginTop: 10,
   },
 });
 
@@ -85,19 +118,6 @@ export default class PagerExample extends React.Component {
       const { selectedIndex } = this.state;
       return (
         <View style={{ flex: 1, backgroundColor: '#ffffff' }}>
-          <View style={styles.buttonContainer}>
-            <View
-              style={styles.button}
-              onClick={() => {
-                this.viewpager.setPage(2);
-              }}
-            >
-              <Text style={styles.buttonText}>动效滑到第3页</Text>
-            </View>
-            <View style={styles.button} onClick={() => this.viewpager.setPageWithoutAnimation(0)}>
-              <Text style={styles.buttonText}>直接滑到第1页</Text>
-            </View>
-          </View>
           <ViewPager
             ref={(ref) => {
               this.viewpager = ref;
@@ -105,31 +125,20 @@ export default class PagerExample extends React.Component {
             style={styles.container}
             initialPage={0}
             keyboardDismissMode="none"
+            vertical
             scrollEnabled
             onPageSelected={this.onPageSelected}
             onPageScrollStateChanged={this.onPageScrollStateChanged}
             onPageScroll={this.onPageScroll}
           >
-            {
+           {
               [
-                SquarePagerView('squarePager'),
-                TrianglePagerView('TrianglePager'),
-                CirclePagerView('CirclePager'),
+               SquarePagerView('squarePager'),
+               TrianglePagerView('TrianglePager'),
+               CirclePagerView('CirclePager'),
               ]
             }
           </ViewPager>
-          <View style={styles.dotContainer}>
-            {
-              new Array(PAGE_COUNT).fill(0)
-                .map((n, i) => {
-                  const isSelect = i === selectedIndex;
-                  return (
-                  // eslint-disable-next-line react/jsx-key
-                  <View style={[styles.dot, isSelect ? styles.selectDot : null]} key={`dot_${i}`}/>
-                  );
-                })
-            }
-          </View>
         </View>
       );
     }

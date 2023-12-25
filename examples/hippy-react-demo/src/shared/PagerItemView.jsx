@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, Text, View } from '@hippy/react';
+import { StyleSheet, Text, View, ScrollView } from '@hippy/react';
 
 const styles = StyleSheet.create({
   pageContainer: {
@@ -45,6 +45,38 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
     width: 140,
   },
+  itemStyle: {
+    width: 100,
+    height: 100,
+    lineHeight: 100,
+    borderWidth: 1,
+    borderStyle: 'solid',
+    borderColor: '#4c9afa',
+    fontSize: 80,
+    margin: 20,
+    color: '#4c9afa',
+    textAlign: 'center',
+  },
+  verticalScrollView: {
+    height: 300,
+    width: 140,
+    margin: 20,
+    borderColor: '#eee',
+    borderWidth: 1,
+    borderStyle: 'solid',
+  },
+  itemTitle: {
+    alignItems: 'flex-start',
+    justifyContent: 'center',
+    height: 40,
+    borderWidth: 1,
+    borderStyle: 'solid',
+    borderColor: '#e0e0e0',
+    borderRadius: 2,
+    backgroundColor: '#fafafa',
+    padding: 10,
+    marginTop: 10,
+  },
 });
 
 const VIEW_NAME_MAP = {
@@ -55,12 +87,28 @@ const VIEW_NAME_MAP = {
 
 function generateShapePagerView(shapeStyle, name) {
   const ShapePagerView = title => (
-      <View style={styles.pageContainer} key={title}>
-        <View style={[styles.shapeBase, shapeStyle]} key={'shape'} />
-        <View style={styles.mainRec} key={'title'}>
-          {title ? <Text style={styles.title}>{title}</Text> : null}
-        </View>
-      </View>
+    <View style={styles.selectDot}>
+    <ScrollView
+        horizontal={true}
+        bounces={true}
+        disallowIntercept={true}
+        showsHorizontalScrollIndicator={false} // only iOS support
+        showScrollIndicator={false} // only Android support
+        onScroll={params => console.log('onScroll', params)}
+        onMomentumScrollBegin={params => console.log('onMomentumScrollBegin', params)}
+        onMomentumScrollEnd={params => console.log('onMomentumScrollEnd', params)}
+        onScrollBeginDrag={params => console.log('onScrollBeginDrag', params)}
+        onScrollEndDrag={params => console.log('onScrollEndDrag', params)}
+    >
+      <Text style={styles.itemStyle}>A</Text>
+      <Text style={styles.itemStyle}>B</Text>
+      <Text style={styles.itemStyle}>C</Text>
+      <Text style={styles.itemStyle}>D</Text>
+      <Text style={styles.itemStyle}>E</Text>
+      <Text style={styles.itemStyle}>F</Text>
+      <Text style={styles.itemStyle}>A</Text>
+    </ScrollView>
+    </View>
   );
   ShapePagerView.displayName = name;
   return ShapePagerView;
