@@ -38,7 +38,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.tencent.mtt.hippy.utils.ContextHolder;
-
+import com.tencent.mtt.hippy.utils.UIThreadUtils;
 import com.tencent.renderer.NativeRender;
 import com.tencent.renderer.component.image.ImageDataHolder;
 import com.tencent.renderer.component.image.ImageDataSupplier;

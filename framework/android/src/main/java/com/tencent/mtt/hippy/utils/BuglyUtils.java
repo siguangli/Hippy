@@ -31,15 +31,19 @@ public class BuglyUtils {
         if (!BuildConfig.ENABLE_BUGLY_REPORT || sHasCommitted || context == null) {
             return;
         }
-        Context appContext = context.getApplicationContext();
-        SharedPreferences settings = appContext.getSharedPreferences(BUGLY_KEY, Context.MODE_PRIVATE);
-        String version = settings.getString(SDK_APP_ID, null);
-        if (!BuildConfig.LIBRARY_VERSION.equals(version)) {
-            SharedPreferences.Editor editor = settings.edit();
-            editor.putString(SDK_APP_ID, BuildConfig.LIBRARY_VERSION);
-            sHasCommitted = editor.commit();
-        } else {
-            sHasCommitted = true;
+        try {
+            Context appContext = context.getApplicationContext();
+            SharedPreferences settings = appContext.getSharedPreferences(BUGLY_KEY, Context.MODE_PRIVATE);
+            String version = settings.getString(SDK_APP_ID, null);
+            if (!BuildConfig.LIBRARY_VERSION.equals(version)) {
+                SharedPreferences.Editor editor = settings.edit();
+                editor.putString(SDK_APP_ID, BuildConfig.LIBRARY_VERSION);
+                sHasCommitted = editor.commit();
+            } else {
+                sHasCommitted = true;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 }
