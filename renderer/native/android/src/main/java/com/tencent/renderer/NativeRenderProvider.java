@@ -380,7 +380,6 @@ public class NativeRenderProvider {
                 length = buffer.limit() - buffer.position();
                 offset += buffer.arrayOffset();
                 bytes = buffer.array();
-                checkBufferHeader(bytes, functionName, offset, length);
             } catch (Exception e) {
                 NativeRenderDelegate renderDelegate = mRenderDelegateRef.get();
                 if (renderDelegate != null) {
@@ -391,22 +390,6 @@ public class NativeRenderProvider {
         }
         doCallBack(mInstanceId, result, functionName, rootId, nodeId, callbackId, bytes, offset,
                 length);
-    }
-
-    private void checkBufferHeader(@Nullable final byte[] bytes, String eventName, int offset, int length) {
-        NativeRenderDelegate renderDelegate = mRenderDelegateRef.get();
-        if (bytes == null || renderDelegate == null) {
-            return;
-        }
-        try {
-            if (bytes.length < 2 || length < 2 || bytes[0] != -1 || bytes[1] != 13) {
-                String message = "eventName " + eventName + ", offset " + offset + ", length " + length
-                        + ", buffer " + Arrays.toString(bytes);
-                renderDelegate.onReceiveRenderLogMessage(LOG_SEVERITY_FATAL, TAG, message);
-            }
-        } catch (Exception e) {
-
-        }
     }
 
     public void dispatchEvent(final int rootId, final int nodeId, @NonNull final String eventName,
@@ -431,7 +414,6 @@ public class NativeRenderProvider {
                 length = buffer.limit() - buffer.position();
                 offset += buffer.arrayOffset();
                 bytes = buffer.array();
-                checkBufferHeader(bytes, eventName, offset, length);
             } catch (Exception e) {
                 NativeRenderDelegate renderDelegate = mRenderDelegateRef.get();
                 if (renderDelegate != null) {
