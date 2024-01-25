@@ -22,7 +22,7 @@ import com.tencent.renderer.node.PullFooterRenderNode;
 import com.tencent.renderer.node.RenderNode;
 import com.tencent.mtt.hippy.utils.HippyViewUtil;
 import com.tencent.mtt.hippy.views.list.HippyListView;
-import com.tencent.mtt.hippy.views.waterfalllist.HippyWaterfallView;
+import com.tencent.mtt.hippy.views.waterfall.HippyWaterfallView;
 import com.tencent.mtt.supportui.views.recyclerview.RecyclerViewBase;
 
 import static com.tencent.renderer.utils.EventUtils.EVENT_LIST_FOOTER_RELEASED;
@@ -49,9 +49,9 @@ public class FooterUtil {
       new HippyViewEvent(EVENT_LIST_FOOTER_RELEASED).send(footerView, null);
     }
 
-    if (footerContainer instanceof HippyWaterfallView) {
-      ((HippyWaterfallView) footerContainer).startLoadMore();
-    }
+//    if (footerContainer instanceof HippyWaterfallView) {
+//      ((HippyWaterfallView) footerContainer).startLoadMore();
+//    }
   }
 
   public static void checkFooterBinding(RecyclerViewBase list, View view) {

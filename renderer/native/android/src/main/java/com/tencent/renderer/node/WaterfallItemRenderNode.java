@@ -13,26 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.tencent.mtt.hippy.views.waterfalllist;
 
-import android.content.Context;
-import com.tencent.mtt.hippy.views.view.HippyViewGroup;
+package com.tencent.renderer.node;
 
-public class HippyWaterfallItemView extends HippyViewGroup {
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
-  static final String TAG = "HippyWaterfallItemView";
-  private int mType;
+import com.tencent.mtt.hippy.uimanager.ControllerManager;
+import java.util.Map;
 
-  public HippyWaterfallItemView(Context context) {
-    super(context);
-  }
+public class WaterfallItemRenderNode extends ListItemRenderNode {
 
-  public void setType(int type) {
-    mType = type;
-  }
+    static final String TAG = "HippyWaterfallItemNode";
 
-  public int getType() {
-    return mType;
-  }
+    public WaterfallItemRenderNode(int rootId, int id, @Nullable Map<String, Object> props,
+            @NonNull String className, @NonNull ControllerManager controllerManager, boolean isLazyLoad) {
+        super(rootId, id, props, className, controllerManager, isLazyLoad);
+    }
 
 }

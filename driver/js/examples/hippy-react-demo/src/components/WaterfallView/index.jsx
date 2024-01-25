@@ -233,20 +233,10 @@ export default class ListExample extends React.Component {
     const { numberOfColumns, columnSpacing, interItemSpacing } = this;
     const contentInset = this.getWaterfallContentInset();
     return (
-        <RefreshWrapper
-            ref={(ref) => {
-              this.refresh = ref;
-            }}
-            style={{ flex: 1 }}
-            onRefresh={this.onRefresh}
-            bounceTime={100}
-            getRefresh={this.getRefresh}
-        >
           <WaterfallView
               ref={(ref) => {
                 this.listView = ref;
               }}
-              renderBanner={this.renderBanner}
               numberOfColumns={numberOfColumns}
               columnSpacing={columnSpacing}
               interItemSpacing={interItemSpacing}
@@ -259,9 +249,7 @@ export default class ListExample extends React.Component {
               contentInset={contentInset}
               getItemStyle={this.getItemStyle}
               containPullFooter={true}
-              renderPullFooter={this.renderPullFooter}
           />
-        </RefreshWrapper>
     );
   }
 }
