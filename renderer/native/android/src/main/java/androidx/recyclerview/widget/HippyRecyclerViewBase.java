@@ -82,6 +82,8 @@ public class HippyRecyclerViewBase extends RecyclerViewBase {
             LayoutManager layoutManager = getLayoutManager();
             if (layoutManager instanceof HippyLinearLayoutManager) {
                 ((HippyLinearLayoutManager) layoutManager).resetCache();
+            } else if (layoutManager instanceof HippyStaggeredGridLayoutManager) {
+                ((HippyStaggeredGridLayoutManager) layoutManager).resetCache();
             }
             super.dispatchLayout();
         }

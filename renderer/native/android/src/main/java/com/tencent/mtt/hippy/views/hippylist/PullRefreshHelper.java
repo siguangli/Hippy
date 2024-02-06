@@ -32,6 +32,8 @@ import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.RecyclerView.LayoutManager;
+import androidx.recyclerview.widget.StaggeredGridLayoutManager;
+import com.tencent.mtt.hippy.utils.LogUtils;
 import com.tencent.renderer.node.RenderNode;
 import com.tencent.mtt.hippy.views.hippylist.recyclerview.helper.AnimatorListenerBase;
 import com.tencent.mtt.hippy.views.refresh.HippyPullFooterView;
@@ -171,7 +173,9 @@ public abstract class PullRefreshHelper {
         mContainer.addView(itemView, lpChild);
         int width = isVertical ? MATCH_PARENT : 0;
         int height = isVertical ? 0 : MATCH_PARENT;
-        RecyclerView.LayoutParams lpContainer = new RecyclerView.LayoutParams(width, height);
+        //RecyclerView.LayoutParams lpContainer = new RecyclerView.LayoutParams(MATCH_PARENT, MATCH_PARENT);
+        StaggeredGridLayoutManager.LayoutParams lpContainer = new StaggeredGridLayoutManager.LayoutParams(width, height);
+        lpContainer.setFullSpan(true);
         mContainer.setLayoutParams(lpContainer);
     }
 
@@ -201,6 +205,7 @@ public abstract class PullRefreshHelper {
 
     protected void setVisibleSize(int size) {
         ViewGroup.LayoutParams layoutParams = mContainer.getLayoutParams();
+        LogUtils.e("maxli", "setVisibleSize: size " + size + ", height " + layoutParams.height);
         if (isVertical()) {
             layoutParams.height = Math.max(size, 0);
         } else {

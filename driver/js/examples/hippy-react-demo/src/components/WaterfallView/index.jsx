@@ -55,8 +55,9 @@ export default class ListExample extends React.Component {
     super(props);
     this.state = {
       dataSource: [],
-      pullingText: '继续下拉触发刷新',
-      loadingState: '正在加载...',
+      headerRefreshText: '继续下拉触发刷新',
+      footerRefreshText: '正在加载...',
+      horizontal: undefined,
     };
     this.numberOfColumns = 2;
     this.columnSpacing = 6;
@@ -69,8 +70,10 @@ export default class ListExample extends React.Component {
     this.onRefresh = this.onRefresh.bind(this);
     this.getRefresh = this.getRefresh.bind(this);
     this.renderPullFooter = this.renderPullFooter.bind(this);
+    this.renderPullHeader = this.renderPullHeader.bind(this);
     this.renderBanner = this.renderBanner.bind(this);
     this.getItemStyle = this.getItemStyle.bind(this);
+    this.getHeaderStyle = this.getHeaderStyle.bind(this);
   }
 
   async componentDidMount() {
@@ -220,12 +223,45 @@ export default class ListExample extends React.Component {
 
   getItemStyle() {
     const { numberOfColumns, columnSpacing } = this;
-    const screenWidth = Dimensions.get('screen').width;
+    const screenWidth = Dimensions.get('screen').width - 32;
     const contentInset = this.getWaterfallContentInset();
     const width = screenWidth - contentInset.left - contentInset.right;
     return {
-      width: (width - ((numberOfColumns - 1) * columnSpacing)) / numberOfColumns,
+      //width: (width - ((numberOfColumns - 1) * columnSpacing)) / numberOfColumns,
+      width: (screenWidth - columnSpacing) / numberOfColumns,
     };
+  }
+
+  getHeaderStyle() {
+    const { horizontal } = this.state;
+    return !horizontal ? {} : {
+      width: 50,
+    };
+  }
+
+  /**
+   * 渲染 pullHeader 组件
+   */
+  renderPullHeader() {
+    const { headerRefreshText, horizontal } = this.state;
+    return (
+      !horizontal ? <View style={styles.pullContainer}>
+        <Text style={styles.pullContent}>{headerRefreshText}</Text>
+      </View> : <View style={{
+        width: 40,
+        height: 300,
+        backgroundColor: '#4c9afa',
+        justifyContent: 'center',
+        alignItems: 'center',
+      }}>
+        <Text style={{
+          lineHeight: 25,
+          color: 'white',
+          width: 40,
+          paddingHorizontal: 15,
+        }}>{headerRefreshText}</Text>
+      </View>
+    );
   }
 
   render() {
@@ -242,12 +278,14 @@ export default class ListExample extends React.Component {
               interItemSpacing={interItemSpacing}
               numberOfItems={dataSource.length}
               style={{ flex: 1 }}
+              renderPullHeader={this.renderPullHeader}
               renderItem={this.renderItem}
               onEndReached={this.onEndReached}
               getItemType={this.getItemType}
               getItemKey={this.getItemKey}
               contentInset={contentInset}
               getItemStyle={this.getItemStyle}
+              getHeaderStyle={this.getHeaderStyle}
               containPullFooter={true}
           />
     );

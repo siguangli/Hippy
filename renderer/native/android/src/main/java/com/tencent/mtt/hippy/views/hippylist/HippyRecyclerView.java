@@ -31,6 +31,7 @@ import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import androidx.recyclerview.widget.StaggeredGridLayoutManager;
 import com.tencent.mtt.hippy.utils.LogUtils;
 import com.tencent.mtt.hippy.utils.PixelUtil;
 import com.tencent.mtt.hippy.views.common.HippyNestedScrollComponent.HippyNestedScrollTarget2;
@@ -38,6 +39,7 @@ import com.tencent.mtt.hippy.views.common.HippyNestedScrollHelper;
 import com.tencent.mtt.hippy.views.hippylist.recyclerview.helper.skikcy.IHeaderAttachListener;
 import com.tencent.mtt.hippy.views.hippylist.recyclerview.helper.skikcy.IHeaderHost;
 import com.tencent.mtt.hippy.views.hippylist.recyclerview.helper.skikcy.StickyHeaderHelper;
+import androidx.recyclerview.widget.HippyStaggeredGridLayoutManager;
 import java.util.ArrayList;
 
 /**
@@ -174,7 +176,12 @@ public class HippyRecyclerView<ADP extends HippyRecyclerListAdapter> extends Hip
      */
     public void setListData() {
         LogUtils.d("HippyRecyclerView", "itemCount =" + listAdapter.getItemCount());
-        listAdapter.notifyDataSetChanged();
+        LayoutManager layoutManager = getLayoutManager();
+        if (layoutManager instanceof StaggeredGridLayoutManager) {
+            listAdapter.notifyItemRangeChanged(renderNodeCount, listAdapter.getRenderNodeCount() - renderNodeCount);
+        } else {
+            listAdapter.notifyDataSetChanged();
+        }
         if (overPullHelper != null) {
             overPullHelper.enableOverPullUp(!listAdapter.hasHeader());
             overPullHelper.enableOverPullDown(!listAdapter.hasFooter());
@@ -617,6 +624,7 @@ public class HippyRecyclerView<ADP extends HippyRecyclerListAdapter> extends Hip
         }
         if (listAdapter.headerRefreshHelper != null) {
             int myConsumed = listAdapter.headerRefreshHelper.handleDrag(diff);
+            LogUtils.e("maxli", "handlePullRefresh: myConsumed " + myConsumed);
             if (myConsumed != 0) {
                 if (consumed != null) {
                     consumed[isHorizontal ? 0 : 1] += myConsumed;

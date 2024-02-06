@@ -14,14 +14,16 @@
  * limitations under the License.
  */
 
-package com.tencent.mtt.hippy.views.waterfall;
+package androidx.recyclerview.widget;
 
-import androidx.recyclerview.widget.StaggeredGridLayoutManager;
+import android.content.Context;
+import androidx.recyclerview.widget.GridLayoutManager;
 
-public class HippyStaggeredGridLayoutManager extends StaggeredGridLayoutManager {
+public class HippyGridLayoutManager extends GridLayoutManager {
 
-    public HippyStaggeredGridLayoutManager(int spanCount, int orientation) {
-        super(spanCount, orientation);
+    public HippyGridLayoutManager(Context context, int spanCount) {
+        super(context, spanCount);
     }
+
 
 }
