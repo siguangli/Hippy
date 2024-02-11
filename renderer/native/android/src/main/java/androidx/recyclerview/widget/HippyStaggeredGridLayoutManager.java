@@ -17,16 +17,15 @@
 package androidx.recyclerview.widget;
 
 import android.view.View;
+
 import androidx.annotation.NonNull;
-import androidx.recyclerview.widget.ItemLayoutParams;
-import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.RecyclerView.Adapter;
-import androidx.recyclerview.widget.RecyclerView.LayoutParams;
 import androidx.recyclerview.widget.RecyclerView.State;
 import androidx.recyclerview.widget.RecyclerView.ViewHolder;
-import androidx.recyclerview.widget.StaggeredGridLayoutManager;
-import com.tencent.mtt.hippy.utils.LogUtils;
+
 import com.tencent.mtt.hippy.views.hippylist.HippyRecyclerListAdapter;
+
+import java.util.Arrays;
 import java.util.HashMap;
 
 public class HippyStaggeredGridLayoutManager extends StaggeredGridLayoutManager {
@@ -34,15 +33,20 @@ public class HippyStaggeredGridLayoutManager extends StaggeredGridLayoutManager 
     private static final String TAG = "HippyStaggeredGridLayoutManager";
     public static final int INVALID_SIZE = -1;
     protected HashMap<Integer, Integer> itemSizeMaps = new HashMap<>();
+    private int[] mSpanTotalHeight;
 
-    private static final RecyclerView.LayoutParams ITEM_LAYOUT_PARAMS = new RecyclerView.LayoutParams(0, 0);
+    private static final RecyclerView.LayoutParams ITEM_LAYOUT_PARAMS = new RecyclerView.LayoutParams(
+            0, 0);
 
     public HippyStaggeredGridLayoutManager(int spanCount, int orientation) {
         super(spanCount, orientation);
+        mSpanTotalHeight = new int[spanCount];
+        Arrays.fill(mSpanTotalHeight, INVALID_SIZE);
     }
 
     @Override
-    public void layoutDecoratedWithMargins(@NonNull View child, int left, int top, int right, int bottom) {
+    public void layoutDecoratedWithMargins(@NonNull View child, int left, int top, int right,
+            int bottom) {
         super.layoutDecoratedWithMargins(child, left, top, right, bottom);
         RecyclerView.LayoutParams lp = (RecyclerView.LayoutParams) child.getLayoutParams();
         int size = getOrientation() == RecyclerView.VERTICAL
@@ -53,12 +57,15 @@ public class HippyStaggeredGridLayoutManager extends StaggeredGridLayoutManager 
 
     @Override
     public int computeVerticalScrollRange(State state) {
-//        int[] positionsEnd = findLastVisibleItemPositions(null);
-//        int heightUntilPosition = getSizeUntilPosition(getItemCount() - 1);
-//        if (heightUntilPosition != INVALID_SIZE) {
-//            return heightUntilPosition;
-//        }
-        return super.computeVerticalScrollRange(state);
+        int maxH = INVALID_SIZE;
+        for (int i = 0; i < getSpanCount(); i++) {
+            int sh = getSpanHeightBeforeIndex(i, mSpans[i].mViews.size() - 1);
+            mSpanTotalHeight[i] = sh;
+            if (sh > maxH) {
+                maxH = sh;
+            }
+        }
+        return maxH > 0 ? maxH : super.computeVerticalScrollRange(state);
     }
 
     @Override
@@ -66,29 +73,28 @@ public class HippyStaggeredGridLayoutManager extends StaggeredGridLayoutManager 
         if (getChildCount() <= 0 || getItemCount() <= 0) {
             return 0;
         }
-        int[] positions = findFirstVisibleItemPositions(null);
-        if (positions[0] == 0) {
-            return 0;
-        }
-        int[] positionsEnd = findLastVisibleItemPositions(null);
+        int[] positions = findLastVisibleItemPositions(null);
         View firstVisibleView = findViewByPosition(positions[0]);
         int index = mSpans[0].mViews.indexOf(firstVisibleView);
         int end = mPrimaryOrientation.getDecoratedEnd(firstVisibleView);
-        int total = getSizeBeforeSpanIndex(index);
+        int total = getSpanHeightBeforeIndex(0, index);
         if (firstVisibleView != null && total != INVALID_SIZE) {
             return total - end;
         }
         return super.computeVerticalScrollOffset(state);
     }
 
-    int getSizeBeforeSpanIndex(int index) {
+    int getSpanHeightBeforeIndex(int span, int index) {
+        if (span < 0 || index < 0) {
+            return 0;
+        }
         HippyRecyclerListAdapter adapter = (HippyRecyclerListAdapter) mRecyclerView.getAdapter();
         if (adapter.hasHeader()) {
 
         }
         int totalSize = 0;
         for (int i = 0; i <= index; i++) {
-            View child = mSpans[0].mViews.get(i);
+            View child = mSpans[span].mViews.get(i);
             ViewHolder vh = RecyclerView.getChildViewHolderInt(child);
             if (vh == null) {
                 continue;
@@ -115,13 +121,15 @@ public class HippyStaggeredGridLayoutManager extends StaggeredGridLayoutManager 
             layoutInfo.getItemLayoutParams(itemView, ITEM_LAYOUT_PARAMS);
             if (getOrientation() == RecyclerView.VERTICAL) {
                 if (ITEM_LAYOUT_PARAMS.height >= 0) {
-                    int size = ITEM_LAYOUT_PARAMS.height + ITEM_LAYOUT_PARAMS.bottomMargin + ITEM_LAYOUT_PARAMS.topMargin;
+                    int size = ITEM_LAYOUT_PARAMS.height + ITEM_LAYOUT_PARAMS.bottomMargin
+                            + ITEM_LAYOUT_PARAMS.topMargin;
                     cacheItemLayoutParams(size, position);
                     return size;
                 }
             } else {
                 if (ITEM_LAYOUT_PARAMS.width >= 0) {
-                    int size = ITEM_LAYOUT_PARAMS.width + ITEM_LAYOUT_PARAMS.leftMargin + ITEM_LAYOUT_PARAMS.rightMargin;
+                    int size = ITEM_LAYOUT_PARAMS.width + ITEM_LAYOUT_PARAMS.leftMargin
+                            + ITEM_LAYOUT_PARAMS.rightMargin;
                     cacheItemLayoutParams(size, position);
                     return size;
                 }

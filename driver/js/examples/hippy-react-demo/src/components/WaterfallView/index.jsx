@@ -71,6 +71,8 @@ export default class ListExample extends React.Component {
     this.getRefresh = this.getRefresh.bind(this);
     this.renderPullFooter = this.renderPullFooter.bind(this);
     this.renderPullHeader = this.renderPullHeader.bind(this);
+    this.onHeaderReleased = this.onHeaderReleased.bind(this);
+    this.onHeaderPulling = this.onHeaderPulling.bind(this);
     this.renderBanner = this.renderBanner.bind(this);
     this.getItemStyle = this.getItemStyle.bind(this);
     this.getHeaderStyle = this.getHeaderStyle.bind(this);
@@ -109,6 +111,55 @@ export default class ListExample extends React.Component {
     this.setState({ dataSource: newDataSource });
     this.loadMoreDataFlag = false;
   }
+
+ /**
+   * 下拉超过内容高度，松手后触发
+   */
+ async onHeaderReleased() {
+  if (this.fetchingDataFlag) {
+    return;
+  }
+  this.fetchingDataFlag = true;
+  console.log('onHeaderReleased');
+  this.setState({
+    headerRefreshText: '刷新数据中，请稍等',
+  });
+  let dataSource = [];
+  try {
+    dataSource = await this.mockFetchData();
+  } catch (err) {}
+  this.fetchingDataFlag = false;
+  this.setState({
+    dataSource,
+    headerRefreshText: '2秒后收起',
+  }, () => {
+    this.listView.collapsePullHeader({ time: 2000 });
+  });
+}
+
+  /**
+   * 下拉过程中触发
+   *
+   * 事件会通过 contentOffset 参数返回拖拽高度，我们已经知道了内容高度，
+   * 简单对比一下就可以显示不同的状态。
+   *
+   * 这里简单处理，其实可以做到更复杂的动态效果。
+   */
+    onHeaderPulling(evt) {
+      if (this.fetchingDataFlag) {
+        return;
+      }
+      console.log('onHeaderPulling', evt.contentOffset);
+      if (evt.contentOffset > styles.pullContent.height) {
+        this.setState({
+          headerRefreshText: '松手，即可触发刷新',
+        });
+      } else {
+        this.setState({
+          headerRefreshText: '继续下拉，触发刷新',
+        });
+      }
+    }
 
   renderPullFooter() {
     if (this.state.dataSource.length === 0) return null;
@@ -279,6 +330,8 @@ export default class ListExample extends React.Component {
               numberOfItems={dataSource.length}
               style={{ flex: 1 }}
               renderPullHeader={this.renderPullHeader}
+              onHeaderReleased={this.onHeaderReleased}
+              onHeaderPulling={this.onHeaderPulling}
               renderItem={this.renderItem}
               onEndReached={this.onEndReached}
               getItemType={this.getItemType}

@@ -33,13 +33,11 @@ public class PullHeaderRefreshHelper extends PullRefreshHelper {
     protected int handleDrag(int distance) {
         int consumed = 0;
         int size = 0;
-        LogUtils.e("maxli", "handleDrag: distance " + distance + ", mRefreshStatus " + mRefreshStatus);
         switch (mRefreshStatus) {
             case PULL_STATUS_FOLDED:
                 if (distance < 0) { // down towards
                     // make sure edge reached, aka distance + getOffset() < 0
                     int offset = getOffset();
-                    LogUtils.e("maxli", "PULL_STATUS_FOLDED: distance " + distance + ", offset " + offset);
                     consumed = Math.min(0, distance + offset);
                     if (consumed != 0) {
                         mRefreshStatus = PullRefreshStatus.PULL_STATUS_DRAGGING;
@@ -53,7 +51,6 @@ public class PullHeaderRefreshHelper extends PullRefreshHelper {
                 if (distance < 0) { // down towards
                     // make sure edge reached, aka distance + getOffset() < 0
                     int offset = getOffset();
-                    LogUtils.e("maxli", "PULL_STATUS_DRAGGING: distance " + distance + ", offset " + offset);
                     consumed = Math.min(0, distance + offset);
                 } else { // up towards
                     // make sure consume no more than header size (converted by PULL_RATIO)
@@ -67,7 +64,6 @@ public class PullHeaderRefreshHelper extends PullRefreshHelper {
             default:
                 break;
         }
-        LogUtils.e("maxli", "handleDrag: consumed " + consumed);
         if (consumed != 0) {
             endAnimation();
             sendPullingEvent(size);

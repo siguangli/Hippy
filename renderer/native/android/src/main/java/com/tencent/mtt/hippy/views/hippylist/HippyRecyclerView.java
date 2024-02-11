@@ -183,8 +183,8 @@ public class HippyRecyclerView<ADP extends HippyRecyclerListAdapter> extends Hip
             listAdapter.notifyDataSetChanged();
         }
         if (overPullHelper != null) {
-            overPullHelper.enableOverPullUp(!listAdapter.hasHeader());
-            overPullHelper.enableOverPullDown(!listAdapter.hasFooter());
+            overPullHelper.enableOverPullUp(!listAdapter.hasFooter());
+            overPullHelper.enableOverPullDown(!listAdapter.hasHeader());
         }
         renderNodeCount = listAdapter.getRenderNodeCount();
         if (renderNodeCount > 0 && mInitialContentOffset > 0) {
@@ -624,7 +624,6 @@ public class HippyRecyclerView<ADP extends HippyRecyclerListAdapter> extends Hip
         }
         if (listAdapter.headerRefreshHelper != null) {
             int myConsumed = listAdapter.headerRefreshHelper.handleDrag(diff);
-            LogUtils.e("maxli", "handlePullRefresh: myConsumed " + myConsumed);
             if (myConsumed != 0) {
                 if (consumed != null) {
                     consumed[isHorizontal ? 0 : 1] += myConsumed;
