@@ -23,7 +23,12 @@ import androidx.recyclerview.widget.RecyclerView.Adapter;
 import androidx.recyclerview.widget.RecyclerView.State;
 import androidx.recyclerview.widget.RecyclerView.ViewHolder;
 
+import com.tencent.mtt.hippy.uimanager.RenderManager;
+import com.tencent.mtt.hippy.utils.LogUtils;
 import com.tencent.mtt.hippy.views.hippylist.HippyRecyclerListAdapter;
+import com.tencent.renderer.node.ListItemRenderNode;
+import com.tencent.renderer.node.RenderNode;
+import com.tencent.renderer.node.WaterfallItemRenderNode;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -33,7 +38,7 @@ public class HippyStaggeredGridLayoutManager extends StaggeredGridLayoutManager 
     private static final String TAG = "HippyStaggeredGridLayoutManager";
     public static final int INVALID_SIZE = -1;
     protected HashMap<Integer, Integer> itemSizeMaps = new HashMap<>();
-    private int[] mSpanTotalHeight;
+    private final int[] mSpanTotalHeight;
 
     private static final RecyclerView.LayoutParams ITEM_LAYOUT_PARAMS = new RecyclerView.LayoutParams(
             0, 0);
@@ -48,23 +53,32 @@ public class HippyStaggeredGridLayoutManager extends StaggeredGridLayoutManager 
     public void layoutDecoratedWithMargins(@NonNull View child, int left, int top, int right,
             int bottom) {
         super.layoutDecoratedWithMargins(child, left, top, right, bottom);
-        RecyclerView.LayoutParams lp = (RecyclerView.LayoutParams) child.getLayoutParams();
+        StaggeredGridLayoutManager.LayoutParams lp = (StaggeredGridLayoutManager.LayoutParams) child.getLayoutParams();
         int size = getOrientation() == RecyclerView.VERTICAL
                 ? bottom - top + lp.topMargin + lp.bottomMargin
                 : right - left + lp.leftMargin + lp.rightMargin;
-        cacheItemLayoutParams(size, getPosition(child));
+        RenderNode childNode = RenderManager.getRenderNode(child);
+        if (childNode instanceof WaterfallItemRenderNode) {
+            ((WaterfallItemRenderNode) childNode).setSpanIndex(lp.getSpanIndex());
+            cacheItemLayoutParams(size, childNode.getId());
+        }
     }
 
     @Override
     public int computeVerticalScrollRange(State state) {
         int maxH = INVALID_SIZE;
+        if (mSpanTotalHeight[0] == INVALID_SIZE) {
+            computeSpanTotalHeight();
+        }
         for (int i = 0; i < getSpanCount(); i++) {
-            int sh = getSpanHeightBeforeIndex(i, mSpans[i].mViews.size() - 1);
-            mSpanTotalHeight[i] = sh;
-            if (sh > maxH) {
-                maxH = sh;
+            if (mSpanTotalHeight[i] > maxH) {
+                maxH = mSpanTotalHeight[i];
             }
         }
+        int extent = computeVerticalScrollExtent(state);
+        int range = maxH - extent;
+        LogUtils.e("maxli", "computeVerticalScrollRange: maxH " + maxH
+                + ", extent " + extent + ", range " + range);
         return maxH > 0 ? maxH : super.computeVerticalScrollRange(state);
     }
 
@@ -73,64 +87,111 @@ public class HippyStaggeredGridLayoutManager extends StaggeredGridLayoutManager 
         if (getChildCount() <= 0 || getItemCount() <= 0) {
             return 0;
         }
-        int[] positions = findLastVisibleItemPositions(null);
-        View firstVisibleView = findViewByPosition(positions[0]);
-        int index = mSpans[0].mViews.indexOf(firstVisibleView);
-        int end = mPrimaryOrientation.getDecoratedEnd(firstVisibleView);
-        int total = getSpanHeightBeforeIndex(0, index);
-        if (firstVisibleView != null && total != INVALID_SIZE) {
-            return total - end;
+        int[] positions = findFirstVisibleItemPositions(null);
+        LogUtils.e("maxli", "computeVerticalScrollOffset: positions "
+                + positions[0] + ", " + positions[1]);
+        View firstVisibleView = null;
+        int index = 0;
+        LogUtils.e("maxli", "computeVerticalScrollOffset: mViews.size() "
+                + mSpans[0].mViews.size());
+        for (int i = 0; i < mSpans[0].mViews.size(); i++) {
+            View child = mSpans[0].mViews.get(i);
+            ViewHolder vh = mRecyclerView.getChildViewHolderInt(child);
+            if (vh == null) {
+                continue;
+            }
+            if (vh.getLayoutPosition() == positions[0] && !vh.shouldIgnore()
+                    && (mRecyclerView.mState.isPreLayout() || !vh.isRemoved())) {
+                firstVisibleView = child;
+                index = i;
+                break;
+            }
+        }
+        if (firstVisibleView != null) {
+            int end = mPrimaryOrientation.getDecoratedEnd(firstVisibleView);
+            int total = computeSpanHeightUntilFirstVisibleView(0, firstVisibleView);
+            LogUtils.e("maxli", "computeVerticalScrollOffset: index " + index
+                    + ", end " + end + ", total " + total);
+            if (firstVisibleView != null && total != INVALID_SIZE) {
+                LogUtils.e("maxli", "computeVerticalScrollOffset: offset " + (total - end));
+                return total - end;
+            }
         }
         return super.computeVerticalScrollOffset(state);
     }
 
-    int getSpanHeightBeforeIndex(int span, int index) {
-        if (span < 0 || index < 0) {
+    private void computeChildHeight(@NonNull WaterfallItemRenderNode child) {
+        int spanIndex = ((WaterfallItemRenderNode) child).getSpanIndex();
+        if (spanIndex < getSpanCount() && spanIndex >= 0) {
+            Integer size = itemSizeMaps.get(child.getId());
+            if (size == null) {
+                size = getItemSizeFromAdapter(child);
+            }
+            mSpanTotalHeight[spanIndex] += size;
+        }
+    }
+
+    private int computeChildHeight(int span, @NonNull WaterfallItemRenderNode child) {
+        int spanIndex = ((WaterfallItemRenderNode) child).getSpanIndex();
+        if (spanIndex == span) {
+            Integer size = itemSizeMaps.get(child.getId());
+            if (size == null) {
+                size = getItemSizeFromAdapter(child);
+            }
+            return size;
+        }
+        return 0;
+    }
+
+    void computeSpanTotalHeight() {
+        HippyRecyclerListAdapter adapter = (HippyRecyclerListAdapter) mRecyclerView.getAdapter();
+        if (adapter == null) {
+            return;
+        }
+        for (int i = 0; i <= adapter.getItemCount(); i++) {
+            ListItemRenderNode child = adapter.getChildNode(i);
+            if (child instanceof WaterfallItemRenderNode) {
+                computeChildHeight((WaterfallItemRenderNode) child);
+            }
+        }
+    }
+
+    int computeSpanHeightUntilFirstVisibleView(int span, @NonNull View firstVisibleView) {
+        HippyRecyclerListAdapter adapter = (HippyRecyclerListAdapter) mRecyclerView.getAdapter();
+        if (span < 0 || adapter == null) {
             return 0;
         }
-        HippyRecyclerListAdapter adapter = (HippyRecyclerListAdapter) mRecyclerView.getAdapter();
-        if (adapter.hasHeader()) {
-
-        }
         int totalSize = 0;
-        for (int i = 0; i <= index; i++) {
-            View child = mSpans[span].mViews.get(i);
-            ViewHolder vh = RecyclerView.getChildViewHolderInt(child);
-            if (vh == null) {
-                continue;
+        for (int i = 0; i <= adapter.getItemCount(); i++) {
+            ListItemRenderNode child = adapter.getChildNode(i);
+            if (child instanceof WaterfallItemRenderNode) {
+                totalSize += computeChildHeight(span, (WaterfallItemRenderNode) child);
             }
-            if (!vh.shouldIgnore() && (mRecyclerView.mState.isPreLayout() || !vh.isRemoved())) {
-                Integer size = itemSizeMaps.get(vh.getLayoutPosition());
-                if (size == null) {
-                    size = getItemSizeFromAdapter(vh.getLayoutPosition(), child);
-                }
-                if (size == INVALID_SIZE) {
-                    return INVALID_SIZE;
-                }
-                totalSize += size;
+            if (firstVisibleView.getId() == child.getId()) {
+                break;
             }
         }
         return totalSize;
     }
 
-    int getItemSizeFromAdapter(int position, View itemView) {
+    int getItemSizeFromAdapter(ListItemRenderNode node) {
         Adapter adapter = mRecyclerView.getAdapter();
         if (adapter instanceof ItemLayoutParams) {
             ItemLayoutParams layoutInfo = (ItemLayoutParams) adapter;
             resetLayoutParams();
-            layoutInfo.getItemLayoutParams(itemView, ITEM_LAYOUT_PARAMS);
+            layoutInfo.getItemLayoutParams(node, ITEM_LAYOUT_PARAMS);
             if (getOrientation() == RecyclerView.VERTICAL) {
                 if (ITEM_LAYOUT_PARAMS.height >= 0) {
                     int size = ITEM_LAYOUT_PARAMS.height + ITEM_LAYOUT_PARAMS.bottomMargin
                             + ITEM_LAYOUT_PARAMS.topMargin;
-                    cacheItemLayoutParams(size, position);
+                    cacheItemLayoutParams(size, node.getId());
                     return size;
                 }
             } else {
                 if (ITEM_LAYOUT_PARAMS.width >= 0) {
                     int size = ITEM_LAYOUT_PARAMS.width + ITEM_LAYOUT_PARAMS.leftMargin
                             + ITEM_LAYOUT_PARAMS.rightMargin;
-                    cacheItemLayoutParams(size, position);
+                    cacheItemLayoutParams(size, node.getId());
                     return size;
                 }
             }
@@ -142,8 +203,8 @@ public class HippyStaggeredGridLayoutManager extends StaggeredGridLayoutManager 
         itemSizeMaps.clear();
     }
 
-    private void cacheItemLayoutParams(int size, int position) {
-        itemSizeMaps.put(position, size);
+    private void cacheItemLayoutParams(int size, int id) {
+        itemSizeMaps.put(id, size);
     }
 
     private static void resetLayoutParams() {

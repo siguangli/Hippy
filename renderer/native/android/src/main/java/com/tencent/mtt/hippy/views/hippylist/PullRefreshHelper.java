@@ -22,18 +22,14 @@ import android.animation.Animator;
 import android.animation.ValueAnimator;
 import android.view.Gravity;
 import android.view.View;
-import android.view.View.OnTouchListener;
-import android.view.ViewConfiguration;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
-import android.widget.LinearLayout.LayoutParams;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.RecyclerView.LayoutManager;
 import androidx.recyclerview.widget.StaggeredGridLayoutManager;
-import com.tencent.mtt.hippy.utils.LogUtils;
 import com.tencent.renderer.node.RenderNode;
 import com.tencent.mtt.hippy.views.hippylist.recyclerview.helper.AnimatorListenerBase;
 import com.tencent.mtt.hippy.views.refresh.HippyPullFooterView;
@@ -50,7 +46,7 @@ public abstract class PullRefreshHelper {
     public static final int DURATION = 200;
     public static final float PULL_RATIO = 2.4f;
     protected final HippyRecyclerView mRecyclerView;
-    protected final LinearLayout mContainer;
+    protected final PullRefreshContainer mContainer;
     protected final RenderNode mRenderNode;
     @Nullable
     protected View mItemView;
@@ -58,10 +54,11 @@ public abstract class PullRefreshHelper {
     protected ValueAnimator mAnimator;
     protected PullRefreshStatus mRefreshStatus = PullRefreshStatus.PULL_STATUS_FOLDED;
 
-    PullRefreshHelper(@NonNull HippyRecyclerView recyclerView, @NonNull RenderNode footerNode) {
+    PullRefreshHelper(@NonNull HippyRecyclerView recyclerView, @NonNull RenderNode node) {
         mRecyclerView = recyclerView;
-        mRenderNode = footerNode;
-        mContainer = new LinearLayout(recyclerView.getContext());
+        mRenderNode = node;
+        mContainer = new PullRefreshContainer(recyclerView.getContext());
+        mContainer.setId(node.getId());
     }
 
     protected abstract int handleDrag(int distance);
@@ -205,7 +202,6 @@ public abstract class PullRefreshHelper {
 
     protected void setVisibleSize(int size) {
         ViewGroup.LayoutParams layoutParams = mContainer.getLayoutParams();
-        LogUtils.e("maxli", "setVisibleSize: size " + size + ", height " + layoutParams.height);
         if (isVertical()) {
             layoutParams.height = Math.max(size, 0);
         } else {

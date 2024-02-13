@@ -26,9 +26,19 @@ public class WaterfallItemRenderNode extends ListItemRenderNode {
 
     static final String TAG = "HippyWaterfallItemNode";
 
+    private int mSpanIndex = -1;
+
     public WaterfallItemRenderNode(int rootId, int id, @Nullable Map<String, Object> props,
             @NonNull String className, @NonNull ControllerManager controllerManager, boolean isLazyLoad) {
         super(rootId, id, props, className, controllerManager, isLazyLoad);
+    }
+
+    public int getSpanIndex() {
+        return mSpanIndex;
+    }
+
+    public void setSpanIndex(int index) {
+        mSpanIndex = index;
     }
 
 }

@@ -1,15 +1,11 @@
 package androidx.recyclerview.widget;
 
-import android.view.View;
 import androidx.recyclerview.widget.RecyclerView.LayoutParams;
+import com.tencent.renderer.node.ListItemRenderNode;
 
-/**
- * Created on 2021/3/17.
- * Description
- */
 public interface ItemLayoutParams {
 
     void getItemLayoutParams(int position, LayoutParams lp);
 
-    void getItemLayoutParams(View itemView, LayoutParams lp);
+    void getItemLayoutParams(ListItemRenderNode node, LayoutParams lp);
 }

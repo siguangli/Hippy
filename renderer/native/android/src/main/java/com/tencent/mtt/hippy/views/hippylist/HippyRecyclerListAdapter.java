@@ -408,20 +408,18 @@ public class HippyRecyclerListAdapter<HRCV extends HippyRecyclerView> extends Ad
 
     @Override
     public void getItemLayoutParams(int position, LayoutParams lp) {
-        if (lp == null) {
-            return;
+        if (lp != null) {
+            lp.height = getItemHeight(position);
+            lp.width = getItemWidth(position);
         }
-        lp.height = getItemHeight(position);
-        lp.width = getItemWidth(position);
     }
 
     @Override
-    public void getItemLayoutParams(View itemView, LayoutParams lp) {
-        if (lp == null || itemView == null) {
-            return;
+    public void getItemLayoutParams(ListItemRenderNode node, LayoutParams lp) {
+        if (lp != null || node != null) {
+            lp.height = getRenderNodeHeight(node);
+            lp.width = getRenderNodeWidth(node);
         }
-        lp.height = getItemHeight(itemView);
-        lp.width = getItemWidth(itemView);
     }
 
     public boolean hasHeader() {
