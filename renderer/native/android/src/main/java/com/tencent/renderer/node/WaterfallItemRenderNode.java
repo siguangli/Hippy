@@ -28,6 +28,8 @@ public class WaterfallItemRenderNode extends ListItemRenderNode {
 
     private int mSpanIndex = -1;
 
+    private boolean mFullSpan = false;
+
     public WaterfallItemRenderNode(int rootId, int id, @Nullable Map<String, Object> props,
             @NonNull String className, @NonNull ControllerManager controllerManager, boolean isLazyLoad) {
         super(rootId, id, props, className, controllerManager, isLazyLoad);
@@ -39,6 +41,14 @@ public class WaterfallItemRenderNode extends ListItemRenderNode {
 
     public void setSpanIndex(int index) {
         mSpanIndex = index;
+    }
+
+    public void setFullSpan(boolean fullSpan) {
+        mFullSpan = fullSpan;
+    }
+
+    public boolean isFullSpan() {
+        return mFullSpan;
     }
 
 }

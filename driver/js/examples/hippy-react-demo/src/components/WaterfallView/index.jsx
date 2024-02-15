@@ -73,6 +73,7 @@ export default class ListExample extends React.Component {
     this.renderPullHeader = this.renderPullHeader.bind(this);
     this.onHeaderReleased = this.onHeaderReleased.bind(this);
     this.onHeaderPulling = this.onHeaderPulling.bind(this);
+    this.onFooterPulling = this.onFooterPulling.bind(this);
     this.renderBanner = this.renderBanner.bind(this);
     this.getItemStyle = this.getItemStyle.bind(this);
     this.getHeaderStyle = this.getHeaderStyle.bind(this);
@@ -85,7 +86,9 @@ export default class ListExample extends React.Component {
 
   /**
    * 页面加载更多时触发
-   * 这里触发加载更多还可以使用 PullFooter 组件，主要看是否需要一个内容加载区。
+   *
+   * 这里触发加载更多还可以使用 PullFooter 组件。
+   *
    * onEndReached 更适合用来无限滚动的场景。
    */
   async onEndReached() {
@@ -96,7 +99,7 @@ export default class ListExample extends React.Component {
     }
     this.loadMoreDataFlag = true;
     this.setState({
-      loadingState: '加载更多...',
+      footerRefreshText: '加载更多...',
     });
     let newData = [];
     try {
@@ -104,38 +107,39 @@ export default class ListExample extends React.Component {
     } catch (err) {}
     if (newData.length === 0) {
       this.setState({
-        loadingState: '没有更多数据',
+        footerRefreshText: '没有更多数据',
       });
     }
     const newDataSource = [...dataSource, ...newData];
     this.setState({ dataSource: newDataSource });
     this.loadMoreDataFlag = false;
+    this.listView.collapsePullFooter();
   }
 
- /**
+  /**
    * 下拉超过内容高度，松手后触发
    */
- async onHeaderReleased() {
-  if (this.fetchingDataFlag) {
-    return;
+  async onHeaderReleased() {
+    if (this.fetchingDataFlag) {
+      return;
+    }
+    this.fetchingDataFlag = true;
+    console.log('onHeaderReleased');
+    this.setState({
+      headerRefreshText: '刷新数据中，请稍等',
+    });
+    let dataSource = [];
+    try {
+      dataSource = await this.mockFetchData();
+    } catch (err) {}
+    this.fetchingDataFlag = false;
+    this.setState({
+      dataSource,
+      headerRefreshText: '2秒后收起',
+    }, () => {
+      this.listView.collapsePullHeader({ time: 2000 });
+    });
   }
-  this.fetchingDataFlag = true;
-  console.log('onHeaderReleased');
-  this.setState({
-    headerRefreshText: '刷新数据中，请稍等',
-  });
-  let dataSource = [];
-  try {
-    dataSource = await this.mockFetchData();
-  } catch (err) {}
-  this.fetchingDataFlag = false;
-  this.setState({
-    dataSource,
-    headerRefreshText: '2秒后收起',
-  }, () => {
-    this.listView.collapsePullHeader({ time: 2000 });
-  });
-}
 
   /**
    * 下拉过程中触发
@@ -145,29 +149,51 @@ export default class ListExample extends React.Component {
    *
    * 这里简单处理，其实可以做到更复杂的动态效果。
    */
-    onHeaderPulling(evt) {
-      if (this.fetchingDataFlag) {
-        return;
-      }
-      console.log('onHeaderPulling', evt.contentOffset);
-      if (evt.contentOffset > styles.pullContent.height) {
-        this.setState({
-          headerRefreshText: '松手，即可触发刷新',
-        });
-      } else {
-        this.setState({
-          headerRefreshText: '继续下拉，触发刷新',
-        });
-      }
+  onHeaderPulling(evt) {
+    if (this.fetchingDataFlag) {
+      return;
     }
+    console.log('onHeaderPulling', evt.contentOffset);
+    if (evt.contentOffset > styles.pullContent.height) {
+      this.setState({
+        headerRefreshText: '松手，即可触发刷新',
+      });
+    } else {
+      this.setState({
+        headerRefreshText: '继续下拉，触发刷新',
+      });
+    }
+  }
 
+  onFooterPulling(evt) {
+    console.log('onFooterPulling', evt);
+  }
+
+  /**
+   * 渲染 pullFooter 组件
+   */
   renderPullFooter() {
-    if (this.state.dataSource.length === 0) return null;
-    return (<View style={styles.pullFooter}>
+    const { horizontal } = this.state;
+    return !horizontal ? <View style={styles.pullFooter}>
       <Text style={{
         color: 'white',
-      }}>{this.state.loadingState}</Text>
-    </View>);
+      }}
+      >{this.state.footerRefreshText}</Text>
+    </View> : <View style={{
+      width: 40,
+      height: 300,
+      backgroundColor: '#4c9afa',
+      justifyContent: 'center',
+      alignItems: 'center',
+    }}>
+      <Text style={{
+        color: 'white',
+        lineHeight: 25,
+        width: 40,
+        paddingHorizontal: 15,
+      }}
+      >{this.state.footerRefreshText}</Text>
+    </View>;
   }
 
   async onRefresh() {
@@ -330,10 +356,11 @@ export default class ListExample extends React.Component {
               numberOfItems={dataSource.length}
               style={{ flex: 1 }}
               renderPullHeader={this.renderPullHeader}
+              renderPullFooter={this.renderPullFooter}
+              onFooterReleased={this.onEndReached}
               onHeaderReleased={this.onHeaderReleased}
               onHeaderPulling={this.onHeaderPulling}
               renderItem={this.renderItem}
-              onEndReached={this.onEndReached}
               getItemType={this.getItemType}
               getItemKey={this.getItemKey}
               contentInset={contentInset}
