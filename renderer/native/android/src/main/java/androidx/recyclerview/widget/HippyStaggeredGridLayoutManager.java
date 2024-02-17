@@ -110,25 +110,19 @@ public class HippyStaggeredGridLayoutManager extends StaggeredGridLayoutManager 
 
     @Override
     public int computeHorizontalScrollOffset(State state) {
-        if (getChildCount() <= 0 || getItemCount() <= 0) {
-            return 0;
-        }
         int offset = computeScrollOffset();
         return (offset != INVALID_SIZE) ? offset : super.computeHorizontalScrollOffset(state);
     }
 
     @Override
     public int computeVerticalScrollOffset(State state) {
-        if (getChildCount() <= 0 || getItemCount() <= 0) {
-            return 0;
-        }
         int offset = computeScrollOffset();
         return (offset != INVALID_SIZE) ? offset : super.computeVerticalScrollOffset(state);
     }
 
     private int computeScrollOffset() {
         if (getChildCount() <= 0 || getItemCount() <= 0) {
-            return 0;
+            return INVALID_SIZE;
         }
         View firstVisibleView = findFirstVisibleView();
         if (firstVisibleView != null) {
