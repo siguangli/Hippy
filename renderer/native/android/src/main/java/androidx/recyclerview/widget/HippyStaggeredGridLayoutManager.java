@@ -24,6 +24,7 @@ import androidx.recyclerview.widget.RecyclerView.State;
 import androidx.recyclerview.widget.RecyclerView.ViewHolder;
 
 import com.tencent.mtt.hippy.uimanager.RenderManager;
+import com.tencent.mtt.hippy.utils.LogUtils;
 import com.tencent.mtt.hippy.views.hippylist.HippyRecyclerListAdapter;
 import com.tencent.renderer.node.ListItemRenderNode;
 import com.tencent.renderer.node.RenderNode;
@@ -35,16 +36,16 @@ import java.util.HashMap;
 public class HippyStaggeredGridLayoutManager extends StaggeredGridLayoutManager {
 
     private static final String TAG = "HippyStaggeredGridLayoutManager";
-    public static final int INVALID_SIZE = -1;
+    public static final int INVALID_SIZE = Integer.MIN_VALUE;
     protected HashMap<Integer, Integer> itemSizeMaps = new HashMap<>();
-    private final int[] mSpanTotalHeight;
+    private final int[] mSpanTotalSize;
 
     private static final RecyclerView.LayoutParams ITEM_LAYOUT_PARAMS = new RecyclerView.LayoutParams(
             0, 0);
 
     public HippyStaggeredGridLayoutManager(int spanCount, int orientation) {
         super(spanCount, orientation);
-        mSpanTotalHeight = new int[spanCount];
+        mSpanTotalSize = new int[spanCount];
     }
 
     @Override
@@ -65,15 +66,55 @@ public class HippyStaggeredGridLayoutManager extends StaggeredGridLayoutManager 
 
     @Override
     public int computeVerticalScrollRange(State state) {
-        int maxH = INVALID_SIZE;
-        Arrays.fill(mSpanTotalHeight, 0);
-        computeSpanTotalHeight();
+        int range = computeScrollRange();
+        return range > 0 ? range : super.computeVerticalScrollRange(state);
+    }
+
+    @Override
+    public int computeHorizontalScrollRange(RecyclerView.State state) {
+        int range = computeScrollRange();
+        return range > 0 ? range : super.computeHorizontalScrollRange(state);
+    }
+
+    private int computeScrollRange() {
+        int max = 0;
+        Arrays.fill(mSpanTotalSize, 0);
+        computeSpanTotalSize();
         for (int i = 0; i < getSpanCount(); i++) {
-            if (mSpanTotalHeight[i] > maxH) {
-                maxH = mSpanTotalHeight[i];
+            if (mSpanTotalSize[i] > max) {
+                max = mSpanTotalSize[i];
             }
         }
-        return maxH > 0 ? maxH : super.computeVerticalScrollRange(state);
+        return max;
+    }
+
+    private View findFirstVisibleView() {
+        try {
+            int[] positions = findFirstVisibleItemPositions(null);
+            for (int i = 0; i < mSpans[0].mViews.size(); i++) {
+                View child = mSpans[0].mViews.get(i);
+                ViewHolder vh = RecyclerView.getChildViewHolderInt(child);
+                if (vh == null) {
+                    continue;
+                }
+                if (vh.getLayoutPosition() == positions[0] && !vh.shouldIgnore()
+                        && (mRecyclerView.mState.isPreLayout() || !vh.isRemoved())) {
+                    return child;
+                }
+            }
+        } catch (Exception e) {
+            LogUtils.w(TAG, "findFirstVisibleView: " + e.getMessage());
+        }
+        return null;
+    }
+
+    @Override
+    public int computeHorizontalScrollOffset(State state) {
+        if (getChildCount() <= 0 || getItemCount() <= 0) {
+            return 0;
+        }
+        int offset = computeScrollOffset();
+        return (offset != INVALID_SIZE) ? offset : super.computeHorizontalScrollOffset(state);
     }
 
     @Override
@@ -81,72 +122,67 @@ public class HippyStaggeredGridLayoutManager extends StaggeredGridLayoutManager 
         if (getChildCount() <= 0 || getItemCount() <= 0) {
             return 0;
         }
-        int[] positions = findFirstVisibleItemPositions(null);
-        View firstVisibleView = null;
-        for (int i = 0; i < mSpans[0].mViews.size(); i++) {
-            View child = mSpans[0].mViews.get(i);
-            ViewHolder vh = RecyclerView.getChildViewHolderInt(child);
-            if (vh == null) {
-                continue;
-            }
-            if (vh.getLayoutPosition() == positions[0] && !vh.shouldIgnore()
-                    && (mRecyclerView.mState.isPreLayout() || !vh.isRemoved())) {
-                firstVisibleView = child;
-                break;
-            }
-        }
-        if (firstVisibleView != null) {
-            int end = mPrimaryOrientation.getDecoratedEnd(firstVisibleView);
-            int total = computeSpanHeightUntilFirstVisibleView(0, firstVisibleView);
-            return total - end;
-        }
-        return super.computeVerticalScrollOffset(state);
+        int offset = computeScrollOffset();
+        return (offset != INVALID_SIZE) ? offset : super.computeVerticalScrollOffset(state);
     }
 
-    private int getChildHeight(@NonNull ListItemRenderNode child) {
+    private int computeScrollOffset() {
+        if (getChildCount() <= 0 || getItemCount() <= 0) {
+            return 0;
+        }
+        View firstVisibleView = findFirstVisibleView();
+        if (firstVisibleView != null) {
+            int end = mPrimaryOrientation.getDecoratedEnd(firstVisibleView);
+            int total = computeSpanSizeUntilFirstVisibleView(0, firstVisibleView);
+            return total - end;
+        }
+        return INVALID_SIZE;
+    }
+
+    private int getChildSize(@NonNull ListItemRenderNode child) {
         Integer size = itemSizeMaps.get(child.getId());
         if (size == null) {
             size = getItemSizeFromAdapter(child);
         }
-        return size;
+        return Math.max(size, 0);
     }
 
-    private void addSpanChildHeight(@NonNull WaterfallItemRenderNode child) {
+    private void addSpanChildSize(@NonNull WaterfallItemRenderNode child) {
         if (child.isFullSpan()) {
             for (int i = 0; i < getSpanCount(); i++) {
-                mSpanTotalHeight[i] += getChildHeight(child);
+                mSpanTotalSize[i] += getChildSize(child);
             }
         } else {
             int spanIndex = child.getSpanIndex();
             if (spanIndex < getSpanCount() && spanIndex >= 0) {
-                mSpanTotalHeight[spanIndex] += getChildHeight(child);
+                mSpanTotalSize[spanIndex] += getChildSize(child);
             }
         }
     }
 
-    private int getChildHeightWithSpanIndex(int spanIndex, @NonNull ListItemRenderNode child) {
+    private int getChildSizeWithSpanIndex(int spanIndex, @NonNull ListItemRenderNode child) {
         if (child instanceof WaterfallItemRenderNode) {
             WaterfallItemRenderNode node = (WaterfallItemRenderNode) child;
             if (node.getSpanIndex() == spanIndex || node.isFullSpan()) {
-                return getChildHeight(child);
+                return getChildSize(child);
             }
         }
         return 0;
     }
 
-    void computeSpanTotalHeight() {
+    void computeSpanTotalSize() {
         HippyRecyclerListAdapter adapter = (HippyRecyclerListAdapter) mRecyclerView.getAdapter();
         if (adapter != null) {
             for (int i = 0; i <= adapter.getItemCount(); i++) {
                 ListItemRenderNode child = adapter.getChildNode(i);
                 if (child instanceof WaterfallItemRenderNode) {
-                    addSpanChildHeight((WaterfallItemRenderNode) child);
+                    addSpanChildSize((WaterfallItemRenderNode) child);
                 }
             }
         }
     }
 
-    int computeSpanHeightUntilFirstVisibleView(int spanIndex, @NonNull View firstVisibleView) {
+    int computeSpanSizeUntilFirstVisibleView(int spanIndex, @NonNull View firstVisibleView) {
         HippyRecyclerListAdapter adapter = (HippyRecyclerListAdapter) mRecyclerView.getAdapter();
         if (spanIndex < 0 || adapter == null) {
             return 0;
@@ -154,7 +190,7 @@ public class HippyStaggeredGridLayoutManager extends StaggeredGridLayoutManager 
         int totalSize = 0;
         for (int i = 0; i <= adapter.getItemCount(); i++) {
             ListItemRenderNode child = adapter.getChildNode(i);
-            totalSize += getChildHeightWithSpanIndex(spanIndex, child);
+            totalSize += getChildSizeWithSpanIndex(spanIndex, child);
             if (firstVisibleView.getId() == child.getId()) {
                 break;
             }

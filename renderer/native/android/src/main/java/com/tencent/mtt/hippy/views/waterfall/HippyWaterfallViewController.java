@@ -74,7 +74,7 @@ public class HippyWaterfallViewController<HRW extends HippyRecyclerViewWrapper> 
             if (MapUtils.getBooleanValue(props, HORIZONTAL)) {
                 orientation = RecyclerView.HORIZONTAL;
             }
-            enableOverPull = MapUtils.getBooleanValue(props, NodeProps.OVER_PULL, true);
+            enableOverPull = MapUtils.getBooleanValue(props, NodeProps.OVER_PULL, false);
             hasStableIds = MapUtils.getBooleanValue(props, NodeProps.HAS_STABLE_IDS, true);
         }
         HippyStaggeredGridLayoutManager layoutManager = new HippyStaggeredGridLayoutManager(2, orientation);

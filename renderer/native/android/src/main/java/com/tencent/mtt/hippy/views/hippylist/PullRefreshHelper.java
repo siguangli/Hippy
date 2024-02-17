@@ -30,6 +30,8 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.RecyclerView.LayoutManager;
 import androidx.recyclerview.widget.StaggeredGridLayoutManager;
+
+import com.tencent.mtt.hippy.views.waterfall.HippyWaterfallView;
 import com.tencent.renderer.node.RenderNode;
 import com.tencent.mtt.hippy.views.hippylist.recyclerview.helper.AnimatorListenerBase;
 import com.tencent.mtt.hippy.views.refresh.HippyPullFooterView;
@@ -170,9 +172,13 @@ public abstract class PullRefreshHelper {
         mContainer.addView(itemView, lpChild);
         int width = isVertical ? MATCH_PARENT : 0;
         int height = isVertical ? 0 : MATCH_PARENT;
-        //RecyclerView.LayoutParams lpContainer = new RecyclerView.LayoutParams(MATCH_PARENT, MATCH_PARENT);
-        StaggeredGridLayoutManager.LayoutParams lpContainer = new StaggeredGridLayoutManager.LayoutParams(width, height);
-        lpContainer.setFullSpan(true);
+        RecyclerView.LayoutParams lpContainer;
+        if (mRecyclerView instanceof HippyWaterfallView) {
+            lpContainer = new StaggeredGridLayoutManager.LayoutParams(width, height);
+            ((StaggeredGridLayoutManager.LayoutParams) lpContainer).setFullSpan(true);
+        } else {
+            lpContainer = new RecyclerView.LayoutParams(MATCH_PARENT, MATCH_PARENT);
+        }
         mContainer.setLayoutParams(lpContainer);
     }
 

@@ -17,9 +17,6 @@
 package com.tencent.mtt.hippy.views.waterfall;
 
 import android.content.Context;
-import android.util.AttributeSet;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import com.tencent.mtt.hippy.views.common.ClipChildrenView;
 import com.tencent.mtt.hippy.views.hippylist.HippyRecyclerView;
 
@@ -29,13 +26,11 @@ public class HippyWaterfallView extends HippyRecyclerView implements ClipChildre
 
     public HippyWaterfallView(Context context) {
         super(context);
-    }
-
-    public HippyWaterfallView(@NonNull Context context, @Nullable AttributeSet attrs) {
-        super(context, attrs);
-    }
-
-    public HippyWaterfallView(@NonNull Context context, @Nullable AttributeSet attrs, int defStyle) {
-        super(context, attrs, defStyle);
+        setOnFlingListener(new OnFlingListener() {
+            @Override
+            public boolean onFling(int velocityX, int velocityY) {
+                return isOverPulling();
+            }
+        });
     }
 }
