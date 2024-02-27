@@ -247,7 +247,7 @@ public class HippyTextInput extends AppCompatEditText implements HippyViewBase,
 
     public void hideInputMethod() {
         InputMethodManager imm = this.getInputMethodManager();
-        if (imm != null && imm.isActive(this)) {
+        if (imm != null && imm.isActive()) {
             try {
                 imm.hideSoftInputFromWindow(this.getWindowToken(), 0);
             } catch (Exception e) {
