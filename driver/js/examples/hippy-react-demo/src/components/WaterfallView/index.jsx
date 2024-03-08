@@ -61,7 +61,7 @@ export default class ListExample extends React.Component {
     };
     this.numberOfColumns = 2;
     this.columnSpacing = 6;
-    this.interItemSpacing = 6;
+    this.interItemSpacing = 30;
     this.mockFetchData = this.mockFetchData.bind(this);
     this.renderItem = this.renderItem.bind(this);
     this.getItemType = this.getItemType.bind(this);
@@ -295,7 +295,7 @@ export default class ListExample extends React.Component {
   }
 
   getWaterfallContentInset() {
-    return { top: 0, left: 5, bottom: 0, right: 5 };
+    return { top: 0, left: 0, bottom: 0, right: 0 };
   }
 
   getItemStyle() {
@@ -304,8 +304,7 @@ export default class ListExample extends React.Component {
     const contentInset = this.getWaterfallContentInset();
     const width = screenWidth - contentInset.left - contentInset.right;
     return {
-      //width: (width - ((numberOfColumns - 1) * columnSpacing)) / numberOfColumns,
-      width: (screenWidth - columnSpacing) / numberOfColumns,
+      width: (width - ((numberOfColumns - 1) * columnSpacing)) / numberOfColumns,
     };
   }
 
@@ -360,13 +359,14 @@ export default class ListExample extends React.Component {
               onFooterReleased={this.onEndReached}
               onHeaderReleased={this.onHeaderReleased}
               onHeaderPulling={this.onHeaderPulling}
+              preloadItemNumber={8}
               renderItem={this.renderItem}
               getItemType={this.getItemType}
               getItemKey={this.getItemKey}
-              contentInset={contentInset}
               getItemStyle={this.getItemStyle}
               getHeaderStyle={this.getHeaderStyle}
               containPullFooter={true}
+              contentInset={contentInset}
           />
     );
   }

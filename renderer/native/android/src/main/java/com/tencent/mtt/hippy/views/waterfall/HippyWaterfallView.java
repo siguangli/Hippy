@@ -17,6 +17,8 @@
 package com.tencent.mtt.hippy.views.waterfall;
 
 import android.content.Context;
+import androidx.recyclerview.widget.HippyGridSpacesItemDecoration;
+import androidx.recyclerview.widget.RecyclerView;
 import com.tencent.mtt.hippy.views.common.ClipChildrenView;
 import com.tencent.mtt.hippy.views.hippylist.HippyRecyclerView;
 
@@ -32,5 +34,19 @@ public class HippyWaterfallView extends HippyRecyclerView implements ClipChildre
                 return isOverPulling();
             }
         });
+    }
+
+    public void setColumnSpacing(int columnSpacing) {
+        RecyclerView.ItemDecoration decoration = getItemDecorationAt(0);
+        if (decoration instanceof HippyGridSpacesItemDecoration) {
+            ((HippyGridSpacesItemDecoration) decoration).setColumnSpacing(columnSpacing);
+        }
+    }
+
+    public void setItemSpacing(int itemSpacing) {
+        RecyclerView.ItemDecoration decoration = getItemDecorationAt(0);
+        if (decoration instanceof HippyGridSpacesItemDecoration) {
+            ((HippyGridSpacesItemDecoration) decoration).setItemSpacing(itemSpacing);
+        }
     }
 }

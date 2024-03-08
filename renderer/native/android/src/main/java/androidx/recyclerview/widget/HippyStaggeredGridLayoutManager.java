@@ -39,13 +39,16 @@ public class HippyStaggeredGridLayoutManager extends StaggeredGridLayoutManager 
     public static final int INVALID_SIZE = Integer.MIN_VALUE;
     protected HashMap<Integer, Integer> itemSizeMaps = new HashMap<>();
     private final int[] mSpanTotalSize;
+    private final HippyGridSpacesItemDecoration mItemDecoration;
 
     private static final RecyclerView.LayoutParams ITEM_LAYOUT_PARAMS = new RecyclerView.LayoutParams(
             0, 0);
 
-    public HippyStaggeredGridLayoutManager(int spanCount, int orientation) {
+    public HippyStaggeredGridLayoutManager(int spanCount, int orientation,
+            HippyGridSpacesItemDecoration itemDecoration) {
         super(spanCount, orientation);
         mSpanTotalSize = new int[spanCount];
+        mItemDecoration = itemDecoration;
     }
 
     @Override
@@ -126,7 +129,9 @@ public class HippyStaggeredGridLayoutManager extends StaggeredGridLayoutManager 
         }
         View firstVisibleView = findFirstVisibleView();
         if (firstVisibleView != null) {
-            int end = mPrimaryOrientation.getDecoratedEnd(firstVisibleView);
+            int paddingTop = (getOrientation() == RecyclerView.VERTICAL) ? mRecyclerView.getPaddingTop()
+                    : mRecyclerView.getPaddingLeft();
+            int end = mPrimaryOrientation.getDecoratedEnd(firstVisibleView) - paddingTop;
             int total = computeSpanSizeUntilFirstVisibleView(0, firstVisibleView);
             return total - end;
         }
@@ -167,7 +172,8 @@ public class HippyStaggeredGridLayoutManager extends StaggeredGridLayoutManager 
     void computeSpanTotalSize() {
         HippyRecyclerListAdapter adapter = (HippyRecyclerListAdapter) mRecyclerView.getAdapter();
         if (adapter != null) {
-            for (int i = 0; i <= adapter.getItemCount(); i++) {
+            int itemCount = adapter.getItemCount();
+            for (int i = 0; i <= itemCount; i++) {
                 ListItemRenderNode child = adapter.getChildNode(i);
                 if (child instanceof WaterfallItemRenderNode) {
                     addSpanChildSize((WaterfallItemRenderNode) child);
@@ -182,7 +188,8 @@ public class HippyStaggeredGridLayoutManager extends StaggeredGridLayoutManager 
             return 0;
         }
         int totalSize = 0;
-        for (int i = 0; i <= adapter.getItemCount(); i++) {
+        int itemCount = adapter.getItemCount();
+        for (int i = 0; i <= itemCount; i++) {
             ListItemRenderNode child = adapter.getChildNode(i);
             totalSize += getChildSizeWithSpanIndex(spanIndex, child);
             if (firstVisibleView.getId() == child.getId()) {

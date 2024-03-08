@@ -24,14 +24,16 @@ import android.view.View;
 import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.HippyGridSpacesItemDecoration;
 import androidx.recyclerview.widget.HippyStaggeredGridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.tencent.mtt.hippy.annotation.HippyController;
+import com.tencent.mtt.hippy.annotation.HippyControllerProps;
 import com.tencent.mtt.hippy.dom.node.NodeProps;
 import com.tencent.mtt.hippy.uimanager.ControllerManager;
 import com.tencent.mtt.hippy.uimanager.ControllerRegistry;
 import com.tencent.mtt.hippy.uimanager.HippyViewController;
+import com.tencent.mtt.hippy.utils.PixelUtil;
 import com.tencent.mtt.hippy.views.hippylist.HippyListUtils;
 import com.tencent.mtt.hippy.views.hippylist.HippyRecyclerView;
 import com.tencent.mtt.hippy.views.hippylist.HippyRecyclerViewWrapper;
@@ -39,6 +41,7 @@ import com.tencent.renderer.NativeRenderContext;
 import com.tencent.renderer.node.RenderNode;
 import com.tencent.renderer.node.WaterfallRenderNode;
 import com.tencent.renderer.utils.MapUtils;
+import java.util.HashMap;
 import java.util.Map;
 
 @HippyController(name = HippyWaterfallViewController.CLASS_NAME, dispatchWithStandardType = true)
@@ -70,16 +73,21 @@ public class HippyWaterfallViewController<HRW extends HippyRecyclerViewWrapper> 
         int orientation = RecyclerView.VERTICAL;
         boolean enableOverPull = true;
         boolean hasStableIds = true;
+        int numberOfColumns = 2;
         if (props != null) {
             if (MapUtils.getBooleanValue(props, HORIZONTAL)) {
                 orientation = RecyclerView.HORIZONTAL;
             }
             enableOverPull = MapUtils.getBooleanValue(props, NodeProps.OVER_PULL, false);
             hasStableIds = MapUtils.getBooleanValue(props, NodeProps.HAS_STABLE_IDS, true);
+            numberOfColumns = MapUtils.getIntValue(props, NodeProps.NUMBER_OF_COLUMNS, 2);
         }
-        HippyStaggeredGridLayoutManager layoutManager = new HippyStaggeredGridLayoutManager(2, orientation);
+        HippyGridSpacesItemDecoration itemDecoration = new HippyGridSpacesItemDecoration(numberOfColumns);
+        HippyStaggeredGridLayoutManager layoutManager = new HippyStaggeredGridLayoutManager(
+                Math.max(numberOfColumns, 2), orientation, itemDecoration);
         waterfallView.setLayoutManager(layoutManager);
         waterfallView.initRecyclerView(hasStableIds);
+        waterfallView.addItemDecoration(itemDecoration);
         if (HippyListUtils.isVerticalLayout(waterfallView)) {
             waterfallView.setEnableOverPull(enableOverPull);
         }
@@ -94,7 +102,7 @@ public class HippyWaterfallViewController<HRW extends HippyRecyclerViewWrapper> 
 
     @Override
     public void onViewDestroy(HRW viewGroup) {
-        ((HRW) viewGroup).getRecyclerView().onDestroy();
+        viewGroup.getRecyclerView().onDestroy();
     }
 
     @Override
@@ -136,5 +144,61 @@ public class HippyWaterfallViewController<HRW extends HippyRecyclerViewWrapper> 
             ((HippyRecyclerViewWrapper<?>) view).getRecyclerView().dispatchLayout();
         }
     }
+
+    @HippyControllerProps(name = "scrollEventThrottle", defaultType = HippyControllerProps.NUMBER, defaultNumber =
+            30.0D)
+    public void setScrollEventThrottle(HRW recyclerViewWrapper, int scrollEventThrottle) {
+        recyclerViewWrapper.getRecyclerViewEventHelper().setScrollEventThrottle(scrollEventThrottle);
+    }
+
+    @HippyControllerProps(name = "preloadItemNumber", defaultType = HippyControllerProps.NUMBER, defaultNumber = 0)
+    public void setPreloadItemNumber(HRW recyclerViewWrapper, int preloadItemNumber) {
+        recyclerViewWrapper.getRecyclerViewEventHelper().setPreloadItemNumber(preloadItemNumber);
+    }
+
+    @HippyControllerProps(name = NodeProps.ITEM_SPACING, defaultType = HippyControllerProps.NUMBER, defaultNumber = 0)
+    public void setItemSpacing(HRW recyclerViewWrapper, int itemSpacing) {
+        HippyRecyclerView recyclerView = recyclerViewWrapper.getRecyclerView();
+        if (recyclerView instanceof HippyWaterfallView) {
+            ((HippyWaterfallView) recyclerView).setItemSpacing((int) PixelUtil.dp2px(itemSpacing));
+        }
+    }
+
+    @HippyControllerProps(name = NodeProps.COLUMN_SPACING, defaultType = HippyControllerProps.NUMBER, defaultNumber = 0)
+    public void setColumnSpacing(HRW recyclerViewWrapper, int columnSpacing) {
+        HippyRecyclerView recyclerView = recyclerViewWrapper.getRecyclerView();
+        if (recyclerView instanceof HippyWaterfallView) {
+            ((HippyWaterfallView) recyclerView).setColumnSpacing((int) PixelUtil.dp2px(columnSpacing));
+        }
+    }
+
+    @HippyControllerProps(name = "contentInset", defaultType = HippyControllerProps.MAP)
+    public void setContentInset(HRW recyclerViewWrapper, HashMap insetMap) {
+        if (insetMap == null) {
+            return;
+        }
+        int left = 0;
+        int top = 0;
+        int right = 0;
+        int bottom = 0;
+        Object value = insetMap.get("left");
+        if (value instanceof Number) {
+            left = Math.round(PixelUtil.dp2px(((Number) value).doubleValue()));
+        }
+        value = insetMap.get("top");
+        if (value instanceof Number) {
+            top = Math.round(PixelUtil.dp2px(((Number) value).doubleValue()));
+        }
+        value = insetMap.get("right");
+        if (value instanceof Number) {
+            right = Math.round(PixelUtil.dp2px(((Number) value).doubleValue()));
+        }
+        value = insetMap.get("bottom");
+        if (value instanceof Number) {
+            bottom = Math.round(PixelUtil.dp2px(((Number) value).doubleValue()));
+        }
+        recyclerViewWrapper.getRecyclerView().setPadding(left, top, right, bottom);
+    }
+
 
 }
