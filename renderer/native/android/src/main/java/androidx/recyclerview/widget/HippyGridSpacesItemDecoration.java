@@ -52,14 +52,6 @@ public class HippyGridSpacesItemDecoration extends RecyclerView.ItemDecoration {
     @Override
     public void getItemOffsets(@NonNull Rect outRect, @NonNull View view,
             @NonNull RecyclerView parent, @NonNull State state) {
-        StaggeredGridLayoutManager.LayoutParams lp = (StaggeredGridLayoutManager.LayoutParams) view.getLayoutParams();
-        int index = lp.getSpanIndex();
-        boolean fullSpan = lp.isFullSpan();
-        if (view instanceof PullRefreshContainer || fullSpan || (index == mNumberOfColumns - 1)) {
-            outRect.right = 0;
-        } else {
-            outRect.right = mColumnSpacing;
-        }
         outRect.bottom = mItemSpacing;
     }
 }

@@ -16,10 +16,12 @@
 
 package androidx.recyclerview.widget;
 
+import android.graphics.Rect;
 import android.view.View;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView.Adapter;
+import androidx.recyclerview.widget.RecyclerView.LayoutParams;
 import androidx.recyclerview.widget.RecyclerView.State;
 import androidx.recyclerview.widget.RecyclerView.ViewHolder;
 
@@ -54,15 +56,23 @@ public class HippyStaggeredGridLayoutManager extends StaggeredGridLayoutManager 
     @Override
     public void layoutDecoratedWithMargins(@NonNull View child, int left, int top, int right,
             int bottom) {
-        super.layoutDecoratedWithMargins(child, left, top, right, bottom);
-        StaggeredGridLayoutManager.LayoutParams lp = (StaggeredGridLayoutManager.LayoutParams) child.getLayoutParams();
+        //super.layoutDecoratedWithMargins(child, left, top, right, bottom);
+        final StaggeredGridLayoutManager.LayoutParams lp = (StaggeredGridLayoutManager.LayoutParams) child.getLayoutParams();
+        final Rect insets = lp.mDecorInsets;
+        final int spanIndex = lp.getSpanIndex();
+        final boolean isFullSpan = lp.isFullSpan();
+        int lf = spanIndex * (lp.width + mItemDecoration.getColumnSpacing());
+        int rt = (spanIndex + 1) * lp.width + spanIndex * mItemDecoration.getColumnSpacing();
+        int bt = bottom + insets.bottom;
+        child.layout(lf, top, rt, bt);
+        LogUtils.e("maxli", "id " + child.getId() + ", spanIndex " + lp.getSpanIndex() + ", top " + top + ", bottom " + bottom);
         int size = getOrientation() == RecyclerView.VERTICAL
-                ? bottom - top + lp.topMargin + lp.bottomMargin
-                : right - left + lp.leftMargin + lp.rightMargin;
+                ? lp.height + insets.bottom : lp.width + insets.right;
+        LogUtils.e("maxli", "id " + child.getId() + ", size " + size);
         RenderNode childNode = RenderManager.getRenderNode(child);
         if (childNode instanceof WaterfallItemRenderNode) {
-            ((WaterfallItemRenderNode) childNode).setSpanIndex(lp.getSpanIndex());
-            ((WaterfallItemRenderNode) childNode).setFullSpan(lp.isFullSpan());
+            ((WaterfallItemRenderNode) childNode).setSpanIndex(spanIndex);
+            ((WaterfallItemRenderNode) childNode).setFullSpan(isFullSpan);
             cacheItemLayoutParams(size, childNode.getId());
         }
     }
@@ -141,7 +151,7 @@ public class HippyStaggeredGridLayoutManager extends StaggeredGridLayoutManager 
     private int getChildSize(@NonNull ListItemRenderNode child) {
         Integer size = itemSizeMaps.get(child.getId());
         if (size == null) {
-            size = getItemSizeFromAdapter(child);
+            size = getItemSizeFromAdapter(child) + mItemDecoration.getItemSpacing();
         }
         return Math.max(size, 0);
     }
