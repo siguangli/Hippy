@@ -23,6 +23,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.tencent.mtt.hippy.annotation.HippyController;
+import com.tencent.mtt.hippy.annotation.HippyControllerProps;
+import com.tencent.mtt.hippy.dom.node.NodeProps;
 import com.tencent.mtt.hippy.uimanager.ControllerManager;
 import com.tencent.mtt.hippy.uimanager.HippyViewController;
 import com.tencent.renderer.node.RenderNode;
@@ -44,7 +46,15 @@ public class HippyWaterfallItemViewController extends HippyViewController<HippyW
     @Override
     public RenderNode createRenderNode(int rootId, int id, @Nullable Map<String, Object> props,
             @NonNull String className, @NonNull ControllerManager controllerManager, boolean isLazyLoad) {
-        return new WaterfallItemRenderNode(rootId, id, props, className, controllerManager, isLazyLoad);
+        WaterfallItemRenderNode node = new WaterfallItemRenderNode(rootId, id, props, className, controllerManager, isLazyLoad);
+        if (props != null && props.containsKey(NodeProps.FULL_SPAN)) {
+            node.setFullSpan(true);
+        }
+        return node;
     }
 
+    @HippyControllerProps(name = "fullSpan", defaultType = HippyControllerProps.BOOLEAN, defaultBoolean = false)
+    public void setFullSpan(HippyWaterfallItemView waterfallItemView, boolean flag) {
+
+    }
 }

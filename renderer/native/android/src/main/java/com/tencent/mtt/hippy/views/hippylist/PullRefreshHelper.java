@@ -32,6 +32,7 @@ import androidx.recyclerview.widget.RecyclerView.LayoutManager;
 import androidx.recyclerview.widget.StaggeredGridLayoutManager;
 
 import com.tencent.mtt.hippy.views.waterfall.HippyWaterfallView;
+import com.tencent.renderer.node.PullHeaderRenderNode;
 import com.tencent.renderer.node.RenderNode;
 import com.tencent.mtt.hippy.views.hippylist.recyclerview.helper.AnimatorListenerBase;
 import com.tencent.mtt.hippy.views.refresh.HippyPullFooterView;
@@ -59,7 +60,7 @@ public abstract class PullRefreshHelper {
     PullRefreshHelper(@NonNull HippyRecyclerView recyclerView, @NonNull RenderNode node) {
         mRecyclerView = recyclerView;
         mRenderNode = node;
-        mContainer = new PullRefreshContainer(recyclerView.getContext());
+        mContainer = new PullRefreshContainer(recyclerView.getContext(), node instanceof PullHeaderRenderNode);
         mContainer.setId(node.getId());
     }
 
@@ -221,12 +222,7 @@ public abstract class PullRefreshHelper {
     protected void smoothResizeTo(int fromValue, int toValue, int duration) {
         endAnimation();
         mAnimator = ValueAnimator.ofInt(fromValue, toValue);
-        mAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-            @Override
-            public void onAnimationUpdate(ValueAnimator animation) {
-                setVisibleSize((int) animation.getAnimatedValue());
-            }
-        });
+        mAnimator.addUpdateListener(animation -> setVisibleSize((int) animation.getAnimatedValue()));
         mAnimator.addListener(new AnimatorListenerBase() {
             @Override
             public void onAnimationEnd(Animator animation) {

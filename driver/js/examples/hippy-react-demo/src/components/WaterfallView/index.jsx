@@ -354,6 +354,8 @@ export default class ListExample extends React.Component {
               interItemSpacing={interItemSpacing}
               numberOfItems={dataSource.length}
               style={{ flex: 1 }}
+              renderPullHeader={this.renderPullHeader}
+              renderPullFooter={this.renderPullFooter}
               onFooterReleased={this.onEndReached}
               onHeaderReleased={this.onHeaderReleased}
               onHeaderPulling={this.onHeaderPulling}

@@ -22,7 +22,7 @@ import androidx.annotation.Nullable;
 import com.tencent.mtt.hippy.uimanager.ControllerManager;
 import java.util.Map;
 
-public class WaterfallItemRenderNode extends ListItemRenderNode {
+public class  WaterfallItemRenderNode extends ListItemRenderNode {
 
     static final String TAG = "HippyWaterfallItemNode";
 

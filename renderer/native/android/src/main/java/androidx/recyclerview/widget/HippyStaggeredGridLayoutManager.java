@@ -28,6 +28,7 @@ import androidx.recyclerview.widget.RecyclerView.ViewHolder;
 import com.tencent.mtt.hippy.uimanager.RenderManager;
 import com.tencent.mtt.hippy.utils.LogUtils;
 import com.tencent.mtt.hippy.views.hippylist.HippyRecyclerListAdapter;
+import com.tencent.mtt.hippy.views.hippylist.PullRefreshContainer;
 import com.tencent.renderer.node.ListItemRenderNode;
 import com.tencent.renderer.node.RenderNode;
 import com.tencent.renderer.node.WaterfallItemRenderNode;
@@ -53,22 +54,37 @@ public class HippyStaggeredGridLayoutManager extends StaggeredGridLayoutManager 
         mItemDecoration = itemDecoration;
     }
 
+    private int getChildSize(@NonNull View child, boolean isFullSpan, int left, int top, int right,
+            int bottom) {
+        HippyRecyclerListAdapter adapter = (HippyRecyclerListAdapter) mRecyclerView.getAdapter();
+        int size = getOrientation() == RecyclerView.VERTICAL
+                ? bottom - top + mItemDecoration.getItemSpacing()
+                : lp.width + mItemDecoration.getItemSpacing();
+        if (child instanceof PullRefreshContainer) {
+
+        } else {
+
+        }
+    }
+
     @Override
     public void layoutDecoratedWithMargins(@NonNull View child, int left, int top, int right,
             int bottom) {
         //super.layoutDecoratedWithMargins(child, left, top, right, bottom);
+        HippyRecyclerListAdapter adapter = (HippyRecyclerListAdapter) mRecyclerView.getAdapter();
         final StaggeredGridLayoutManager.LayoutParams lp = (StaggeredGridLayoutManager.LayoutParams) child.getLayoutParams();
-        final Rect insets = lp.mDecorInsets;
         final int spanIndex = lp.getSpanIndex();
         final boolean isFullSpan = lp.isFullSpan();
-        int lf = spanIndex * (lp.width + mItemDecoration.getColumnSpacing());
-        int rt = (spanIndex + 1) * lp.width + spanIndex * mItemDecoration.getColumnSpacing();
-        int bt = bottom + insets.bottom;
-        child.layout(lf, top, rt, bt);
-        LogUtils.e("maxli", "id " + child.getId() + ", spanIndex " + lp.getSpanIndex() + ", top " + top + ", bottom " + bottom);
+        if (isFullSpan) {
+            child.layout(left, top, right, bottom);
+        } else {
+            int lf = spanIndex * (lp.width + mItemDecoration.getColumnSpacing());
+            int rt = (spanIndex + 1) * lp.width + spanIndex * mItemDecoration.getColumnSpacing();
+            child.layout(lf, top, rt, bottom);
+        }
         int size = getOrientation() == RecyclerView.VERTICAL
-                ? lp.height + insets.bottom : lp.width + insets.right;
-        LogUtils.e("maxli", "id " + child.getId() + ", size " + size);
+                ? lp.height + mItemDecoration.getItemSpacing()
+                : lp.width + mItemDecoration.getItemSpacing();
         RenderNode childNode = RenderManager.getRenderNode(child);
         if (childNode instanceof WaterfallItemRenderNode) {
             ((WaterfallItemRenderNode) childNode).setSpanIndex(spanIndex);
@@ -139,8 +155,9 @@ public class HippyStaggeredGridLayoutManager extends StaggeredGridLayoutManager 
         }
         View firstVisibleView = findFirstVisibleView();
         if (firstVisibleView != null) {
-            int paddingTop = (getOrientation() == RecyclerView.VERTICAL) ? mRecyclerView.getPaddingTop()
-                    : mRecyclerView.getPaddingLeft();
+            int paddingTop =
+                    (getOrientation() == RecyclerView.VERTICAL) ? mRecyclerView.getPaddingTop()
+                            : mRecyclerView.getPaddingLeft();
             int end = mPrimaryOrientation.getDecoratedEnd(firstVisibleView) - paddingTop;
             int total = computeSpanSizeUntilFirstVisibleView(0, firstVisibleView);
             return total - end;

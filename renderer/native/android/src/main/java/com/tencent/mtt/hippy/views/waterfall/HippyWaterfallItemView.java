@@ -26,4 +26,6 @@ public class HippyWaterfallItemView extends HippyListItemView {
     public HippyWaterfallItemView(Context context) {
         super(context);
     }
+
+
 }

@@ -35,6 +35,7 @@ import com.tencent.renderer.node.ListItemRenderNode;
 import com.tencent.renderer.node.PullFooterRenderNode;
 import com.tencent.renderer.node.PullHeaderRenderNode;
 import com.tencent.renderer.node.RenderNode;
+import com.tencent.renderer.node.WaterfallItemRenderNode;
 
 /**
  * Created on 2020/12/22.
@@ -174,6 +175,23 @@ public class HippyRecyclerListAdapter<HRCV extends HippyRecyclerView> extends Ad
         }
         hippyRecyclerView.onLayoutOrientationChanged();
         hippyRecyclerView.enableOverPullIfNeeded();
+    }
+
+    public boolean hasPullHeader() {
+        return headerRefreshHelper != null;
+    }
+
+    public boolean hasBannerView() {
+        ListItemRenderNode node;
+        if (hasPullHeader()) {
+            node = getChildNodeByAdapterPosition(1);
+        } else {
+            node = getChildNodeByAdapterPosition(0);
+        }
+        if (node instanceof WaterfallItemRenderNode) {
+            return ((WaterfallItemRenderNode) node).isFullSpan();
+        }
+        return false;
     }
 
     private void initHeaderRefreshHelper(View itemView, RenderNode node) {
