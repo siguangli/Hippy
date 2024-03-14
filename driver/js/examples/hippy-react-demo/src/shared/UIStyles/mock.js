@@ -28,9 +28,14 @@ const STYLE_5 = {
 };
 const mockData = [
   STYLE_5,
+  STYLE_1,
+  STYLE_2,
+  STYLE_1,
+  STYLE_2,
+  STYLE_1,
+  STYLE_2,
   STYLE_5,
-  STYLE_5,
-  STYLE_5,
+  STYLE_1,
 ];
 
 export default mockData;

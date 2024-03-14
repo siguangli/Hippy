@@ -52,9 +52,4 @@ public class HippyWaterfallItemViewController extends HippyViewController<HippyW
         }
         return node;
     }
-
-    @HippyControllerProps(name = "fullSpan", defaultType = HippyControllerProps.BOOLEAN, defaultBoolean = false)
-    public void setFullSpan(HippyWaterfallItemView waterfallItemView, boolean flag) {
-
-    }
 }

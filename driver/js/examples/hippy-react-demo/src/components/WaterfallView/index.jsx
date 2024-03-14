@@ -60,8 +60,8 @@ export default class ListExample extends React.Component {
       horizontal: undefined,
     };
     this.numberOfColumns = 2;
-    this.columnSpacing = 40;
-    this.interItemSpacing = 30;
+    this.columnSpacing = 6;
+    this.interItemSpacing = 6;
     this.mockFetchData = this.mockFetchData.bind(this);
     this.renderItem = this.renderItem.bind(this);
     this.getItemType = this.getItemType.bind(this);
@@ -353,9 +353,11 @@ export default class ListExample extends React.Component {
               columnSpacing={columnSpacing}
               interItemSpacing={interItemSpacing}
               numberOfItems={dataSource.length}
+              preloadItemNumber={8}
               style={{ flex: 1 }}
+              renderBanner={this.renderBanner}
               renderPullHeader={this.renderPullHeader}
-              renderPullFooter={this.renderPullFooter}
+              onEndReached={this.onEndReached}
               onFooterReleased={this.onEndReached}
               onHeaderReleased={this.onHeaderReleased}
               onHeaderPulling={this.onHeaderPulling}

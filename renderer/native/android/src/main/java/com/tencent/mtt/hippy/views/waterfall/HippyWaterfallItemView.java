@@ -17,7 +17,12 @@
 package com.tencent.mtt.hippy.views.waterfall;
 
 import android.content.Context;
+import android.view.ViewGroup;
+import androidx.recyclerview.widget.StaggeredGridLayoutManager;
+import com.tencent.mtt.hippy.dom.node.NodeProps;
+import com.tencent.mtt.hippy.uimanager.RenderManager;
 import com.tencent.mtt.hippy.views.list.HippyListItemView;
+import com.tencent.renderer.node.RenderNode;
 
 public class HippyWaterfallItemView extends HippyListItemView {
 
@@ -27,5 +32,15 @@ public class HippyWaterfallItemView extends HippyListItemView {
         super(context);
     }
 
-
+    @Override
+    public void setLayoutParams(ViewGroup.LayoutParams params) {
+        super.setLayoutParams(params);
+        if (params instanceof StaggeredGridLayoutManager.LayoutParams) {
+            RenderNode node = RenderManager.getRenderNode(this);
+            if (node != null) {
+                ((StaggeredGridLayoutManager.LayoutParams) params).setFullSpan(
+                        node.containProperty(NodeProps.FULL_SPAN));
+            }
+        }
+    }
 }

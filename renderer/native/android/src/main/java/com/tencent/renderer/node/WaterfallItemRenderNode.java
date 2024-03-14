@@ -16,10 +16,15 @@
 
 package com.tencent.renderer.node;
 
+import android.view.View;
+import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import androidx.recyclerview.widget.StaggeredGridLayoutManager;
+import com.tencent.mtt.hippy.dom.node.NodeProps;
 import com.tencent.mtt.hippy.uimanager.ControllerManager;
+import com.tencent.mtt.hippy.uimanager.RenderManager;
 import java.util.Map;
 
 public class  WaterfallItemRenderNode extends ListItemRenderNode {
@@ -51,4 +56,12 @@ public class  WaterfallItemRenderNode extends ListItemRenderNode {
         return mFullSpan;
     }
 
+    @Override
+    public void onBindViewHolder(@NonNull RenderNode fromNode, @NonNull View itemView) {
+        super.onBindViewHolder(fromNode, itemView);
+        final ViewGroup.LayoutParams lp = itemView.getLayoutParams();
+        if (lp instanceof StaggeredGridLayoutManager.LayoutParams) {
+            ((StaggeredGridLayoutManager.LayoutParams) lp).setFullSpan(mFullSpan);
+        }
+    }
 }

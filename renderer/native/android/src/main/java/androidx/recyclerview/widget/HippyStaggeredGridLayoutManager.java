@@ -16,12 +16,10 @@
 
 package androidx.recyclerview.widget;
 
-import android.graphics.Rect;
 import android.view.View;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView.Adapter;
-import androidx.recyclerview.widget.RecyclerView.LayoutParams;
 import androidx.recyclerview.widget.RecyclerView.State;
 import androidx.recyclerview.widget.RecyclerView.ViewHolder;
 
@@ -30,6 +28,8 @@ import com.tencent.mtt.hippy.utils.LogUtils;
 import com.tencent.mtt.hippy.views.hippylist.HippyRecyclerListAdapter;
 import com.tencent.mtt.hippy.views.hippylist.PullRefreshContainer;
 import com.tencent.renderer.node.ListItemRenderNode;
+import com.tencent.renderer.node.PullFooterRenderNode;
+import com.tencent.renderer.node.PullHeaderRenderNode;
 import com.tencent.renderer.node.RenderNode;
 import com.tencent.renderer.node.WaterfallItemRenderNode;
 
@@ -54,25 +54,11 @@ public class HippyStaggeredGridLayoutManager extends StaggeredGridLayoutManager 
         mItemDecoration = itemDecoration;
     }
 
-    private int getChildSize(@NonNull View child, boolean isFullSpan, int left, int top, int right,
-            int bottom) {
-        HippyRecyclerListAdapter adapter = (HippyRecyclerListAdapter) mRecyclerView.getAdapter();
-        int size = getOrientation() == RecyclerView.VERTICAL
-                ? bottom - top + mItemDecoration.getItemSpacing()
-                : lp.width + mItemDecoration.getItemSpacing();
-        if (child instanceof PullRefreshContainer) {
-
-        } else {
-
-        }
-    }
-
     @Override
     public void layoutDecoratedWithMargins(@NonNull View child, int left, int top, int right,
             int bottom) {
-        //super.layoutDecoratedWithMargins(child, left, top, right, bottom);
-        HippyRecyclerListAdapter adapter = (HippyRecyclerListAdapter) mRecyclerView.getAdapter();
-        final StaggeredGridLayoutManager.LayoutParams lp = (StaggeredGridLayoutManager.LayoutParams) child.getLayoutParams();
+        final StaggeredGridLayoutManager.LayoutParams lp =
+                (StaggeredGridLayoutManager.LayoutParams) child.getLayoutParams();
         final int spanIndex = lp.getSpanIndex();
         final boolean isFullSpan = lp.isFullSpan();
         if (isFullSpan) {
@@ -82,13 +68,16 @@ public class HippyStaggeredGridLayoutManager extends StaggeredGridLayoutManager 
             int rt = (spanIndex + 1) * lp.width + spanIndex * mItemDecoration.getColumnSpacing();
             child.layout(lf, top, rt, bottom);
         }
-        int size = getOrientation() == RecyclerView.VERTICAL
-                ? lp.height + mItemDecoration.getItemSpacing()
-                : lp.width + mItemDecoration.getItemSpacing();
+        int size;
+        if (child instanceof PullRefreshContainer) {
+            size = getOrientation() == RecyclerView.VERTICAL ? bottom - top : right - left;
+        } else {
+            size = getOrientation() == RecyclerView.VERTICAL ? lp.height + mItemDecoration.getItemSpacing()
+                    : lp.width + mItemDecoration.getItemSpacing();
+        }
         RenderNode childNode = RenderManager.getRenderNode(child);
         if (childNode instanceof WaterfallItemRenderNode) {
             ((WaterfallItemRenderNode) childNode).setSpanIndex(spanIndex);
-            ((WaterfallItemRenderNode) childNode).setFullSpan(isFullSpan);
             cacheItemLayoutParams(size, childNode.getId());
         }
     }
@@ -168,7 +157,11 @@ public class HippyStaggeredGridLayoutManager extends StaggeredGridLayoutManager 
     private int getChildSize(@NonNull ListItemRenderNode child) {
         Integer size = itemSizeMaps.get(child.getId());
         if (size == null) {
-            size = getItemSizeFromAdapter(child) + mItemDecoration.getItemSpacing();
+            if (child instanceof PullHeaderRenderNode || child instanceof PullFooterRenderNode) {
+                size = getItemSizeFromAdapter(child);
+            } else {
+                size = getItemSizeFromAdapter(child) + mItemDecoration.getItemSpacing();
+            }
         }
         return Math.max(size, 0);
     }
