@@ -413,8 +413,10 @@ public class NativeRenderer extends Renderer implements NativeRender, NativeRend
                 rootId, nodeId, lowerCaseEventName)) {
             return;
         }
-        LogUtils.d(TAG, "dispatchEvent: id " + nodeId + ", eventName " + eventName
-                + ", eventType " + eventType + ", params " + params + "\n ");
+        if (LogUtils.isDebugMode() && !eventName.equals(ChoreographerUtils.DO_FRAME)) {
+            LogUtils.d(TAG, "dispatchEvent: id " + nodeId + ", eventName " + eventName
+                    + ", eventType " + eventType + ", params " + params + "\n ");
+        }
         mRenderProvider.dispatchEvent(rootId, nodeId, lowerCaseEventName, params, useCapture,
                 useBubble);
     }
@@ -496,9 +498,11 @@ public class NativeRenderer extends Renderer implements NativeRender, NativeRend
                                 + nodeIndex + ", className " + className);
             }
             final Map<String, Object> props = MapUtils.getMapValue(node, NODE_PROPS);
-            LogUtils.d(TAG, "createNode: id " + nodeId + ", pid " + nodePid
-                    + ", index " + nodeIndex + ", name " + className + "\n  props " + props
-                    + "\n ");
+            if (LogUtils.isDebugMode()) {
+                LogUtils.d(TAG, "createNode: id " + nodeId + ", pid " + nodePid
+                        + ", index " + nodeIndex + ", name " + className + "\n  props " + props
+                        + "\n ");
+            }
             mVirtualNodeManager.createNode(rootId, nodeId, nodePid, nodeIndex, className, props);
             // If multiple level are nested, the parent is outermost text node.
             VirtualNode parent = mVirtualNodeManager.checkVirtualParent(rootId, nodeId);
@@ -558,9 +562,11 @@ public class NativeRenderer extends Renderer implements NativeRender, NativeRend
             }
             final Map<String, Object> diffProps = MapUtils.getMapValue(node, NODE_PROPS);
             final List<Object> delProps = MapUtils.getListValue(node, NODE_DELETE_PROPS);
-            LogUtils.d(TAG,
-                    "updateNode: id " + nodeId + ", diff " + diffProps + ", delete " + delProps
-                            + "\n ");
+            if (LogUtils.isDebugMode()) {
+                LogUtils.d(TAG,
+                        "updateNode: id " + nodeId + ", diff " + diffProps + ", delete " + delProps
+                                + "\n ");
+            }
             mVirtualNodeManager.updateNode(rootId, nodeId, diffProps, delProps);
             // If multiple level are nested, the parent is outermost text node.
             VirtualNode parent = mVirtualNodeManager.checkVirtualParent(rootId, nodeId);
@@ -580,7 +586,9 @@ public class NativeRenderer extends Renderer implements NativeRender, NativeRend
     @Override
     public void deleteNode(final int rootId, @NonNull int[] ids) throws NativeRenderException {
         final List<UITaskExecutor> taskList = new ArrayList<>(ids.length);
-        LogUtils.d(TAG, "deleteNode " + Arrays.toString(ids) + "\n ");
+        if (LogUtils.isDebugMode()) {
+            LogUtils.d(TAG, "deleteNode " + Arrays.toString(ids) + "\n ");
+        }
         for (final int nodeId : ids) {
             // The node id should not be negative number.
             if (nodeId < 0) {
@@ -605,14 +613,18 @@ public class NativeRenderer extends Renderer implements NativeRender, NativeRend
     @Override
     public void moveNode(final int rootId, final int[] ids, final int newPid, final int oldPid,
             final int insertIndex) throws NativeRenderException {
-        LogUtils.d(TAG, "moveNode: ids " + Arrays.toString(ids) + ", newPid " +
-                newPid + ", oldPid " + oldPid + ", insertIndex " + insertIndex + "\n ");
+        if (LogUtils.isDebugMode()) {
+            LogUtils.d(TAG, "moveNode: ids " + Arrays.toString(ids) + ", newPid " +
+                    newPid + ", oldPid " + oldPid + ", insertIndex " + insertIndex + "\n ");
+        }
         addUITask(() -> mRenderManager.moveNode(rootId, ids, newPid, oldPid, insertIndex));
     }
 
     @Override
     public void moveNode(final int rootId, final int pid, @NonNull final List<Object> list) {
-        LogUtils.d(TAG, "moveNode: pid " + pid + ", node list " + list + "\n ");
+        if (LogUtils.isDebugMode()) {
+            LogUtils.d(TAG, "moveNode: pid " + pid + ", node list " + list + "\n ");
+        }
         VirtualNode parent = mVirtualNodeManager.getVirtualNode(rootId, pid);
         if (parent == null) {
             addUITask(() -> mRenderManager.moveNode(rootId, pid, list));
@@ -690,6 +702,10 @@ public class NativeRenderer extends Renderer implements NativeRender, NativeRend
                 throw new NativeRenderException(INVALID_NODE_DATA_ERR,
                         TAG + ": updateEventListener: invalid negative id=" + nodeId);
             }
+            if (LogUtils.isDebugMode()) {
+                LogUtils.d(TAG,
+                        "updateEventListener: id " + nodeId + ", eventProps " + eventProps + "\n ");
+            }
             mVirtualNodeManager.updateEventListener(rootId, nodeId, eventProps);
             taskList.add(() -> mRenderManager.updateEventListener(rootId, nodeId, eventProps));
         }
@@ -720,9 +736,11 @@ public class NativeRenderer extends Renderer implements NativeRender, NativeRend
             throw new NativeRenderException(INVALID_NODE_DATA_ERR,
                     TAG + ": callUIFunction: invalid negative id=" + nodeId);
         }
-        LogUtils.d(TAG,
-                "callUIFunction: id " + nodeId + ", functionName " + functionName + ", params"
-                        + params + "\n ");
+        if (LogUtils.isDebugMode()) {
+            LogUtils.d(TAG,
+                    "callUIFunction: id " + nodeId + ", functionName " + functionName + ", params"
+                            + params + "\n ");
+        }
         // If callbackId equal to 0 mean this call does not need to callback.
         final UIPromise promise =
                 (callbackId == 0) ? null : new UIPromise(callbackId, functionName, rootId, nodeId,
@@ -741,7 +759,9 @@ public class NativeRenderer extends Renderer implements NativeRender, NativeRend
 
     @Override
     public void endBatch(final int rootId) throws NativeRenderException {
-        LogUtils.d(TAG, "=============================endBatch " + rootId);
+        if (LogUtils.isDebugMode()) {
+            LogUtils.d(TAG, "=============================endBatch " + rootId);
+        }
         Map<Integer, Layout> layoutToUpdate = mVirtualNodeManager.endBatch(rootId);
         if (layoutToUpdate != null) {
             for (Entry<Integer, Layout> entry : layoutToUpdate.entrySet()) {
