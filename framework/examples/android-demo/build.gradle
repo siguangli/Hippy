@@ -26,6 +26,7 @@ android {
     defaultConfig {
         applicationId "com.openhippy.example"
         minSdkVersion MIN_VERSION as int
+        buildConfigField("String", "APP_VERSION", "String.valueOf(\"$VERSION_NAME\")")
         // noinspection ExpiredTargetSdkVersion
         //noinspection OldTargetApi
         targetSdkVersion TARGET_VERSION as int
@@ -84,6 +85,9 @@ dependencies {
         compileOnly project(path: ':renderer-native')
     }
     implementation deps.annotation
+    implementation "com.tencent.rdelivery:reshub-sdk:1.8.16"
+    implementation "com.tencent.rdelivery:reshub-net:1.8.16"
+    implementation "com.tencent.rdelivery:reshub-report:1.8.16"
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
     implementation 'androidx.recyclerview:recyclerview:1.1.0'
     implementation 'androidx.viewpager:viewpager:1.0.0'

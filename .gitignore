@@ -40,6 +40,7 @@ framework/examples/android-demo/src/main/assets/
 framework/examples/android-demo/libs/*
 framework/examples/android-demo/maven-auth.properties
 framework/examples/android-demo/.cxx/
+framework/examples/android-demo/res/res_hub_config.properties
 framework/examples/ios-demo/HippyDemo.xcodeproj
 framework/examples/ios-demo/HippyDemo.xcworkspace
 framework/examples/ios-demo/Pods/*

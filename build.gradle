@@ -22,6 +22,24 @@
 
 buildscript {
     repositories {
+        maven {
+            url "https://mirrors.tencent.com/nexus/repository/maven-public/"
+        }
+        maven {
+            url "https://mirrors.tencent.com/nexus/repository/maven-public/"
+        }
+        maven {
+            url "https://mirrors.tencent.com/repository/maven/tencent_public"
+        }
+        maven {
+            url "https://mirrors.tencent.com/repository/maven/tencent_public_snapshots"
+        }
+        maven {
+            url "https://mirrors.tencent.com/repository/maven/thirdparty"
+        }
+        maven {
+            url "https://mirrors.tencent.com/repository/maven/thirdparty-snapshots"
+        }
         google()
         mavenCentral()
     }
@@ -40,6 +58,24 @@ buildscript {
 
 allprojects {
     repositories {
+        maven {
+            url "https://mirrors.tencent.com/nexus/repository/maven-public/"
+        }
+        maven {
+            url "https://mirrors.tencent.com/nexus/repository/maven-public/"
+        }
+        maven {
+            url "https://mirrors.tencent.com/repository/maven/tencent_public"
+        }
+        maven {
+            url "https://mirrors.tencent.com/repository/maven/tencent_public_snapshots"
+        }
+        maven {
+            url "https://mirrors.tencent.com/repository/maven/thirdparty"
+        }
+        maven {
+            url "https://mirrors.tencent.com/repository/maven/thirdparty-snapshots"
+        }
         google()
         mavenCentral()
     }

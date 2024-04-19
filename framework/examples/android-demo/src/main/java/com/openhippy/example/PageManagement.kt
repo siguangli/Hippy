@@ -172,6 +172,7 @@ class PageManagement : AppCompatActivity() {
             PageConfiguration.DriverMode.JS_REACT -> resources.getText(R.string.react)
             PageConfiguration.DriverMode.JS_VUE_2 -> resources.getText(R.string.vue2)
             PageConfiguration.DriverMode.JS_VUE_3 -> resources.getText(R.string.vue3)
+            PageConfiguration.DriverMode.VIDEO_ALBUM_SQUARE -> resources.getText(R.string.video_album_square)
             PageConfiguration.DriverMode.VL -> resources.getText(R.string.driver_js_vl)
         }
     }

@@ -33,13 +33,14 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.WindowInsetsControllerCompat
+import com.openhippy.example.ResHub.RES_VIDEO_ALBUM_SQUARE
 import com.tencent.mtt.hippy.HippyEngine
 import com.tencent.mtt.hippy.utils.LogUtils
 
 class PageConfiguration : AppCompatActivity(), View.OnClickListener {
 
     enum class DriverMode {
-        JS_REACT, JS_VUE_2, JS_VUE_3, VL
+        JS_REACT, JS_VUE_2, JS_VUE_3, VIDEO_ALBUM_SQUARE, VL
     }
 
     enum class RenderMode {
@@ -90,9 +91,7 @@ class PageConfiguration : AppCompatActivity(), View.OnClickListener {
     }
 
     override fun onStop() {
-        hippyEngineWrapper?.let {
-            it.onStop()
-        }
+        hippyEngineWrapper?.onStop()
         super.onStop()
     }
 
@@ -319,10 +318,17 @@ class PageConfiguration : AppCompatActivity(), View.OnClickListener {
         val driverJSReact = driverSetting.findViewById<View>(R.id.page_configuration_driver_react)
         val driverJSVue2 = driverSetting.findViewById<View>(R.id.page_configuration_driver_vue2)
         val driverJSVue3 = driverSetting.findViewById<View>(R.id.page_configuration_driver_vue3)
+        val driverJSVideoAlbumSquare = driverSetting.findViewById<View>(R.id.page_configuration_driver_video_album_square)
+        val resLoadState = ResHub.checkResLoadState()
+        if (resLoadState == ResHub.ResLoadState.ALL_SUCCESS
+            || (resLoadState == ResHub.ResLoadState.HAS_FAILED && !ResHub.isResLoadFailed(RES_VIDEO_ALBUM_SQUARE))) {
+            (driverJSVideoAlbumSquare as? TextView)?.setTextColor(resources.getColor(R.color.available))
+        }
         val driverVL = driverSetting.findViewById<View>(R.id.page_configuration_driver_vl)
         driverJSReact.setOnClickListener(this)
         driverJSVue2.setOnClickListener(this)
         driverJSVue3.setOnClickListener(this)
+        driverJSVideoAlbumSquare.setOnClickListener(this)
         driverVL.setOnClickListener(this)
         dialog?.setContentView(driverSetting)
         val dialogWindow = dialog?.window
@@ -350,6 +356,20 @@ class PageConfiguration : AppCompatActivity(), View.OnClickListener {
                 (driverSettingText as TextView).text = resources.getText(R.string.driver_js_vue3)
                 dialog?.dismiss()
             }
+            R.id.page_configuration_driver_video_album_square -> {
+                val resLoadState = ResHub.checkResLoadState()
+                if (resLoadState == ResHub.ResLoadState.ALL_SUCCESS
+                    || (resLoadState == ResHub.ResLoadState.HAS_FAILED && !ResHub.isResLoadFailed(RES_VIDEO_ALBUM_SQUARE))) {
+                    driverMode = DriverMode.VIDEO_ALBUM_SQUARE
+                    (driverSettingText as TextView).text = resources.getText(R.string.driver_js_video_album_square)
+                    dialog?.dismiss()
+                } else if (resLoadState == ResHub.ResLoadState.LOADING) {
+                    showErrorMessage(resources.getText(R.string.resource_loading))
+                } else {
+                    val resLoadMessage = ResHub.getResLoadErrorMessage(RES_VIDEO_ALBUM_SQUARE)
+                    resLoadMessage?.let { showErrorMessage(it) }
+                }
+            }
             R.id.page_configuration_renderer_native -> {
                 renderMode = RenderMode.NATIVE
                 (rendererSettingText as TextView).text = resources.getText(R.string.renderer_native)
@@ -358,24 +378,27 @@ class PageConfiguration : AppCompatActivity(), View.OnClickListener {
             R.id.page_configuration_renderer_tdf_core,
             R.id.page_configuration_renderer_flutter,
             R.id.page_configuration_driver_vl -> {
-                val text = resources.getText(R.string.setting_not_available)
-                val span = SpannableString(text)
-                span.setSpan(
-                    ForegroundColorSpan(Color.BLACK),
-                    0,
-                    text.length,
-                    Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
-                )
-                val toast: Toast =
-                    Toast.makeText(
-                        this,
-                        span,
-                        Toast.LENGTH_SHORT
-                    )
-                toast.setGravity(Gravity.CENTER, 0, 0)
-                toast.show()
+                showErrorMessage(resources.getText(R.string.setting_not_available))
             }
         }
+    }
+
+    private fun showErrorMessage(text: CharSequence) {
+        val span = SpannableString(text)
+        span.setSpan(
+            ForegroundColorSpan(Color.BLACK),
+            0,
+            text.length,
+            Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+        )
+        val toast: Toast =
+            Toast.makeText(
+                this,
+                span,
+                Toast.LENGTH_SHORT
+            )
+        toast.setGravity(Gravity.CENTER, 0, 0)
+        toast.show()
     }
 
     interface SnapshotBuildCallback {

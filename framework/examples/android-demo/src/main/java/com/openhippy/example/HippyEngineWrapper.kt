@@ -23,6 +23,7 @@ import android.os.Looper
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewParent
+import com.openhippy.example.ResHub.RES_VIDEO_ALBUM_SQUARE
 import com.tencent.mtt.hippy.HippyAPIProvider
 import com.tencent.mtt.hippy.HippyEngine
 import com.tencent.mtt.hippy.HippyEngine.*
@@ -75,6 +76,11 @@ class HippyEngineWrapper//TODO: Coming soon
             }
             PageConfiguration.DriverMode.JS_VUE_3 -> {
                 initParams.coreJSAssetsPath = "vue3/vendor.android.js"
+            }
+            PageConfiguration.DriverMode.VIDEO_ALBUM_SQUARE -> {
+                val localPath = ResHub.getResLocalPath(RES_VIDEO_ALBUM_SQUARE)
+                initParams.coreJSFilePath = localPath + "vendor.android.jsbundle"
+                initParams.debugMode = false
             }
             PageConfiguration.DriverMode.VL -> {
                 //TODO: Coming soon
@@ -165,11 +171,14 @@ class HippyEngineWrapper//TODO: Coming soon
                         PageConfiguration.DriverMode.JS_VUE_3 -> {
                             loadParams.jsAssetsPath = "vue3/index.android.js"
                         }
+                        PageConfiguration.DriverMode.VIDEO_ALBUM_SQUARE -> {
+                            val localPath = ResHub.getResLocalPath(RES_VIDEO_ALBUM_SQUARE)
+                            loadParams.jsFilePath = localPath + "index.android.jsbundle"
+                        }
                         PageConfiguration.DriverMode.VL -> {
                             //TODO: Coming soon
                         }
                     }
-                    loadParams.jsFilePath = null
                     loadParams.jsParams = HippyMap()
                     loadParams.jsParams.pushString(
                         "msgFromNative",

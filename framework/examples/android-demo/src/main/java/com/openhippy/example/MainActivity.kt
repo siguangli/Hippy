@@ -15,6 +15,7 @@
 
 package com.openhippy.example
 
+import android.app.Application
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
@@ -23,6 +24,13 @@ import android.view.View
 import android.widget.ImageView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.WindowInsetsControllerCompat
+import com.tencent.mtt.hippy.utils.LogUtils
+import com.tencent.rdelivery.listener.FullReqResultListener
+import com.tencent.rdelivery.reshub.LogDebug
+import com.tencent.rdelivery.reshub.api.IRes
+import com.tencent.rdelivery.reshub.api.IResCallback
+import com.tencent.rdelivery.reshub.api.IResLoadError
+import com.tencent.rdelivery.reshub.core.ResHubCenter
 
 var appContext: Context? = null
 
@@ -38,6 +46,8 @@ class MainActivity : AppCompatActivity() {
         activityMainRoot = layoutInflater.inflate(R.layout.activity_main, null)
         intPageMain()
         setContentView(activityMainRoot)
+        ResHub.initResHub(application)
+        ResHub.loadCustomResources(this)
     }
 
     override fun onResume() {
