@@ -17,6 +17,8 @@
 package com.tencent.mtt.hippy;
 
 import android.content.Context;
+import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
 import android.os.Parcelable;
 import android.util.SparseArray;
 import android.view.View;
@@ -28,6 +30,7 @@ import androidx.annotation.Nullable;
 
 import com.tencent.mtt.hippy.dom.node.NodeProps;
 import com.tencent.mtt.hippy.uimanager.NativeViewTag;
+import com.tencent.mtt.hippy.utils.ContextHolder;
 import com.tencent.mtt.hippy.utils.LogUtils;
 
 import com.tencent.renderer.NativeRender;
@@ -42,6 +45,7 @@ import static com.tencent.renderer.NativeRenderer.SCREEN_SNAPSHOT_ROOT_ID;
 public class HippyRootView extends FrameLayout {
 
     private static final String TAG = "HippyRootView";
+    public static int changeCount = 0;
     protected boolean firstViewAdded = false;
     @Nullable
     private GlobalLayoutListener mGlobalLayoutListener;
@@ -130,6 +134,8 @@ public class HippyRootView extends FrameLayout {
         @SuppressWarnings("RedundantIfStatement")
         @Override
         public void onSystemUiVisibilityChange(int visibility) {
+            changeCount++;
+            LogUtils.e("maxli", "PageConfiguration onSystemUiVisibilityChange: visibility " + visibility);
             if ((visibility & View.SYSTEM_UI_FLAG_HIDE_NAVIGATION) == 0) {
                 checkUpdateDimension(false, true);
             } else {

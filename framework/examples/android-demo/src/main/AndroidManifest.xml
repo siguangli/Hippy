@@ -31,6 +31,7 @@
           android:name=".PageConfiguration"
           android:configChanges="orientation|screenSize|keyboardHidden"
           android:exported="false"
+          android:screenOrientation="portrait"
           android:launchMode="singleInstance">
             <meta-data
               android:name="android.app.lib_name"
@@ -40,7 +41,7 @@
           android:name=".PageManagement"
           android:configChanges="orientation|screenSize|keyboardHidden"
           android:exported="false"
-
+          android:screenOrientation="portrait"
           >
             <meta-data
               android:name="android.app.lib_name"
@@ -50,7 +51,8 @@
           android:name=".MainActivity"
           android:configChanges="orientation|screenSize|keyboardHidden"
           android:exported="true"
-          android:screenOrientation="portrait">
+          android:screenOrientation="portrait"
+          >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

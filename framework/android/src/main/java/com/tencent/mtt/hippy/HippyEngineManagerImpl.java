@@ -262,9 +262,13 @@ public abstract class HippyEngineManagerImpl extends HippyEngineManager implemen
         int dimensionW = 0;
         int dimensionH = 0;
         if (dimensionMap != null) {
+            LogUtils.e("maxli", "PageConfiguration updateDimension: dimensionMap " + dimensionMap);
             HippyMap windowMap = dimensionMap.getMap("windowPhysicalPixels");
             dimensionW = windowMap.getInt("width");
             dimensionH = windowMap.getInt("height");
+            int orientation = context.getResources().getConfiguration().orientation;
+            LogUtils.e("maxli", "PageConfiguration updateDimension: dimensionW " + dimensionW
+                    + ", dimensionH " + dimensionH + ", orientation " + orientation);
         }
         if (height < 0 || dimensionW == dimensionH) {
             HippyDeviceAdapter deviceAdapter = mEngineContext.getGlobalConfigs().getDeviceAdapter();

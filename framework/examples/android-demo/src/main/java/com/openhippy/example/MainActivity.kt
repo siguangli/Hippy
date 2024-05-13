@@ -17,7 +17,11 @@ package com.openhippy.example
 
 import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
+import android.content.pm.ActivityInfo
+import android.content.res.Configuration
 import android.os.Bundle
+import android.util.Log
 import android.view.MotionEvent
 import android.view.View
 import android.widget.ImageView
@@ -30,6 +34,10 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var activityMainRoot: View
 
+    companion object {
+        var changeCount : Int = 0
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         appContext = applicationContext
@@ -38,11 +46,32 @@ class MainActivity : AppCompatActivity() {
         activityMainRoot = layoutInflater.inflate(R.layout.activity_main, null)
         intPageMain()
         setContentView(activityMainRoot)
+        //setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT)
+    }
+
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        super.onConfigurationChanged(newConfig)
+        val sharedPreferences = getSharedPreferences("MainActivity", Context.MODE_PRIVATE)
+        val editor = sharedPreferences.edit()
+        changeCount++
+        editor.putInt("count", changeCount)
+        editor.commit()
+        Log.e("maxli", "MainActivity onConfigurationChanged: orientation " + newConfig.orientation)
     }
 
     override fun onResume() {
         super.onResume()
+        val sharedPreferences = getSharedPreferences("MainActivity", Context.MODE_PRIVATE)
+        val count = sharedPreferences.getInt("count", -1)
+        Log.e("maxli", "MainActivity onResume: count $count")
         HippyEngineHelper.clearAbandonHippyEngine()
+    }
+
+    override fun onStop() {
+        super.onStop()
+        val sharedPreferences = getSharedPreferences("MainActivity", Context.MODE_PRIVATE)
+        val count = sharedPreferences.getInt("count", -1)
+        Log.e("maxli", "MainActivity onResume: count $count")
     }
 
     private fun intPageMain() {

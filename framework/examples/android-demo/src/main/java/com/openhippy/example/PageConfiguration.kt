@@ -16,6 +16,9 @@
 package com.openhippy.example
 
 import android.app.Dialog
+import android.content.Context
+import android.content.pm.ActivityInfo
+import android.content.res.Configuration
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Color
@@ -27,6 +30,7 @@ import android.os.Looper
 import android.text.SpannableString
 import android.text.Spanned
 import android.text.style.ForegroundColorSpan
+import android.util.Log
 import android.view.*
 import android.widget.ImageView
 import android.widget.TextView
@@ -35,6 +39,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.AppCompatEditText
 import androidx.core.view.WindowInsetsControllerCompat
 import com.tencent.mtt.hippy.HippyEngine
+import com.tencent.mtt.hippy.HippyRootView
 import com.tencent.mtt.hippy.utils.LogUtils
 
 class PageConfiguration : AppCompatActivity(), View.OnClickListener {
@@ -88,6 +93,13 @@ class PageConfiguration : AppCompatActivity(), View.OnClickListener {
         initSettingView()
         hasRunOnCreate = true
         setContentView(pageConfigurationRoot)
+        //setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT)
+        //pageConfigurationRoot.postDelayed({ setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE) }, 5000)
+    }
+
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        super.onConfigurationChanged(newConfig)
+        Log.e("maxli", "PageConfiguration onConfigurationChanged: orientation " + newConfig.orientation)
     }
 
     override fun onStop() {
@@ -95,9 +107,11 @@ class PageConfiguration : AppCompatActivity(), View.OnClickListener {
             it.onStop()
         }
         super.onStop()
+        Log.e("maxli", "PageConfiguration onStop: count ${HippyRootView.changeCount}")
     }
 
     override fun onResume() {
+        Log.e("maxli", "PageConfiguration onResume: count ${HippyRootView.changeCount}")
         if (!hasRunOnCreate) {
             (pageConfigurationContainer as ViewGroup).removeAllViews()
             if (currentEngineId == -1) {
