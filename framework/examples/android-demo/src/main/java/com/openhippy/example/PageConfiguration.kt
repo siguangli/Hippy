@@ -107,11 +107,13 @@ class PageConfiguration : AppCompatActivity(), View.OnClickListener {
             it.onStop()
         }
         super.onStop()
-        Log.e("maxli", "PageConfiguration onStop: count ${HippyRootView.changeCount}")
+        Log.e("maxli", "PageConfiguration onStop: systemUi count ${HippyRootView.systemUiCount}, " +
+                "globalLayout count ${HippyRootView.globalLayoutCount}")
     }
 
     override fun onResume() {
-        Log.e("maxli", "PageConfiguration onResume: count ${HippyRootView.changeCount}")
+        Log.e("maxli", "PageConfiguration onResume: systemUi count ${HippyRootView.systemUiCount}, " +
+                "globalLayout count ${HippyRootView.globalLayoutCount}")
         if (!hasRunOnCreate) {
             (pageConfigurationContainer as ViewGroup).removeAllViews()
             if (currentEngineId == -1) {

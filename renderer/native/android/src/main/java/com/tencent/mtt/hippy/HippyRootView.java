@@ -45,7 +45,8 @@ import static com.tencent.renderer.NativeRenderer.SCREEN_SNAPSHOT_ROOT_ID;
 public class HippyRootView extends FrameLayout {
 
     private static final String TAG = "HippyRootView";
-    public static int changeCount = 0;
+    public static int systemUiCount = 0;
+    public static int globalLayoutCount = 0;
     protected boolean firstViewAdded = false;
     @Nullable
     private GlobalLayoutListener mGlobalLayoutListener;
@@ -91,6 +92,7 @@ public class HippyRootView extends FrameLayout {
     @Override
     protected void onSizeChanged(int w, int h, int ow, int oh) {
         super.onSizeChanged(w, h, ow, oh);
+        LogUtils.e("maxli", "=============onSizeChanged: w " + w + ", h " + h + ", ow " + ow + ", oh " + oh);
         NativeRender nativeRenderer = NativeRendererManager.getNativeRenderer(getContext());
         if ((w != ow || h != oh) && nativeRenderer != null) {
             nativeRenderer.updateDimension(w, h, false, false);
@@ -134,8 +136,8 @@ public class HippyRootView extends FrameLayout {
         @SuppressWarnings("RedundantIfStatement")
         @Override
         public void onSystemUiVisibilityChange(int visibility) {
-            changeCount++;
-            LogUtils.e("maxli", "PageConfiguration onSystemUiVisibilityChange: visibility " + visibility);
+            systemUiCount++;
+            LogUtils.e("maxli", "=============onSystemUiVisibilityChange: visibility " + visibility);
             if ((visibility & View.SYSTEM_UI_FLAG_HIDE_NAVIGATION) == 0) {
                 checkUpdateDimension(false, true);
             } else {
@@ -147,6 +149,8 @@ public class HippyRootView extends FrameLayout {
         public void onGlobalLayout() {
             if (getContext() != null) {
                 int orientation = getContext().getResources().getConfiguration().orientation;
+                globalLayoutCount++;
+                LogUtils.e("maxli", "=============onGlobalLayout: orientation " + orientation);
                 if (orientation != mOrientation) {
                     mOrientation = orientation;
                     sendOrientationChangeEvent(mOrientation);
