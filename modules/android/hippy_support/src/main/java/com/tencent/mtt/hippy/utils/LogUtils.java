@@ -82,6 +82,12 @@ public class LogUtils {
         }
     }
 
+    public static void e(String tag, String msg, CharSequence text) {
+        if (text != null && text.equals("要闻主编精选")) {
+            Log.e(tag, msg);
+        }
+    }
+
     public static void e(String tag, String msg) {
         Log.e(tag, msg);
     }

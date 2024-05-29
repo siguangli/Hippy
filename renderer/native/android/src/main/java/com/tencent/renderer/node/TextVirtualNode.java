@@ -40,6 +40,7 @@ import androidx.annotation.RequiresApi;
 import com.tencent.mtt.hippy.annotation.HippyControllerProps;
 import com.tencent.mtt.hippy.dom.node.NodeProps;
 import com.tencent.mtt.hippy.utils.I18nUtil;
+import com.tencent.mtt.hippy.utils.LogUtils;
 import com.tencent.mtt.hippy.utils.PixelUtil;
 import com.tencent.renderer.NativeRender;
 import com.tencent.renderer.component.text.FontAdapter;
@@ -549,6 +550,8 @@ public class TextVirtualNode extends VirtualNode {
 
     @NonNull
     protected Layout createLayout(final float width, final FlexMeasureMode widthMode) {
+        LogUtils.e("maxli", "===============================", mText);
+        LogUtils.e("maxli", "createLayout: width: " + width + ", mode " + widthMode, mText);
         if (mSpanned == null || mDirty) {
             mSpanned = createSpan(true);
             mDirty = false;
@@ -556,13 +559,16 @@ public class TextVirtualNode extends VirtualNode {
                 && width <= (mLastLayoutWidth + 1)) {
             // If the property of text node no change, and the current layout width is equal
             // to the last measurement result, no need to create layout again.
+            LogUtils.e("maxli", "return mLayout: mLastLayoutWidth: " + mLastLayoutWidth, mText);
             return mLayout;
         }
         final TextPaint textPaint = getTextPaint();
         Layout layout;
         BoringLayout.Metrics boring = BoringLayout.isBoring(mSpanned, textPaint);
         boolean unconstrainedWidth = (widthMode == FlexMeasureMode.UNDEFINED) || width < 0;
+        LogUtils.e("maxli", "unconstrainedWidth: " + unconstrainedWidth, mText);
         if (boring != null && (unconstrainedWidth || boring.width <= width)) {
+            LogUtils.e("maxli", "boring != null: boring.width " + boring.width, mText);
             layout = BoringLayout
                     .make(mSpanned, textPaint, boring.width, mAlignment,
                             getLineSpacingMultiplier(), mLineSpacingExtra, boring, true);
@@ -572,7 +578,10 @@ public class TextVirtualNode extends VirtualNode {
                     || desiredWidth > width)) {
                 desiredWidth = width;
             }
+            LogUtils.e("maxli", "desiredWidth: " + desiredWidth, mText);
             layout = buildStaticLayout(mSpanned, textPaint, (int) Math.ceil(desiredWidth));
+            LogUtils.e("maxli", "mNumberOfLines: " + mNumberOfLines
+                    + ", layout.getLineCount() " + layout.getLineCount(), mText);
             if (mNumberOfLines > 0 && layout.getLineCount() > mNumberOfLines) {
                 int lastLineStart = layout.getLineStart(mNumberOfLines - 1);
                 int lastLineEnd = layout.getLineEnd(mNumberOfLines - 1);
@@ -600,6 +609,7 @@ public class TextVirtualNode extends VirtualNode {
         }
         mLayout = layout;
         mLastLayoutWidth = layout.getWidth();
+        LogUtils.e("maxli", "layout.getWidth(): " + layout.getWidth(), mText);
         return layout;
     }
 
