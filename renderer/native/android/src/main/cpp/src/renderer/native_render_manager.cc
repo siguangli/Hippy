@@ -525,6 +525,11 @@ void NativeRenderManager::CallNativeMethod(const std::string& method, uint32_t r
   jobject j_buffer;
   auto j_size = footstone::check::checked_numeric_cast<size_t, jint>(buffer.second);
   j_buffer = j_env->NewByteArray(j_size);
+  if (!j_buffer) {
+    FOOTSTONE_LOG(ERROR) << "CallNativeMethod j_buffer error " << j_size << "!!!";
+    FOOTSTONE_DCHECK(false);
+    return;
+  }
   j_env->SetByteArrayRegion(reinterpret_cast<jbyteArray>(j_buffer), 0, j_size,
                             reinterpret_cast<const jbyte*>(buffer.first));
 
