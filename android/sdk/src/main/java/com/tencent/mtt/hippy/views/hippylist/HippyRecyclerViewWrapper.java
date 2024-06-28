@@ -109,6 +109,10 @@ public class HippyRecyclerViewWrapper<HRCV extends HippyRecyclerView> extends Fr
         recyclerView.scrollToTop();
     }
 
+    public void stopScroll() {
+        recyclerView.stopScroll();
+    }
+
     public void setRowShouldSticky(boolean enable) {
         recyclerView.setRowShouldSticky(enable);
     }

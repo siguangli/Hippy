@@ -158,6 +158,9 @@ function registerWaterfall(Vue) {
       startLoadMore() {
         this.call('startLoadMore');
       },
+      stopScroll() {
+        this.call('stopScroll');
+      },
     },
     render(h) {
       const on = getEventRedirector.call(this, [
@@ -167,6 +170,7 @@ function registerWaterfall(Vue) {
         'exposureReport',
         'initialListReady',
         'scroll',
+        'momentumScrollBegin',
       ]);
       return h(
         'hi-waterfall',

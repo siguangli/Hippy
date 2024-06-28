@@ -28,6 +28,7 @@ import com.tencent.mtt.hippy.uimanager.ControllerManager;
 import com.tencent.mtt.hippy.uimanager.HippyViewController;
 import com.tencent.mtt.hippy.uimanager.RenderNode;
 import com.tencent.mtt.hippy.utils.PixelUtil;
+import com.tencent.mtt.hippy.views.list.HippyListView;
 import com.tencent.mtt.supportui.views.recyclerview.IRecyclerViewFooter;
 
 @HippyController(name = WaterFallComponentName.CONTAINER)
@@ -169,6 +170,11 @@ public class HippyWaterfallViewController extends HippyViewController<HippyWater
     listView.setScrollEventThrottle(scrollEventThrottle);
   }
 
+  @HippyControllerProps(name = "onMomentumScrollBegin", defaultType = HippyControllerProps.BOOLEAN)
+  public void setMomentumScrollBeginEventEnable(HippyWaterfallView view, boolean flag) {
+    view.setMomentumScrollBeginEventEnable(flag);
+  }
+
   // #lizard forgives
   @Override
   public void dispatchFunction(HippyWaterfallView listView, String functionName,
@@ -180,6 +186,10 @@ public class HippyWaterfallViewController extends HippyViewController<HippyWater
     String text;
     int refreshResult;
     switch (functionName) {
+      case "stopScroll": {
+        listView.stopScroll();
+        break;
+      }
       case "endReachedCompleted": { // 加载更多完成
         status = dataArray.getInt(0);
         text = dataArray.getString(1);
