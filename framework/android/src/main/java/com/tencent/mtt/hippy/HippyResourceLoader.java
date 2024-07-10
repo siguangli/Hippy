@@ -112,6 +112,8 @@ public class HippyResourceLoader implements ResourceLoader {
         } else if (UrlUtils.isAssetsUrl(holder.uri)) {
             isAssetsFile = true;
             fileName = holder.uri.substring(PREFIX_ASSETS.length());
+        } else if (UrlUtils.isAppFileUrl(holder.uri)) {
+            fileName = UrlUtils.getAppFilePath(holder.uri, ContextHolder.getAppContext());
         } else {
             holder.resultCode = FetchResultCode.ERR_UNKNOWN_SCHEME.ordinal();
             return;
