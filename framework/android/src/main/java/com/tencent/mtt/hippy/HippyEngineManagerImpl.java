@@ -15,6 +15,8 @@
 
 package com.tencent.mtt.hippy;
 
+import static com.tencent.mtt.hippy.common.LogAdapter.LOG_SEVERITY_WARNING;
+
 import android.content.Context;
 import android.text.TextUtils;
 import android.view.View;
@@ -28,6 +30,7 @@ import com.openhippy.connector.NativeRenderConnector;
 import com.openhippy.connector.RenderConnector;
 import com.openhippy.framework.BuildConfig;
 import com.tencent.devtools.DevtoolsManager;
+import com.tencent.mtt.hippy.adapter.HippyLogAdapter;
 import com.tencent.mtt.hippy.adapter.device.HippyDeviceAdapter;
 import com.tencent.mtt.hippy.adapter.executor.HippyExecutorSupplierAdapter;
 import com.tencent.mtt.hippy.adapter.thirdparty.HippyThirdPartyAdapter;
@@ -157,6 +160,11 @@ public abstract class HippyEngineManagerImpl extends HippyEngineManager implemen
             mEventListeners.add(listener);
         }
         try {
+            HippyLogAdapter logAdapter = mGlobalConfigs.getLogAdapter();
+            if (logAdapter != null) {
+                String msg = "initEngine: engine id " + getEngineId();
+                logAdapter.onReceiveLogMessage(LOG_SEVERITY_WARNING, HippyEngine.TAG, msg);
+            }
             mDevSupportManager = new DevSupportManager(mGlobalConfigs, mDebugMode, mServerHost,
                     mServerBundleName, mRemoteServerUrl);
             mDevSupportManager.setDevCallback(this);
@@ -190,6 +198,12 @@ public abstract class HippyEngineManagerImpl extends HippyEngineManager implemen
     protected void onDestroyEngine() {
         mCurrentState = EngineState.DESTROYED;
         if (mEngineContext != null) {
+            HippyLogAdapter logAdapter = mGlobalConfigs.getLogAdapter();
+            if (logAdapter != null) {
+                String msg = "onDestroyEngine: engine id " + getEngineId() + ", root id " + ((mRootView != null) ? mRootView.getId() : -1)
+                        + ", componentName " + mEngineContext.getComponentName();
+                logAdapter.onReceiveLogMessage(LOG_SEVERITY_WARNING, HippyEngine.TAG, msg);
+            }
             mEngineContext.destroy(false);
         }
         if (moduleLoadParams != null && moduleLoadParams.nativeParams != null) {
@@ -463,6 +477,12 @@ public abstract class HippyEngineManagerImpl extends HippyEngineManager implemen
         }
         mDestroyModuleListeners.put(rootId, callback);
         if (mEngineContext != null && mEngineContext.getBridgeManager() != null) {
+            HippyLogAdapter logAdapter = mGlobalConfigs.getLogAdapter();
+            if (logAdapter != null) {
+                String msg = "destroyInstance: engine id " + getEngineId() + ", root id " + rootId
+                        + ", componentName " + mEngineContext.getComponentName();
+                logAdapter.onReceiveLogMessage(LOG_SEVERITY_WARNING, HippyEngine.TAG, msg);
+            }
             mEngineContext.getBridgeManager().destroyInstance(rootId);
         }
     }

@@ -16,15 +16,20 @@
 
 package com.tencent.mtt.hippy.modules;
 
+import static com.tencent.mtt.hippy.common.LogAdapter.LOG_SEVERITY_WARNING;
+
 import android.os.Handler;
 import android.os.Message;
 
+import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.tencent.mtt.hippy.HippyAPIProvider;
+import com.tencent.mtt.hippy.HippyEngine;
 import com.tencent.mtt.hippy.HippyEngineContext;
 import com.tencent.mtt.hippy.HippyInstanceLifecycleEventListener;
+import com.tencent.mtt.hippy.adapter.HippyLogAdapter;
 import com.tencent.mtt.hippy.adapter.monitor.HippyEngineMonitorAdapter;
 import com.tencent.mtt.hippy.annotation.HippyNativeModule;
 import com.tencent.mtt.hippy.bridge.HippyCallNativeParams;
@@ -46,6 +51,7 @@ import com.tencent.mtt.hippy.utils.ArgumentUtils;
 import com.tencent.mtt.hippy.utils.LogUtils;
 
 import com.tencent.mtt.hippy.utils.UIThreadUtils;
+import java.lang.ref.WeakReference;
 import java.lang.reflect.Proxy;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
@@ -438,13 +444,33 @@ public class HippyModuleManagerImpl implements HippyModuleManager, Handler.Callb
     }
 
     private void removeRootView(@NonNull final JSDenseArray roots) {
+        final WeakReference<HippyEngineContext> engineContextRef = new WeakReference<>(mContext);
         UIThreadUtils.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                if (roots.size() > 0) {
-                    Object valueObj = roots.get(0);
-                    if (valueObj instanceof Integer) {
-                        ((HippyInstanceLifecycleEventListener) mContext).onInstanceDestroy((Integer) valueObj);
+                HippyEngineContext engineContext = engineContextRef.get();
+                if (engineContext != null) {
+                    HippyLogAdapter logAdapter = engineContext.getGlobalConfigs().getLogAdapter();
+                    if (roots != null && roots.size() > 0) {
+                        Object valueObj = roots.get(0);
+                        if (valueObj instanceof Integer) {
+                            if (logAdapter != null) {
+                                String msg = "removeRootView: engine id " + engineContext.getEngineId() + ", root id "
+                                        + ((Integer) valueObj) + ", componentName " + engineContext.getComponentName();;
+                                logAdapter.onReceiveLogMessage(LOG_SEVERITY_WARNING, HippyEngine.TAG, msg);
+                            }
+                            ((HippyInstanceLifecycleEventListener) engineContext).onInstanceDestroy((Integer) valueObj);
+                        }
+                    } else {
+                        ViewGroup rootView = engineContext.getRootView();
+                        if (rootView != null) {
+                            if (logAdapter != null) {
+                                String msg = "removeRootView: engine id " + engineContext.getEngineId() + ", root id "
+                                        + rootView.getId() + ", componentName " + engineContext.getComponentName();;
+                                logAdapter.onReceiveLogMessage(LOG_SEVERITY_WARNING, HippyEngine.TAG, msg);
+                            }
+                            ((HippyInstanceLifecycleEventListener) engineContext).onInstanceDestroy(rootView.getId());
+                        }
                     }
                 }
             }

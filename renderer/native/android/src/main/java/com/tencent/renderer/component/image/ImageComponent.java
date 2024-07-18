@@ -253,7 +253,7 @@ public class ImageComponent extends Component {
             }
         }
         imageHolder.attached();
-        if (mImageLoader != null) {
+        if (mImageLoader != null && !loadFromCache) {
             mImageLoader.saveImageToCache(imageHolder);
         }
         postInvalidateDelayed(0);

@@ -68,6 +68,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 @SuppressWarnings({"deprecation", "unused", "rawtypes"})
 public abstract class HippyEngine {
+  public static final String TAG = "HippyEngine";
   private static final AtomicInteger ID_COUNTER = new AtomicInteger();
   private final int engineId = ID_COUNTER.getAndIncrement();
 

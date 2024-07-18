@@ -19,12 +19,14 @@ package com.openhippy.pool;
 import android.util.LruCache;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import com.tencent.mtt.hippy.utils.LogUtils;
+import java.lang.ref.WeakReference;
 
 public class ImageDataPool extends BasePool<ImageDataKey, ImageRecycleObject> {
 
-    private static final int DEFAULT_IMAGE_POOL_SIZE = 16;
+    private static final int DEFAULT_IMAGE_POOL_SIZE = 8;
     private final Object mLock = new Object();
-    private LruCache<ImageDataKey, ImageRecycleObject> mPools;
+    private LruCache<ImageDataKey, WeakReference<ImageRecycleObject>> mPools;
 
     public ImageDataPool() {
         init(DEFAULT_IMAGE_POOL_SIZE);
@@ -36,11 +38,11 @@ public class ImageDataPool extends BasePool<ImageDataKey, ImageRecycleObject> {
     }
 
     private void init(int size) {
-        mPools = new LruCache<ImageDataKey, ImageRecycleObject>(
+        mPools = new LruCache<ImageDataKey, WeakReference<ImageRecycleObject>>(
                 size) {
             @Override
             protected void entryRemoved(boolean evicted, @NonNull ImageDataKey key,
-                    @NonNull ImageRecycleObject oldValue, @Nullable ImageRecycleObject newValue) {
+                    @NonNull WeakReference<ImageRecycleObject> oldValue, @Nullable WeakReference<ImageRecycleObject> newValue) {
                 if (evicted) {
                     onEntryEvicted(oldValue);
                 }
@@ -52,12 +54,18 @@ public class ImageDataPool extends BasePool<ImageDataKey, ImageRecycleObject> {
     @Nullable
     public ImageRecycleObject acquire(@NonNull ImageDataKey key) {
         synchronized (mLock) {
-            ImageRecycleObject data = mPools.get(key);
-            if (data != null && data.isScraped()) {
+            WeakReference<ImageRecycleObject> dataRef = mPools.get(key);
+            if (dataRef == null) {
+                return null;
+            }
+            ImageRecycleObject data = dataRef.get();
+            if (data == null || (data != null && data.isScraped())) {
                 // Bitmap may have been recycled, must be removed from the cache and not
                 // returned to the component.
                 mPools.remove(key);
-                data.evicted();
+                if (data != null) {
+                    data.evicted();
+                }
                 return null;
             }
             return data;
@@ -75,7 +83,7 @@ public class ImageDataPool extends BasePool<ImageDataKey, ImageRecycleObject> {
     @Override
     public void release(@NonNull ImageDataKey key, @NonNull ImageRecycleObject data) {
         synchronized (mLock) {
-            mPools.put(key, data);
+            mPools.put(key, new WeakReference<>(data));
             data.cached();
         }
     }
@@ -94,7 +102,10 @@ public class ImageDataPool extends BasePool<ImageDataKey, ImageRecycleObject> {
         }
     }
 
-    private void onEntryEvicted(@NonNull ImageRecycleObject data) {
-        data.evicted();
+    private void onEntryEvicted(@NonNull WeakReference<ImageRecycleObject> dataRef) {
+        ImageRecycleObject data = dataRef.get();
+        if (data != null) {
+            data.evicted();
+        }
     }
 }
