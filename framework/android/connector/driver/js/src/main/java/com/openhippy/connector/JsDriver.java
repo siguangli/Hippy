@@ -22,6 +22,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import java.lang.ref.WeakReference;
 import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
 
 @SuppressWarnings("JavaJniMissingFunction")
 public class JsDriver implements Connector {
@@ -135,6 +137,11 @@ public class JsDriver implements Connector {
         attachToRoot(mInstanceId, root.getId());
     }
 
+    public void registerGlobalProperty(@NonNull String key, @NonNull String properties) {
+        byte[] globalProperties = properties.getBytes(StandardCharsets.UTF_16LE);
+        registerGlobalProperty(mInstanceId, key, globalProperties);
+    }
+
     /**
      * Will call native jni to connect driver runtime with root node.
      *
@@ -176,4 +183,6 @@ public class JsDriver implements Connector {
 
     private native void onResourceLoadEnd(int instanceId, String uri, long startTime, long endTime,
             long retCode, String errorMsg);
+
+    private native void registerGlobalProperty(int instanceId, String key, byte[] propertyBytes);
 }

@@ -49,6 +49,10 @@ class JsDriverUtils {
                                                                 int64_t group_id,
                                                                 bool is_reload);
 
+  static void RegisterGlobalProperty(const std::shared_ptr<Scope>& scope,
+                                     const string_view& property_key,
+                                     const string_view& property_data);
+
   static void InitInstance(const std::shared_ptr<Engine>& engine,
                            const std::shared_ptr<VMInitParam>& param,
                            const string_view& global_config,

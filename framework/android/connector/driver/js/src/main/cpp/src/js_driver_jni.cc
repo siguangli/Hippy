@@ -106,6 +106,11 @@ REGISTER_JNI("com/openhippy/connector/JsDriver", // NOLINT(cert-err58-cpp)
              SetDomManager)
 
 REGISTER_JNI("com/openhippy/connector/JsDriver", // NOLINT(cert-err58-cpp)
+             "registerGlobalProperty",
+             "(ILjava/lang/String;[B)V",
+             RegisterGlobalProperty)
+
+REGISTER_JNI("com/openhippy/connector/JsDriver", // NOLINT(cert-err58-cpp)
              "onNativeInitEnd",
              "(IJJ)V",
              OnNativeInitEnd)
@@ -569,6 +574,18 @@ void SetDomManager(__unused JNIEnv* j_env,
 
   auto scope = GetScope(j_scope_id);
   scope->SetDomManager(dom_manager_object);
+}
+
+void RegisterGlobalProperty(__unused JNIEnv* j_env,
+                   __unused jobject j_obj,
+                   jint j_scope_id,
+                   jstring j_property_key,
+                   jbyteArray j_property_data) {
+  auto property_data = JniUtils::JByteArrayToStrView(j_env, j_property_data);
+  auto property_key = JniUtils::ToStrView(j_env, j_property_key);
+  auto scope = GetScope(j_scope_id);
+  if (scope == nullptr) return;
+  JsDriverUtils::RegisterGlobalProperty(scope, property_key, property_data);
 }
 
 static jint JNI_OnLoad(__unused JavaVM* j_vm, __unused void* reserved) {

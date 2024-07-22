@@ -65,6 +65,7 @@ import com.tencent.mtt.hippy.modules.javascriptmodules.EventDispatcher;
 import com.tencent.mtt.hippy.modules.nativemodules.deviceevent.DeviceEventModule;
 import com.tencent.mtt.hippy.uimanager.HippyCustomViewCreator;
 import com.tencent.mtt.hippy.uimanager.RenderManager;
+import com.tencent.mtt.hippy.utils.ArgumentUtils;
 import com.tencent.mtt.hippy.utils.DimensionsUtil;
 import com.tencent.mtt.hippy.utils.LogUtils;
 import com.tencent.mtt.hippy.utils.PixelUtil;
@@ -377,6 +378,13 @@ public abstract class HippyEngineManagerImpl extends HippyEngineManager implemen
     public void removeSnapshotView() {
         if (mEngineContext != null) {
             mEngineContext.getRenderer().removeSnapshotView();
+        }
+    }
+
+    public void registerGlobalProperty(@NonNull String key, @NonNull Object value) {
+        if (mEngineContext != null) {
+            String properties = ArgumentUtils.objectToJson(value);
+            mEngineContext.getJsDriver().registerGlobalProperty(key, properties);
         }
     }
 

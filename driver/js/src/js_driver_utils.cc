@@ -182,6 +182,28 @@ void RegisterGlobalObjectAndGlobalConfig(const std::shared_ptr<Scope>& scope, co
   FOOTSTONE_CHECK(flag) << "set " << kNativeGlobalKey << " failed";
 }
 
+void JsDriverUtils::RegisterGlobalProperty(const std::shared_ptr<Scope>& scope, const string_view& property_key, const string_view& property_data) {
+  auto runner = scope->GetTaskRunner();
+  std::weak_ptr<Scope> weak_scope = scope;
+  auto callback = [weak_scope, property_key, property_data] {
+    std::shared_ptr<Scope> scope = weak_scope.lock();
+    if (!scope) {
+      return;
+    }
+    auto ctx = scope->GetContext();
+    auto global_object = ctx->GetGlobalObject();
+    auto native_global_key = ctx->CreateString(kNativeGlobalKey);
+    auto native_global_object = ctx->GetProperty(global_object, native_global_key);
+    auto engine = scope->GetEngine().lock();
+    FOOTSTONE_CHECK(engine);
+    auto native_property_object = engine->GetVM()->ParseJson(ctx, property_data);
+    auto native_property_key = ctx->CreateString(property_key);
+    auto flag = ctx->SetProperty(native_global_object, native_property_key, native_property_object);
+    FOOTSTONE_CHECK(flag) << "set " << property_key << " failed";
+  };
+  runner->PostTask(std::move(callback));
+}
+
 void RegisterCallHostObject(const std::shared_ptr<Scope>& scope, const JsCallback& call_host_callback) {
   auto func_wrapper = std::make_unique<hippy::napi::FunctionWrapper>(call_host_callback, nullptr);
   auto ctx = scope->GetContext();

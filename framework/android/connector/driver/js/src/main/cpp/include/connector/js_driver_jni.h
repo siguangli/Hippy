@@ -85,6 +85,12 @@ void SetDomManager(JNIEnv* j_env,
                    jint j_runtime_id,
                    jint j_dom_manager_id);
 
+void RegisterGlobalProperty(JNIEnv* j_env,
+                            __unused jobject j_obj,
+                            jint j_runtime_id,
+                            jstring j_property_key,
+                            jbyteArray j_global_properties);
+
 void OnNativeInitEnd(JNIEnv* j_env, jobject j_object, jint j_scope_id, jlong startTime, jlong endTime);
 
 void OnFirstPaintEnd(JNIEnv* j_env, jobject j_object, jint j_scope_id, jlong time);

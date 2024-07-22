@@ -216,6 +216,8 @@ public abstract class HippyEngine {
 
     public abstract void removeSnapshotView();
 
+    public abstract void registerGlobalProperty(@NonNull String key, @NonNull Object value);
+
     /**
      * Generate screenshots of specified views
      *
