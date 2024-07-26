@@ -19,6 +19,7 @@ package com.tencent.renderer.node;
 import androidx.annotation.Nullable;
 
 import com.tencent.mtt.hippy.uimanager.ControllerManager;
+import com.tencent.mtt.hippy.utils.LogUtils;
 import java.util.Map;
 
 public class ListViewRenderNode extends RenderNode {
@@ -29,9 +30,12 @@ public class ListViewRenderNode extends RenderNode {
     }
 
     @Override
-    protected void addChildToPendingList(RenderNode node) {
-        // Since the recycler view of the system will automatically complete add sub views,
-        // we don't need to deal with it in this function
+    public void batchComplete() {
+        for(int i = 0; i < mChildren.size(); i++) {
+            RenderNode node = mChildren.get(i);
+            LogUtils.e("maxli", "batchComplete: id " + node.getId() + ", index " + i);
+        }
+        super.batchComplete();
     }
 
     @Override
