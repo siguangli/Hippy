@@ -15,26 +15,23 @@
  */
 package com.tencent.mtt.hippy.views.refresh;
 
-import static android.widget.LinearLayout.VERTICAL;
-
 import android.content.Context;
 import android.view.View;
-import com.tencent.mtt.hippy.views.view.HippyViewGroup;
 import java.lang.ref.WeakReference;
 
-public class RefreshWrapperItemView extends HippyViewGroup {
+public class RefreshWrapperFooterItemView extends RefreshWrapperItemView {
 
-  protected boolean mIsVertical = true;
+  protected WeakReference<View> mContentViewRef;
 
-  public RefreshWrapperItemView(Context context) {
+  public RefreshWrapperFooterItemView(Context context) {
     super(context);
   }
 
-  public void setOrientation(int orientationMode) {
-    mIsVertical = (orientationMode == VERTICAL);
+  public void setContentView(View contentView) {
+    mContentViewRef = new WeakReference<>(contentView);
   }
 
-  public boolean isVertical () {
-    return mIsVertical;
+  public View getContentView() {
+    return (mContentViewRef != null) ? mContentViewRef.get() : null;
   }
 }

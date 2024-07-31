@@ -22,26 +22,29 @@ import com.tencent.mtt.hippy.uimanager.ControllerRegistry;
 import com.tencent.mtt.hippy.views.view.HippyViewGroupController;
 
 @SuppressWarnings({"unused"})
-@HippyController(name = "RefreshWrapperItemView")
-public class RefreshWrapperItemController extends HippyViewGroupController {
+@HippyController(name = "RefreshWrapperFooterItemView")
+public class RefreshWrapperFooterItemController extends HippyViewGroupController {
 
   @Override
   protected View createViewImpl(Context context) {
-    return new RefreshWrapperItemView(context);
+    return new RefreshWrapperFooterItemView(context);
   }
 
   @Override
   public void updateLayout(int id, int x, int y, int width, int height,
-      ControllerRegistry componentHolder) {
+          ControllerRegistry componentHolder) {
     View view = componentHolder.getView(id);
-    boolean isVertical = true;
-    if (view instanceof RefreshWrapperItemView) {
-      isVertical = ((RefreshWrapperItemView) view).isVertical();
-    }
-    if (isVertical) {
-      y = y - height;
-    } else {
-      x = x - width;
+    if (view instanceof RefreshWrapperFooterItemView) {
+      RefreshWrapperFooterItemView footerItemView = ((RefreshWrapperFooterItemView) view);
+      View contentView = footerItemView.getContentView();
+      boolean isVertical = footerItemView.isVertical();
+      int contentViewWidth = (contentView != null) ? contentView.getWidth() : 0;
+      int contentViewHeight = (contentView != null) ? contentView.getHeight() : 0;
+      if (isVertical) {
+        y = y + contentViewHeight;
+      } else {
+        x = x + contentViewWidth;
+      }
     }
     super.updateLayout(id, x, y, width, height, componentHolder);
   }

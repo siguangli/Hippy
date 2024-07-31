@@ -15,6 +15,9 @@
  */
 package com.tencent.mtt.hippy.views.viewpager;
 
+import static android.widget.LinearLayout.HORIZONTAL;
+import static android.widget.LinearLayout.VERTICAL;
+
 import com.tencent.mtt.hippy.HippyInstanceContext;
 import com.tencent.mtt.hippy.modules.Promise;
 import com.tencent.mtt.hippy.uimanager.HippyViewBase;
@@ -51,6 +54,7 @@ public class HippyViewPager extends ViewPager implements HippyViewBase {
   private ViewPagerPageChangeListener mPageListener;
   private final Handler mHandler = new Handler(Looper.getMainLooper());
   private Promise mCallBackPromise;
+  protected int mOrientationMode = HORIZONTAL;
 
   private void init(Context context) {
     setCallPageChangedOnFirstLayout(true);
@@ -77,12 +81,19 @@ public class HippyViewPager extends ViewPager implements HippyViewBase {
 
   public HippyViewPager(Context context, boolean isVertical) {
     super(context, isVertical);
+    if (isVertical) {
+      mOrientationMode = VERTICAL;
+    }
     init(context);
   }
 
   public HippyViewPager(Context context) {
     super(context);
     init(context);
+  }
+
+  public int getOrientationMode() {
+    return mOrientationMode;
   }
 
   public void setCallBackPromise(Promise promise) {

@@ -332,6 +332,8 @@ public class DomManager implements HippyInstanceLifecycleEventListener,
           "dom create node id: " + id + " mClassName " + className + " pid " + pid + " mIndex:"
               + index + " isJustLayout :"
               + isLayoutOnly + " isVirtual " + isVirtual);
+      LogUtils.d(TAG,
+              "props: " + props + "\n");
       //			mContext.getGlobalConfigs().getLogAdapter().log(TAG,"dom create node id: " + id + " mClassName " + className + " pid " + pid + " mIndex:" + index + " isJustLayout :"
       //					+ isLayoutOnly + " isVirtual " + isVirtual);
       //updateProps
