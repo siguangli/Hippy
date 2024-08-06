@@ -26,6 +26,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import com.tencent.mtt.hippy.uimanager.ControllerManager;
 import com.tencent.mtt.hippy.uimanager.RenderManager;
+import com.tencent.mtt.hippy.utils.LogUtils;
 import com.tencent.mtt.hippy.views.list.HippyListItemView;
 import com.tencent.mtt.hippy.views.list.IRecycleItemTypeChange;
 import com.tencent.renderer.NativeRenderException;
@@ -238,4 +239,5 @@ public class ListItemRenderNode extends RenderNode {
     public boolean shouldSticky() {
         return mShouldSticky;
     }
+
 }

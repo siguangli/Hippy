@@ -22,8 +22,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import com.tencent.renderer.node.RenderNode;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
+import java.util.LinkedList;
+import java.util.List;
 
 public class DispatchDrawHelper {
 
@@ -34,7 +34,7 @@ public class DispatchDrawHelper {
     private RenderNode mNode;
     /** Render order of nodes from new order according to zIndex attribute. */
     @NonNull
-    private ArrayList<RenderNode> mDrawingOrder;
+    private List<RenderNode> mDrawingOrder;
 
     public void onDispatchDrawStart(Canvas canvas, @NonNull RenderNode node) {
         mCanvas = canvas;

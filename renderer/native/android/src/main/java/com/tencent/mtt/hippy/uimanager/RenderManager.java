@@ -19,7 +19,6 @@ package com.tencent.mtt.hippy.uimanager;
 import static com.tencent.renderer.NativeRenderer.NODE_ID;
 import static com.tencent.renderer.NativeRenderer.NODE_INDEX;
 import static com.tencent.renderer.node.RenderNode.FLAG_ALREADY_DELETED;
-import static com.tencent.renderer.node.RenderNode.FLAG_LAZY_LOAD;
 import static com.tencent.renderer.node.RenderNode.FLAG_UPDATE_TOTAL_PROPS;
 
 import android.content.Context;
@@ -162,7 +161,7 @@ public class RenderManager {
         // update node not need to diff props in this batch cycle.
         node.setNodeFlag(FLAG_UPDATE_TOTAL_PROPS);
         rootNode.addRenderNode(node);
-        parentNode.addChild(node, index);
+        parentNode.addPendingChild(node, index);
         addUpdateNodeIfNeeded(rootId, parentNode);
         addUpdateNodeIfNeeded(rootId, node);
     }
@@ -241,12 +240,6 @@ public class RenderManager {
                 LogUtils.w(TAG, "moveNode: " + e.getMessage());
             }
         }
-        Collections.sort(infoList, new Comparator<MoveNodeInfo>() {
-            @Override
-            public int compare(MoveNodeInfo n1, MoveNodeInfo n2) {
-                return n1.index - n2.index;
-            }
-        });
         for (int i = 0; i < infoList.size(); i++) {
             try {
                 MoveNodeInfo info = infoList.get(i);
@@ -254,24 +247,16 @@ public class RenderManager {
                 if (child == null) {
                     continue;
                 }
+                parent.addChildToPendingList(child, info.index);
                 if (child instanceof ListItemRenderNode) {
                     parent.addDeleteChild(child);
                     parent.deleteSubviewIfNeeded();
                     child.setLazy(true);
                     child.setHostView(null);
-                } else {
-                    if (moveNodes == null) {
-                        moveNodes = new ArrayList<>();
-                    }
-                    moveNodes.add(new Pair<>(child, pid));
                 }
-                parent.resetChildIndex(child, info.index);
             } catch (Exception e) {
                 LogUtils.w(TAG, "moveNode: " + e.getMessage());
             }
-        }
-        if (moveNodes != null) {
-            parent.addMoveNodes(moveNodes);
         }
         addUpdateNodeIfNeeded(rootId, parent);
     }
@@ -283,16 +268,13 @@ public class RenderManager {
             LogUtils.w(TAG, "moveNode: oldParent=" + oldParent + ", newParent=" + newParent);
             return;
         }
-        List<Pair<RenderNode, Integer>> moveNodes = new ArrayList<>(ids.length);
         for (int i = 0; i < ids.length; i++) {
             RenderNode node = getRenderNode(rootId, ids[i]);
             if (node != null) {
-                moveNodes.add(new Pair<>(node, oldPid));
                 oldParent.removeChild(node);
-                newParent.addChild(node, (i + insertIndex));
+                newParent.addChildToPendingList(node, (i + insertIndex));
             }
         }
-        newParent.addMoveNodes(moveNodes);
         addUpdateNodeIfNeeded(rootId, newParent);
     }
 
