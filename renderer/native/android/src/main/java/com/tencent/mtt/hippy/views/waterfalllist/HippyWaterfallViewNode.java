@@ -36,7 +36,7 @@ public class HippyWaterfallViewNode extends RenderNode {
   }
 
   @Override
-  protected void addChildToPendingList(RenderNode renderNode) {
+  public void addChildToPendingList(RenderNode renderNode, int index) {
   }
 
   @Override
