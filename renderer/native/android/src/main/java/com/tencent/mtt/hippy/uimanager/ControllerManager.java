@@ -19,10 +19,12 @@ package com.tencent.mtt.hippy.uimanager;
 import static com.tencent.renderer.NativeRenderException.ExceptionCode.ADD_CHILD_VIEW_FAILED_ERR;
 import static com.tencent.renderer.NativeRenderException.ExceptionCode.REMOVE_CHILD_VIEW_FAILED_ERR;
 import static com.tencent.renderer.node.RenderNode.FLAG_ALREADY_UPDATED;
+import static com.tencent.renderer.node.RenderNode.FLAG_HAS_ATTACHED;
 import static com.tencent.renderer.node.RenderNode.FLAG_UPDATE_LAYOUT;
 
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewParent;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import com.openhippy.pool.BasePool.PoolType;
@@ -580,20 +582,27 @@ public class ControllerManager {
         }
     }
 
-    public void addChild(int rootId, int pid, @NonNull RenderNode node) {
+    public void mountHostView(int rootId, int pid, @NonNull RenderNode node) {
         View child = mControllerRegistry.getView(rootId, node.getId());
-        View parent = mControllerRegistry.getView(rootId, pid);
-        if (child != null && parent instanceof ViewGroup && child.getParent() == null) {
-            String parentClassName = NativeViewTag.getClassName(parent);
-            HippyViewController<?> controller = null;
-            if (parentClassName != null) {
-                controller = mControllerRegistry.getViewController(parentClassName);
+        View newParent = mControllerRegistry.getView(rootId, pid);
+        if (child != null) {
+            ViewParent oldParent = child.getParent();
+            if (oldParent instanceof ViewGroup) {
+                ((ViewGroup) oldParent).removeView(child);
             }
-            if (controller != null) {
-                controller.addView((ViewGroup) parent, child, node.indexOfDrawingOrder());
+            if (newParent instanceof ViewGroup) {
+                String parentClassName = NativeViewTag.getClassName(newParent);
+                HippyViewController<?> controller = null;
+                if (parentClassName != null) {
+                    controller = mControllerRegistry.getViewController(parentClassName);
+                }
+                if (controller != null) {
+                    controller.addView((ViewGroup) newParent, child, node.indexOfDrawingOrder());
+                    node.setNodeFlag(FLAG_HAS_ATTACHED);
+                }
+            } else {
+                reportAddViewException(pid, newParent, node.getId(), child);
             }
-        } else {
-            reportAddViewException(pid, parent, node.getId(), child);
         }
     }
 

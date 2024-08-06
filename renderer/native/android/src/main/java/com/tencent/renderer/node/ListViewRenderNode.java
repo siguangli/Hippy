@@ -19,6 +19,7 @@ package com.tencent.renderer.node;
 import androidx.annotation.Nullable;
 
 import com.tencent.mtt.hippy.uimanager.ControllerManager;
+import com.tencent.mtt.hippy.utils.LogUtils;
 import java.util.Map;
 
 public class ListViewRenderNode extends RenderNode {
@@ -26,12 +27,6 @@ public class ListViewRenderNode extends RenderNode {
     public ListViewRenderNode(int rootId, int id, @Nullable Map<String, Object> props,
             String className, ControllerManager componentManager, boolean isLazyLoad) {
         super(rootId, id, props, className, componentManager, isLazyLoad);
-    }
-
-    @Override
-    protected void addChildToPendingList(RenderNode node) {
-        // Since the recycler view of the system will automatically complete add sub views,
-        // we don't need to deal with it in this function
     }
 
     @Override
