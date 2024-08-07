@@ -71,13 +71,12 @@ std::shared_ptr<DomNode> DomManager::GetNode(const std::weak_ptr<RootNode>& weak
 }
 
 void DomManager::CreateDomNodes(const std::weak_ptr<RootNode>& weak_root_node,
-                                std::vector<std::shared_ptr<DomInfo>>&& nodes,
-                                bool needSortByIndex) {
+                                std::vector<std::shared_ptr<DomInfo>>&& nodes) {
   auto root_node = weak_root_node.lock();
   if (!root_node) {
     return;
   }
-  root_node->CreateDomNodes(std::move(nodes), needSortByIndex);
+  root_node->CreateDomNodes(std::move(nodes));
 }
 
 void DomManager::UpdateDomNodes(const std::weak_ptr<RootNode>& weak_root_node,
@@ -259,7 +258,7 @@ bool DomManager::SetSnapShot(const std::shared_ptr<RootNode>& root_node, const b
     nodes.push_back(std::make_shared<DomInfo>(dom_node, nullptr, nullptr));
   }
 
-  CreateDomNodes(root_node, std::move(nodes), false);
+  CreateDomNodes(root_node, std::move(nodes));
   EndBatch(root_node);
 
   return true;
