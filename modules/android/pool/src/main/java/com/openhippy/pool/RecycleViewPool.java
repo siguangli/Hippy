@@ -30,7 +30,7 @@ public class RecycleViewPool extends BasePool<String, View> {
 
     private static final String TAG = "RecycleViewPool";
     private final Map<String, SimplePool<View>> mPools = new HashMap<>();
-    private int mPoolSize = 8;
+    private int mPoolSize = 6;
 
     public RecycleViewPool() {}
 

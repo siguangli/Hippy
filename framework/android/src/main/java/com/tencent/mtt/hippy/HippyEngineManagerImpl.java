@@ -160,11 +160,6 @@ public abstract class HippyEngineManagerImpl extends HippyEngineManager implemen
             mEventListeners.add(listener);
         }
         try {
-            HippyLogAdapter logAdapter = mGlobalConfigs.getLogAdapter();
-            if (logAdapter != null) {
-                String msg = "initEngine: engine id " + getEngineId();
-                logAdapter.onReceiveLogMessage(LOG_SEVERITY_WARNING, HippyEngine.TAG, msg);
-            }
             mDevSupportManager = new DevSupportManager(mGlobalConfigs, mDebugMode, mServerHost,
                     mServerBundleName, mRemoteServerUrl);
             mDevSupportManager.setDevCallback(this);
