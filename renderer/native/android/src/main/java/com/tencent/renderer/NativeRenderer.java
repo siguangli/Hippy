@@ -516,6 +516,7 @@ public class NativeRenderer extends Renderer implements NativeRender, NativeRend
     private void updateFcpStateIfNeeded(int rootId, @Nullable Map<String, Object> props) {
         if (mFcpBatchState == FCPBatchState.WATCHING && props != null && rootId != SCREEN_SNAPSHOT_ROOT_ID) {
             if (MapUtils.getStringValue(props, PAINT_TYPE_KEY, "").equalsIgnoreCase(FCP_VALUE)) {
+                LogUtils.e("HippyTimeMonitor", "fcp start");
                 mFcpBatchState = FCPBatchState.DETECTED;
             }
         }

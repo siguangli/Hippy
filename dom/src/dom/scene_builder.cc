@@ -44,6 +44,7 @@ void SceneBuilder::Update(const std::weak_ptr<DomManager>& weak_dom_manager,
                           std::vector<std::shared_ptr<DomInfo>>&& nodes) {
   auto dom_manager = weak_dom_manager.lock();
   if (dom_manager) {
+    FOOTSTONE_DLOG(ERROR) << "HippyTimeMonitor, dom start(updateNode)";
     dom_manager->UpdateDomNodes(root_node, std::move(nodes));
   }
 }
