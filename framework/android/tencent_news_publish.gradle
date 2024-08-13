@@ -26,8 +26,8 @@ publishing {
 
       credentials {
         //修改为自己的账号密码，可在mirrors.tencent.com上查询密码
-        username MAVEN_USER
-        password MAVEN_PWD
+        username "zealotchen"
+        password "632862880bc711eca8a26c92bf5e3645"
       }
     }
   }

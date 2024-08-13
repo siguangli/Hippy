@@ -275,14 +275,14 @@ bool DomManager::SetSnapShot(const std::shared_ptr<RootNode>& root_node, const b
 }
 
 void DomManager::RecordDomStartTimePoint() {
-  FOOTSTONE_DLOG(ERROR) << "HippyTimeMonitor, dom start";
+  FOOTSTONE_LOG(ERROR) << "HippyTimeMonitor, dom start";
   if (dom_start_time_point_.ToEpochDelta() == TimeDelta::Zero()) {
     dom_start_time_point_ = footstone::TimePoint::SystemNow();
   }
 }
 
 void DomManager::RecordDomEndTimePoint() {
-  FOOTSTONE_DLOG(ERROR) << "HippyTimeMonitor, dom end";
+  FOOTSTONE_LOG(ERROR) << "HippyTimeMonitor, dom end";
   if (dom_end_time_point_.ToEpochDelta() == TimeDelta::Zero()
   && dom_start_time_point_.ToEpochDelta() != TimeDelta::Zero()) {
     dom_end_time_point_ = footstone::TimePoint::SystemNow();
