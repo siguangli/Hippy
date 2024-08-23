@@ -20,6 +20,7 @@ import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
 
 import android.view.MotionEvent;
 import android.view.View.OnTouchListener;
+import android.view.ViewParent;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.HippyItemTypeHelper;
 import androidx.recyclerview.widget.ItemLayoutParams;
@@ -28,6 +29,7 @@ import androidx.recyclerview.widget.RecyclerView.LayoutParams;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
+import androidx.recyclerview.widget.RecyclerView.ViewHolder;
 import com.tencent.mtt.hippy.HippyEngineContext;
 import com.tencent.mtt.hippy.uimanager.DiffUtils;
 import com.tencent.mtt.hippy.uimanager.DiffUtils.PatchType;
@@ -35,6 +37,7 @@ import com.tencent.mtt.hippy.uimanager.ListItemRenderNode;
 import com.tencent.mtt.hippy.uimanager.PullFooterRenderNode;
 import com.tencent.mtt.hippy.uimanager.PullHeaderRenderNode;
 import com.tencent.mtt.hippy.uimanager.RenderNode;
+import com.tencent.mtt.hippy.utils.LogUtils;
 import com.tencent.mtt.hippy.views.list.IRecycleItemTypeChange;
 import com.tencent.mtt.hippy.views.refresh.HippyPullFooterView;
 import com.tencent.mtt.hippy.views.refresh.HippyPullHeaderView;
@@ -65,6 +68,17 @@ public class HippyRecyclerListAdapter<HRCV extends HippyRecyclerView> extends Ad
         preloadHelper = new PreloadHelper(hippyRecyclerView);
     }
 
+    @Override
+    public void onViewAttachedToWindow(@NonNull HippyRecyclerViewHolder holder) {
+        LogUtils.e("maxli", "onViewAttachedToWindow: id " + holder.itemView.getId());
+
+    }
+
+    @Override
+    public void onViewDetachedFromWindow(@NonNull HippyRecyclerViewHolder holder) {
+        LogUtils.e("maxli", "onViewDetachedFromWindow: id " + holder.itemView.getId());
+    }
+
     /**
      * 对于吸顶到RenderNode需要特殊处理
      * 吸顶的View需要包一层ViewGroup，吸顶的时候，从ViewGroup把RenderNode的View取出来挂载到顶部
@@ -77,7 +91,8 @@ public class HippyRecyclerListAdapter<HRCV extends HippyRecyclerView> extends Ad
     public HippyRecyclerViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         ListItemRenderNode renderNode = getChildNodeByAdapterPosition(positionToCreateHolder);
         boolean isViewExist = renderNode.isViewExist();
-        boolean needsDelete = renderNode.needDeleteExistRenderView();
+        //boolean needsDelete = renderNode.needDeleteExistRenderView();
+        LogUtils.e("maxli", "onCreateViewHolder: id " + renderNode.getId() + ", viewType " + viewType + ", position " + positionToCreateHolder);
         View renderView = createRenderView(renderNode);
         if (isPullHeader(positionToCreateHolder)) {
             ((HippyPullHeaderView) renderView).setRecyclerView(hippyRecyclerView);
@@ -94,7 +109,7 @@ public class HippyRecyclerListAdapter<HRCV extends HippyRecyclerView> extends Ad
                 throw new IllegalArgumentException("createRenderView error!"
                         + ",isDelete:" + renderNode.isDelete()
                         + ",isViewExist:" + isViewExist
-                        + ",needsDelete:" + needsDelete
+                        //+ ",needsDelete:" + needsDelete
                         + ",className:" + renderNode.getClassName()
                         + ",isLazy :" + renderNode.isIsLazyLoad()
                         + ",itemCount :" + getItemCount()
@@ -139,8 +154,12 @@ public class HippyRecyclerListAdapter<HRCV extends HippyRecyclerView> extends Ad
      * @return
      */
     protected View createRenderView(ListItemRenderNode renderNode) {
-        if (renderNode.needDeleteExistRenderView() && !renderNode.shouldSticky()) {
-            deleteExistRenderView(renderNode);
+        View hostView = renderNode.getHostView();
+        if (hostView != null) {
+            ViewParent parent = hostView.getParent();
+            if (parent == null || parent instanceof FrameLayout) {
+                deleteExistRenderView(renderNode);
+            }
         }
         renderNode.setLazy(false);
         View view = renderNode.createViewRecursive();
@@ -185,6 +204,7 @@ public class HippyRecyclerListAdapter<HRCV extends HippyRecyclerView> extends Ad
         setLayoutParams(hippyRecyclerViewHolder.itemView, position);
         RenderNode oldNode = hippyRecyclerViewHolder.bindNode;
         ListItemRenderNode newNode = getChildNodeByAdapterPosition(position);
+        LogUtils.e("maxli", "onBindViewHolder: old id " + oldNode.getId() + ", new id " + newNode.getId() + ", position " + position);
         oldNode.setLazy(true);
         newNode.setLazy(false);
         if (oldNode != newNode) {

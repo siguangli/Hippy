@@ -68,6 +68,8 @@ public class UIManagerModule extends HippyNativeModuleBase {
         String className = (String) nodeArray.get(NAME);
         String tagName = (String) nodeArray.get(TAG_NAME);
         HippyMap props = (HippyMap) nodeArray.get(PROPS);
+        LogUtils.e("maxli", "createNode: id " + tag + ", pid " + pTag + ", className " + className
+                + ", props " + props + "\n");
         domManager.createNode(hippyRootView, rootID, tag, pTag, index, className, tagName, props);
       }
     }
@@ -88,6 +90,7 @@ public class UIManagerModule extends HippyNativeModuleBase {
           throw new IllegalArgumentException("updateNode invalid value: " + "id=" + id);
         }
         HippyMap props = (HippyMap) nodemap.get(PROPS);
+        LogUtils.e("maxli", "updateNode: id " + id + ", props " + props + "\n");
         domManager.updateNode(id, props, hippyRootView);
       }
     }
@@ -96,6 +99,7 @@ public class UIManagerModule extends HippyNativeModuleBase {
   @HippyMethod(name = "deleteNode")
   public void deleteNode(int rootId, HippyArray delete) {
     DomManager domManager = this.mContext.getDomManager();
+    LogUtils.e("maxli", "deleteNode: delete " + delete + "\n");
     if (delete != null && delete.size() > 0 && domManager != null) {
       int len = delete.size();
       for (int i = 0; i < len; i++) {
@@ -164,6 +168,7 @@ public class UIManagerModule extends HippyNativeModuleBase {
   public void endBatch() {
     DomManager domManager = this.mContext.getDomManager();
     if (domManager != null) {
+      LogUtils.e("maxli", "===========================endBatch:");
       domManager.renderBatchEnd();
     }
   }

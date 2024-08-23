@@ -409,12 +409,15 @@ public class HippyRecyclerView<ADP extends HippyRecyclerListAdapter> extends Hip
     public void onHeaderDetached(ViewHolder aboundHeader, View currentHeaderView) {
         boolean findHostViewHolder = false;
         for (int i = 0; i < getChildCountWithCaches(); i++) {
-            ViewHolder viewHolder = getChildViewHolder(getChildAtWithCaches(i));
-            if (isTheSameRenderNode((HippyRecyclerViewHolder) aboundHeader,
-                    (HippyRecyclerViewHolder) viewHolder)) {
-                findHostViewHolder = true;
-                fillContentView(currentHeaderView, viewHolder);
-                break;
+            View view = getChildAtWithCachesForHeaderDetached(i);
+            if (view != null) {
+                ViewHolder viewHolder = getChildViewHolder(view);
+                if (isTheSameRenderNode((HippyRecyclerViewHolder) aboundHeader,
+                        (HippyRecyclerViewHolder) viewHolder)) {
+                    findHostViewHolder = true;
+                    fillContentView(currentHeaderView, viewHolder);
+                    break;
+                }
             }
         }
         //当header无处安放，抛弃view都同时，需要同步给Hippy进行View都删除，不然后续无法创建对应都View
@@ -427,6 +430,7 @@ public class HippyRecyclerView<ADP extends HippyRecyclerListAdapter> extends Hip
         if (viewHolder != null && viewHolder.itemView instanceof ViewGroup) {
             ViewGroup itemView = (ViewGroup) viewHolder.itemView;
             if (itemView.getChildCount() <= 0) {
+                LogUtils.e("maxli", "fillContentView: item view id " + itemView.getId() + ", child count " + itemView.getChildCount());
                 itemView.addView(currentHeaderView);
             }
         }

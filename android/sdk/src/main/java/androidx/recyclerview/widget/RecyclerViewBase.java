@@ -156,6 +156,15 @@ public class RecyclerViewBase extends RecyclerView {
         }
     }
 
+    public View getChildAtWithCachesForHeaderDetached(int index) {
+        ArrayList<ViewHolder> viewHolders = getCachedViewHolders();
+        if (index < getChildCount()) {
+            return getChildAt(index);
+        } else {
+            return viewHolders.get(index - getChildCount()).itemView;
+        }
+    }
+
     private int getCachedViewHolderCount() {
         int count = mRecycler.mAttachedScrap.size() + mRecycler.mCachedViews.size();
         for (int i = 0; i < mRecycler.getRecycledViewPool().mScrap.size(); i++) {

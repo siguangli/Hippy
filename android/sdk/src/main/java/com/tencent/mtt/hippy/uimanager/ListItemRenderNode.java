@@ -16,9 +16,14 @@
 package com.tencent.mtt.hippy.uimanager;
 
 import android.view.View;
+import android.view.ViewGroup;
+import android.view.ViewParent;
+import android.widget.FrameLayout;
+import androidx.annotation.NonNull;
 import com.tencent.mtt.hippy.HippyRootView;
 import com.tencent.mtt.hippy.common.HippyMap;
 import com.tencent.mtt.hippy.views.list.IRecycleItemTypeChange;
+import com.tencent.mtt.hippy.views.hippylist.HippyRecyclerViewWrapper;
 
 @SuppressWarnings({"deprecation", "unused"})
 public class ListItemRenderNode extends RenderNode {
@@ -120,17 +125,8 @@ public class ListItemRenderNode extends RenderNode {
     return mShouldSticky;
   }
 
-  /**
-   * 异常情况下，如果view已经存在，需要删除它，前提是view没有parent的情况， 有parent的情况出现在sticky属性的view，当前可能是正在置顶的view，这种是不能调用删除的，是正常情况，
-   * hasView为true，通过createView是拿到已经存在的view。
-   *
-   * @return 是否需要删除view
-   */
-  public boolean needDeleteExistRenderView() {
-    if (mComponentManager.hasView(mId)) {
-      return mComponentManager.createView(mRootView, mId, mClassName, mProps).getParent() == null;
-    }
-    return false;
+  public View getHostView() {
+    return mComponentManager.findView(mId);
   }
 
   public boolean isViewExist() {
