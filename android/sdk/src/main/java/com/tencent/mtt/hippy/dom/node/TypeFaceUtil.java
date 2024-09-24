@@ -75,6 +75,9 @@ public class TypeFaceUtil {
       if (!TextUtils.isEmpty(filePath)) {
         try {
           typeface = Typeface.createFromFile(filePath);
+          if (typeface != null) {
+            typeface = Typeface.create(typeface, style);
+          }
         } catch (Exception e) {
           LogUtils.e("TypeFaceUtil", "createTypeface: " + e.getMessage());
         }
