@@ -36,6 +36,7 @@ public class HippyViewGroup extends FlatViewGroup implements HippyViewBase {
     private static final String TAG = "HippyViewGroup";
     float mDownX = 0;
     float mDownY = 0;
+    int moveCount = 0;
     boolean isHandlePullUp = false;
     private boolean mDisallowInterceptTouchEvent = false;
     private ViewConfiguration mViewConfiguration;
@@ -49,10 +50,16 @@ public class HippyViewGroup extends FlatViewGroup implements HippyViewBase {
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
+        int action = event.getAction() & MotionEvent.ACTION_MASK;
         boolean result = super.onTouchEvent(event);
+        int id = getId();
+        if (id == 167) {
+            LogUtils.e(TAG, "=============");
+        }
         if (mGestureDispatcher != null) {
             result |= mGestureDispatcher.handleTouchEvent(event);
         }
+        LogUtils.e("maxli", "onTouchEvent: id " + getId() + ", action " + action + ", result " + result);
         return result;
     }
 
@@ -113,7 +120,14 @@ public class HippyViewGroup extends FlatViewGroup implements HippyViewBase {
         if (mGestureDispatcher != null) {
             result |= mGestureDispatcher.needHandle(NodeProps.ON_INTERCEPT_TOUCH_EVENT);
         }
-
+        int id = getId();
+//        if (id == 168) {
+//            result = true;
+//        }
+//        if (id == 168 && action == MotionEvent.ACTION_MOVE) {
+//            result = true;
+//        }
+        LogUtils.e("maxli", "onInterceptTouchEvent: id " + getId() + ", action " + action + ", result " + result);
         if (!result && mGestureDispatcher != null && mGestureDispatcher
                 .needHandle(NodeProps.ON_INTERCEPT_PULL_UP_EVENT)) {
             //noinspection SwitchStatementWithTooFewBranches

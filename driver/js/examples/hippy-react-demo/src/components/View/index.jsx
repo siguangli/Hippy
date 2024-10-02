@@ -27,18 +27,25 @@ const styles = StyleSheet.create({
     marginVertical: 10,
   },
   bigRectangle: {
-    width: 200,
-    height: 100,
+    width: 300,
+    height: 300,
     borderColor: '#eee',
     borderWidth: 1,
     borderStyle: 'solid',
     padding: 10,
     marginVertical: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  smallRectangle: {
-    width: 40,
-    height: 40,
-    borderRadius: 10,
+  RectangleB: {
+    width: 240,
+    height: 240,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  RectangleC: {
+    width: 180,
+    height: 180,
   },
 });
 
@@ -49,57 +56,67 @@ export default function ViewExpo() {
     </View>
   );
   return (
-    <ScrollView style={{ paddingHorizontal: 10 }}>
-      {renderTitle('backgroundColor')}
-      <View style={[styles.rectangle, { backgroundColor: '#4c9afa' }]} />
-      {renderTitle('backgroundImage')}
-      <View style={[styles.rectangle, {
-        alignItems: 'center',
-        justifyContent: 'center',
-        marginTop: 20,
-        backgroundImage: imageUrl,
-      }]}
-      accessible={true}
-      accessibilityLabel={'背景图'}
-      accessibilityRole={'image'}
-      accessibilityState={{
-        disabled: false,
-        selected: true,
-        checked: false,
-        expanded: false,
-        busy: true,
-      }}
-      accessibilityValue={{
-        min: 1,
-        max: 10,
-        now: 5,
-        text: 'middle',
-      }}
-    ><Text style={{ color: 'white' }}>背景图</Text></View>
-      {renderTitle('backgroundImage linear-gradient')}
-      <View style={[styles.rectangle, {
-        alignItems: 'center',
-        justifyContent: 'center',
-        marginTop: 20,
-        borderWidth: 2,
-        borderStyle: 'solid',
-        borderColor: 'black',
-        borderRadius: 2,
-        backgroundImage: 'linear-gradient(30deg, blue 10%, yellow 40%, red 50%);',
-      }]} ><Text style={{ color: 'white' }}>渐变色</Text></View>
-      {renderTitle('border props')}
-      <View style={[styles.rectangle, { borderColor: '#242424', borderRadius: 4, borderWidth: 1, borderStyle: 'solid' }]} />
-      {renderTitle('flex props')}
       <View style={[styles.bigRectangle, {
         flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
+        backgroundColor: 'red' 
       }]}
+      onTouchDown={(e) => {
+        console.log('onTouchDown View A');
+        return false;
+      }}
+      onTouchMove={(e) => {
+        console.log('onTouchMove View A');
+        return false;
+      }}
+      onTouchEnd={(e) => {
+        console.log('onTouchEnd View A');
+        return false;
+      }}
+      onTouchCancel={(e) => {
+        console.log('onTouchCancel View A');
+        return false;
+      }}
+
       >
-        <View style={[styles.smallRectangle, { backgroundColor: 'yellow' }]} />
-        <View style={[styles.smallRectangle, { backgroundColor: 'blue' }]} />
-        <View style={[styles.smallRectangle, { backgroundColor: 'green' }]} />
+        <View style={[styles.RectangleB, { backgroundColor: 'yellow' }]} 
+              onTouchDown={(e) => {
+                console.log('onTouchDown View B');
+                return false;
+              }}
+              onTouchMove={(e) => {
+                console.log('onTouchMove View B');
+                return false;
+              }}
+              onTouchEnd={(e) => {
+                console.log('onTouchEnd View B');
+                return false;
+              }}
+              onTouchCancel={(e) => {
+                console.log('onTouchCancel View B');
+                return false;
+              }}
+        >
+            <View style={[styles.RectangleC, { backgroundColor: 'blue' }]} 
+                  // onTouchDown={(e) => {
+                  //   console.log('onTouchDown View C');
+                  //   return false;
+                  // }}
+                  // onTouchMove={(e) => {
+                  //   console.log('onTouchMove View C');
+                  //   return false;
+                  // }}
+                  // onTouchEnd={(e) => {
+                  //   console.log('onTouchEnd View C');
+                  //   return false;
+                  // }}
+                  // onTouchCancel={(e) => {
+                  //   console.log('onTouchCancel View C');
+                  //   return false;
+                  // }}
+                  //disallowInterceptTouchEvent={true}
+                  onClick={() => console.log('onClick View C')}
+            />
+        </View>
       </View>
-    </ScrollView>
   );
 }
