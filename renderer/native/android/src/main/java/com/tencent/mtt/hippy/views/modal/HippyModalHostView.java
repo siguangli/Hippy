@@ -127,24 +127,22 @@ public class HippyModalHostView extends HippyViewGroup implements
     }
 
     @Override
-    public int getChildCount() {
-        return mDialogRootView.getChildCount();
-    }
-
-    @Override
-    public View getChildAt(int index) {
-        return mDialogRootView.getChildAt(index);
-    }
-
-    @Override
     public void removeView(View child) {
         mDialogRootView.removeView(child);
     }
 
     @Override
     public void removeViewAt(int index) {
-        View child = getChildAt(index);
+        View child = getModalChildAt(index);
         mDialogRootView.removeView(child);
+    }
+
+    public int getModalChildCount() {
+        return mDialogRootView.getChildCount();
+    }
+
+    public View getModalChildAt(int index) {
+        return mDialogRootView.getChildAt(index);
     }
 
     @Override
