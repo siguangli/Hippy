@@ -37,6 +37,7 @@ import com.tencent.mtt.hippy.views.common.HippyNestedScrollComponent;
 import com.tencent.mtt.hippy.views.common.HippyNestedScrollComponent.Priority;
 import com.tencent.mtt.hippy.views.common.HippyNestedScrollHelper;
 import com.tencent.mtt.hippy.views.custom.HippyCustomPropsController;
+import com.tencent.mtt.hippy.views.modal.HippyModalHostView;
 import com.tencent.mtt.hippy.views.view.HippyViewGroup;
 import com.tencent.renderer.NativeRenderContext;
 import com.tencent.renderer.Renderer;
@@ -543,8 +544,12 @@ public abstract class HippyViewController<T extends View & HippyViewBase> implem
 
     protected void addView(ViewGroup parentView, View view, int index) {
         int realIndex = index;
-        if (realIndex > parentView.getChildCount()) {
-            realIndex = parentView.getChildCount();
+        int childCount = parentView.getChildCount();
+        if (parentView instanceof HippyModalHostView) {
+            childCount = ((HippyModalHostView) parentView).getModalChildCount();
+        }
+        if (realIndex > childCount) {
+            realIndex = childCount;
         }
         try {
             parentView.addView(view, realIndex);
@@ -557,6 +562,9 @@ public abstract class HippyViewController<T extends View & HippyViewBase> implem
     }
 
     public int getChildCount(T viewGroup) {
+        if (viewGroup instanceof HippyModalHostView) {
+            return ((HippyModalHostView) viewGroup).getModalChildCount();
+        }
         if (viewGroup instanceof ViewGroup) {
             return ((ViewGroup) viewGroup).getChildCount();
         }
@@ -564,6 +572,9 @@ public abstract class HippyViewController<T extends View & HippyViewBase> implem
     }
 
     public View getChildAt(T viewGroup, int i) {
+        if (viewGroup instanceof HippyModalHostView) {
+            return ((HippyModalHostView) viewGroup).getModalChildAt(i);
+        }
         if (viewGroup instanceof ViewGroup) {
             return ((ViewGroup) viewGroup).getChildAt(i);
         }
