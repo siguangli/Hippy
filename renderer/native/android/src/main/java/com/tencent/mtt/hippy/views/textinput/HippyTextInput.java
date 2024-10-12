@@ -16,6 +16,8 @@
 
 package com.tencent.mtt.hippy.views.textinput;
 
+import static com.tencent.renderer.component.text.TypeFaceUtil.TEXT_FONT_STYLE_BOLD;
+
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.BlendMode;
@@ -86,7 +88,7 @@ public class HippyTextInput extends AppCompatEditText implements HippyViewBase,
     private int mListenerFlag = 0;
     private ReactContentSizeWatcher mReactContentSizeWatcher = null;
     private boolean mItalic = false;
-    private int mFontWeight = TypeFaceUtil.WEIGHT_NORMAL;
+    private int mFontWeight = Typeface.NORMAL;
     @Nullable
     private String mFontFamily;
     private Paint mTextPaint;
@@ -714,20 +716,16 @@ public class HippyTextInput extends AppCompatEditText implements HippyViewBase,
     }
 
     public void setFontWeight(String weight) {
-        int fontWeight;
-        if (TextUtils.isEmpty(weight) || TypeFaceUtil.TEXT_FONT_STYLE_NORMAL.equals(weight)) {
-            // case normal
-            fontWeight = TypeFaceUtil.WEIGHT_NORMAL;
-        } else if (TypeFaceUtil.TEXT_FONT_STYLE_BOLD.equals(weight)) {
-            // case bold
-            fontWeight = TypeFaceUtil.WEIGHT_BOLE;
+        int fontWeight = Typeface.NORMAL;
+        try {
+            fontWeight = Integer.parseInt(weight);
+        } catch (NumberFormatException ignored) {
+
+        }
+        if (fontWeight >= 500 || TEXT_FONT_STYLE_BOLD.equals(weight)) {
+            fontWeight = Typeface.BOLD;
         } else {
-            // case number
-            try {
-                fontWeight = Math.min(Math.max(1, Integer.parseInt(weight)), 1000);
-            } catch (NumberFormatException ignored) {
-                fontWeight = TypeFaceUtil.WEIGHT_NORMAL;
-            }
+            fontWeight = Typeface.NORMAL;
         }
         if (fontWeight != mFontWeight) {
             mFontWeight = fontWeight;

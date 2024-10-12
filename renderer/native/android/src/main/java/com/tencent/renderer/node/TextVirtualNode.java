@@ -19,8 +19,10 @@ package com.tencent.renderer.node;
 import static com.tencent.mtt.hippy.dom.node.NodeProps.TEXT_SHADOW_COLOR;
 import static com.tencent.mtt.hippy.dom.node.NodeProps.TEXT_SHADOW_OFFSET;
 import static com.tencent.mtt.hippy.dom.node.NodeProps.TEXT_SHADOW_RADIUS;
+import static com.tencent.renderer.component.text.TypeFaceUtil.TEXT_FONT_STYLE_BOLD;
 
 import android.graphics.Color;
+import android.graphics.Typeface;
 import android.os.Build;
 import android.text.BidiFormatter;
 import android.text.BoringLayout;
@@ -89,7 +91,7 @@ public class TextVirtualNode extends VirtualNode {
     protected int mColor = Color.BLACK;
     protected int mNumberOfLines;
     protected boolean mItalic = false;
-    protected int mFontWeight = TypeFaceUtil.WEIGHT_NORMAL;
+    protected int mFontWeight = Typeface.NORMAL;
     protected int mFontSize = (int) Math.ceil(PixelUtil.dp2px(NodeProps.FONT_SIZE_SP));
     protected int mShadowColor = TEXT_SHADOW_COLOR_DEFAULT;
     protected float mShadowOffsetDx = 0.0f;
@@ -184,20 +186,16 @@ public class TextVirtualNode extends VirtualNode {
     @SuppressWarnings("unused")
     @HippyControllerProps(name = NodeProps.FONT_WEIGHT, defaultType = HippyControllerProps.STRING)
     public void setFontWeight(String weight) {
-        int fontWeight;
-        if (TextUtils.isEmpty(weight) || TypeFaceUtil.TEXT_FONT_STYLE_NORMAL.equals(weight)) {
-            // case normal
-            fontWeight = TypeFaceUtil.WEIGHT_NORMAL;
-        } else if (TypeFaceUtil.TEXT_FONT_STYLE_BOLD.equals(weight)) {
-            // case bold
-            fontWeight = TypeFaceUtil.WEIGHT_BOLE;
+        int fontWeight = Typeface.NORMAL;
+        try {
+            fontWeight = Integer.parseInt(weight);
+        } catch (NumberFormatException ignored) {
+
+        }
+        if (fontWeight >= 500 || TEXT_FONT_STYLE_BOLD.equals(weight)) {
+            fontWeight = Typeface.BOLD;
         } else {
-            // case number
-            try {
-                fontWeight = Math.min(Math.max(1, Integer.parseInt(weight)), 1000);
-            } catch (NumberFormatException ignored) {
-                fontWeight = TypeFaceUtil.WEIGHT_NORMAL;
-            }
+            fontWeight = Typeface.NORMAL;
         }
         if (fontWeight != mFontWeight) {
             mFontWeight = fontWeight;

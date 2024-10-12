@@ -33,8 +33,6 @@ import java.util.Map;
 
 public class TypeFaceUtil {
 
-    public static final int WEIGHT_NORMAL = 400;
-    public static final int WEIGHT_BOLE = 700;
     public static final String TEXT_FONT_STYLE_ITALIC = "italic";
     public static final String TEXT_FONT_STYLE_BOLD = "bold";
     public static final String TEXT_FONT_STYLE_NORMAL = "normal";
@@ -44,7 +42,7 @@ public class TypeFaceUtil {
     private static final String FONTS_PATH = "fonts/";
     private static final Map<String, SparseArray<Typeface>> sFontCache = new HashMap<>();
     @ChecksSdkIntAtLeast(api = Build.VERSION_CODES.P)
-    private static final boolean SUPPORT_FONT_WEIGHT = Build.VERSION.SDK_INT >= Build.VERSION_CODES.P;
+    private static final boolean SUPPORT_FONT_WEIGHT = false;
 
     /**
      * @deprecated use {@link #getTypeface(String, int, boolean, FontAdapter)} instead
@@ -53,8 +51,7 @@ public class TypeFaceUtil {
     public static Typeface getTypeface(String fontFamilyName, int style,
             @Nullable FontAdapter fontAdapter) {
         boolean italic = (style & Typeface.ITALIC) != 0;
-        int weightNumber = (style & Typeface.BOLD) != 0 ? WEIGHT_BOLE : WEIGHT_NORMAL;
-        return getTypeface(fontFamilyName, weightNumber, italic, fontAdapter);
+        return getTypeface(fontFamilyName, style, italic, fontAdapter);
     }
 
     public static Typeface getTypeface(String fontFamilyName, int weight, boolean italic,
@@ -150,9 +147,10 @@ public class TypeFaceUtil {
     }
 
     private static int toStyle(int weight, boolean italic) {
-        return weight < WEIGHT_BOLE ?
-                (italic ? Typeface.ITALIC : Typeface.NORMAL) :
-                (italic ? Typeface.BOLD_ITALIC : Typeface.BOLD);
+        if (italic) {
+            return weight == Typeface.BOLD ? Typeface.BOLD_ITALIC : Typeface.ITALIC;
+        }
+        return weight;
     }
 
     /**
@@ -162,8 +160,7 @@ public class TypeFaceUtil {
     public static void apply(Paint paint, int style, int weight, String family,
             @Nullable FontAdapter fontAdapter) {
         boolean italic = style == Typeface.ITALIC;
-        int weightNumber = weight == Typeface.BOLD ? WEIGHT_BOLE : WEIGHT_NORMAL;
-        apply(paint, italic, weightNumber, family, fontAdapter);
+        apply(paint, italic, weight, family, fontAdapter);
     }
 
     public static void apply(Paint paint, boolean italic, int weight, String familyName,
@@ -176,9 +173,6 @@ public class TypeFaceUtil {
                     : Typeface.create(base, toStyle(weight, italic));
         } else {
             typeface = getTypeface(familyName, weight, italic, fontAdapter);
-        }
-        if (weight >= WEIGHT_BOLE && typeface != null && !typeface.isBold()) {
-            paint.setFakeBoldText(true);
         }
         paint.setTypeface(typeface);
     }
