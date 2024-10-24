@@ -23,7 +23,6 @@ import android.view.View;
 import android.view.ViewTreeObserver;
 import android.widget.FrameLayout;
 
-import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.tencent.mtt.hippy.dom.node.NodeProps;
@@ -63,7 +62,7 @@ public class HippyRootView extends FrameLayout {
             firstViewAdded = true;
             NativeRender nativeRenderer = NativeRendererManager.getNativeRenderer(getContext());
             if (nativeRenderer != null) {
-                nativeRenderer.onFirstPaint();
+                nativeRenderer.onFirstPaint(getId());
             }
         }
     }

@@ -23,5 +23,5 @@ public abstract class Renderer implements RenderProxy, RenderExceptionHandler {
      *
      * @return custom view creator object
      */
-    public abstract Object getCustomViewCreator();
+    public abstract Object getCustomViewCreator(int rootId);
 }

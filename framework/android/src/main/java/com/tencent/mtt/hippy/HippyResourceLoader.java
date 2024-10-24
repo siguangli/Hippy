@@ -30,7 +30,6 @@ import com.tencent.vfs.ResourceDataHolder;
 import com.tencent.vfs.ResourceLoader;
 import com.tencent.vfs.UrlUtils;
 import com.tencent.vfs.VfsManager.ProcessorCallback;
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -75,7 +74,7 @@ public class HippyResourceLoader implements ResourceLoader {
     private void loadRemoteResource(@NonNull final ResourceDataHolder holder,
             @NonNull final ProcessorCallback callback) {
         HippyHttpAdapter httpAdapter = mEngineContext.getGlobalConfigs().getHttpAdapter();
-        httpAdapter.fetch(holder, mEngineContext.getNativeParams(), callback);
+        httpAdapter.fetch(holder, mEngineContext.getNativeParams(-1), callback);
     }
 
     private void onLoadLocalResourceFailed(@NonNull final ResourceDataHolder holder,

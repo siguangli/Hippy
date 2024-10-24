@@ -16,16 +16,16 @@
 
 package com.tencent.mtt.hippy.modules;
 
+import static com.tencent.renderer.NativeRenderer.INVALID_NODE_ID;
+
 import android.os.Handler;
 import android.os.Message;
 
-import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.tencent.mtt.hippy.HippyAPIProvider;
 import com.tencent.mtt.hippy.HippyEngineContext;
-import com.tencent.mtt.hippy.HippyInstanceLifecycleEventListener;
 import com.tencent.mtt.hippy.adapter.monitor.HippyEngineMonitorAdapter;
 import com.tencent.mtt.hippy.annotation.HippyNativeModule;
 import com.tencent.mtt.hippy.bridge.HippyCallNativeParams;
@@ -427,7 +427,7 @@ public class HippyModuleManagerImpl implements HippyModuleManager, Handler.Callb
         if (adapter == null || params == null) {
             return false;
         }
-        return adapter.onInterceptCallNative(mContext.getComponentName(), params);
+        return adapter.onInterceptCallNative(mContext.getComponentName(INVALID_NODE_ID), params);
     }
 
     private void onCallNativeFinished(@Nullable HippyCallNativeParams params) {
@@ -435,7 +435,7 @@ public class HippyModuleManagerImpl implements HippyModuleManager, Handler.Callb
         if (adapter == null || params == null) {
             return;
         }
-        adapter.onCallNativeFinished(mContext.getComponentName(), params);
+        adapter.onCallNativeFinished(mContext.getComponentName(INVALID_NODE_ID), params);
     }
 
     private void removeRootView(@Nullable final JSDenseArray roots) {
@@ -443,17 +443,7 @@ public class HippyModuleManagerImpl implements HippyModuleManager, Handler.Callb
         UIThreadUtils.runOnUiThread(() -> {
             HippyEngineContext engineContext = engineContextRef.get();
             if (engineContext != null) {
-                if (roots != null && roots.size() > 0) {
-                    Object valueObj = roots.get(0);
-                    if (valueObj instanceof Integer) {
-                        ((HippyInstanceLifecycleEventListener) engineContext).onInstanceDestroy((Integer) valueObj);
-                    }
-                } else {
-                    ViewGroup rootView = engineContext.getRootView();
-                    if (rootView != null) {
-                        ((HippyInstanceLifecycleEventListener) engineContext).onInstanceDestroy(rootView.getId());
-                    }
-                }
+                engineContext.onRootViewsRemoved(roots);
             }
         });
     }

@@ -41,6 +41,7 @@ import com.tencent.mtt.hippy.modules.HippyModuleManager;
 import com.tencent.mtt.hippy.modules.HippyModulePromise.BridgeTransferType;
 import com.tencent.mtt.hippy.runtime.builtins.JSObject;
 import com.tencent.mtt.hippy.runtime.builtins.JSValue;
+import com.tencent.mtt.hippy.runtime.builtins.array.JSDenseArray;
 import com.tencent.mtt.hippy.serialization.PrimitiveValueSerializer;
 import com.tencent.mtt.hippy.serialization.compatible.Serializer;
 import com.tencent.mtt.hippy.serialization.nio.writer.SafeDirectWriter;
@@ -51,7 +52,7 @@ import com.tencent.mtt.hippy.utils.I18nUtil;
 import com.tencent.mtt.hippy.utils.TimeMonitor;
 
 import java.lang.ref.WeakReference;
-import java.util.HashMap;
+import java.util.List;
 import org.json.JSONObject;
 
 import java.nio.ByteBuffer;
@@ -297,20 +298,21 @@ public class HippyBridgeManagerImpl implements HippyBridgeManager, HippyBridge.B
                 }
                 case MSG_CODE_RUN_BUNDLE: {
                     HippyBundleLoader loader = (HippyBundleLoader) msg.obj;
+                    final int rootId = msg.arg2;
                     if (mBridgeState != BridgeState.INITIALIZED) {
-                        mContext.onLoadModuleCompleted(ModuleLoadStatus.STATUS_ENGINE_UNINIT,
+                        mContext.onLoadModuleCompleted(rootId, ModuleLoadStatus.STATUS_ENGINE_UNINIT,
                                 "load module error. bridge state: " + mBridgeState);
                         return true;
                     }
                     if (loader == null) {
-                        mContext.onLoadModuleCompleted(ModuleLoadStatus.STATUS_VARIABLE_NULL,
+                        mContext.onLoadModuleCompleted(rootId, ModuleLoadStatus.STATUS_VARIABLE_NULL,
                                 "load module error. loader:" + null);
                         return true;
                     }
                     final String bundleUniKey = loader.getBundleUniKey();
                     if (mLoadedBundleInfo != null && !TextUtils.isEmpty(bundleUniKey)
                             && mLoadedBundleInfo.contains(bundleUniKey)) {
-                        mContext.onLoadModuleCompleted(ModuleLoadStatus.STATUS_REPEAT_LOAD,
+                        mContext.onLoadModuleCompleted(rootId, ModuleLoadStatus.STATUS_REPEAT_LOAD,
                                 "repeat load module. loader.getBundleUniKey=" + bundleUniKey);
                         return true;
                     }
@@ -326,12 +328,12 @@ public class HippyBridgeManagerImpl implements HippyBridgeManager, HippyBridge.B
                                     String reason) {
                                 if (result == 0) {
                                     if (contextWeakRef.get() != null) {
-                                        contextWeakRef.get().onLoadModuleCompleted(ModuleLoadStatus.STATUS_OK,
+                                        contextWeakRef.get().onLoadModuleCompleted(rootId, ModuleLoadStatus.STATUS_OK,
                                                 null);
                                     }
                                 } else {
                                     if (contextWeakRef.get() != null) {
-                                        contextWeakRef.get().onLoadModuleCompleted(
+                                        contextWeakRef.get().onLoadModuleCompleted(rootId,
                                                 ModuleLoadStatus.STATUS_ERR_RUN_BUNDLE,
                                                 "load module error. loader.load failed. check the file!!");
                                     }
@@ -342,7 +344,7 @@ public class HippyBridgeManagerImpl implements HippyBridgeManager, HippyBridge.B
                             }
                         });
                     } else {
-                        mContext.onLoadModuleCompleted(ModuleLoadStatus.STATUS_VARIABLE_NULL,
+                        mContext.onLoadModuleCompleted(rootId, ModuleLoadStatus.STATUS_VARIABLE_NULL,
                                 "can not load module. loader.getBundleUniKey=null");
                     }
                     return true;
@@ -403,29 +405,39 @@ public class HippyBridgeManagerImpl implements HippyBridgeManager, HippyBridge.B
         }
     }
 
+    private JSDenseArray getJSArrayObject(List<Integer> ids) {
+        JSDenseArray array = new JSDenseArray();
+        if (ids != null) {
+            for (Integer id : ids) {
+                array.push(id);
+            }
+        }
+        return array;
+    }
+
     @Override
-    public void resumeInstance(int id) {
+    public void resumeInstance(List<Integer> ids) {
         if (mHandler != null) {
             Message message = mHandler
-                    .obtainMessage(MSG_CODE_CALL_FUNCTION, 0, FUNCTION_ACTION_RESUME_INSTANCE, id);
+                    .obtainMessage(MSG_CODE_CALL_FUNCTION, 0, FUNCTION_ACTION_RESUME_INSTANCE, getJSArrayObject(ids));
             mHandler.sendMessage(message);
         }
     }
 
     @Override
-    public void pauseInstance(int id) {
+    public void pauseInstance(List<Integer> ids) {
         if (mHandler != null) {
             Message message = mHandler
-                    .obtainMessage(MSG_CODE_CALL_FUNCTION, 0, FUNCTION_ACTION_PAUSE_INSTANCE, id);
+                    .obtainMessage(MSG_CODE_CALL_FUNCTION, 0, FUNCTION_ACTION_PAUSE_INSTANCE, getJSArrayObject(ids));
             mHandler.sendMessage(message);
         }
     }
 
     @Override
-    public void destroyInstance(int id) {
+    public void destroyInstance(List<Integer> ids) {
         if (mHandler != null) {
             JSObject jsObject = new JSObject();
-            jsObject.set("id", id);
+            jsObject.set("id", getJSArrayObject(ids));
             Message message = mHandler
                     .obtainMessage(MSG_CODE_CALL_FUNCTION, 0, FUNCTION_ACTION_DESTROY_INSTANCE,
                             jsObject);

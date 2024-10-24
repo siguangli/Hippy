@@ -67,11 +67,9 @@ public final class HippyInstanceContext extends ContextWrapper {
     } else {
       assert params != null;
       if (!TextUtils.isEmpty(params.jsAssetsPath)) {
-        mBundleLoader = new HippyAssetBundleLoader(params.context, params.jsAssetsPath,
-            !TextUtils.isEmpty(params.codeCacheTag), params.codeCacheTag);
+        mBundleLoader = new HippyAssetBundleLoader(params.context, params.jsAssetsPath, params.codeCacheTag);
       } else if (!TextUtils.isEmpty(params.jsFilePath)) {
-        mBundleLoader = new HippyFileBundleLoader(params.jsFilePath,
-            !TextUtils.isEmpty(params.codeCacheTag), params.codeCacheTag);
+        mBundleLoader = new HippyFileBundleLoader(params.jsFilePath, params.codeCacheTag);
       }
     }
   }

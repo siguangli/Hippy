@@ -16,6 +16,8 @@
 package com.tencent.mtt.hippy.modules;
 
 
+import static com.tencent.renderer.NativeRenderer.INVALID_NODE_ID;
+
 import android.text.TextUtils;
 
 import com.tencent.mtt.hippy.HippyEngineContext;
@@ -92,7 +94,7 @@ public class PromiseImpl implements HippyModulePromise {
             return false;
         }
         return adapter
-                .onInterceptPromiseCallback(context.getComponentName(), mModuleName, mModuleFunc,
+                .onInterceptPromiseCallback(context.getComponentName(INVALID_NODE_ID), mModuleName, mModuleFunc,
                         mCallId, resultObject);
     }
 
