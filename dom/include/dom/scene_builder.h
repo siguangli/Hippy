@@ -44,7 +44,7 @@ struct EventListenerInfo {
 };
 class SceneBuilder {
  public:
-  SceneBuilder() = default;
+  SceneBuilder(int rootViewId) : rootViewId(rootViewId) {}
   ~SceneBuilder() = default;
 
   static void Create(const std::weak_ptr<DomManager>& dom_manager,
@@ -68,6 +68,7 @@ class SceneBuilder {
                            const EventListenerInfo& event_listener_info);
   static void Build(const std::weak_ptr<DomManager>& dom_manager,
              const std::weak_ptr<RootNode>& root_node);
+  int rootViewId; // 存储 rootViewId
 };
 
 }

@@ -27,10 +27,12 @@ type RootContainer = any;
 let rootContainer: RootContainer;
 let rootViewId: number;
 const fiberNodeCache = new Map();
+const rootViewMap = new Map<number, RootContainer>();
 
 function setRootContainer(rootId: number, root: RootContainer) {
   rootViewId = rootId;
   rootContainer = root;
+  rootViewMap.set(rootViewId, rootContainer);
 }
 
 function getRootContainer(): RootContainer {
@@ -246,4 +248,5 @@ export {
   unCacheFiberNodeOnIdle,
   recursivelyUnCacheFiberNode,
   isTextNode,
+  rootViewMap,
 };
