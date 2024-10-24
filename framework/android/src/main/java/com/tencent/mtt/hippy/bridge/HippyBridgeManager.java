@@ -22,6 +22,7 @@ import com.tencent.mtt.hippy.common.Callback;
 import com.tencent.mtt.hippy.common.HippyJsException;
 import com.tencent.mtt.hippy.common.HippyMap;
 import com.tencent.mtt.hippy.modules.HippyModulePromise.BridgeTransferType;
+import java.util.List;
 
 @SuppressWarnings({"deprecation", "unused"})
 public interface HippyBridgeManager {
@@ -32,11 +33,11 @@ public interface HippyBridgeManager {
 
   void loadInstance(String name, int id, HippyMap params);
 
-  void resumeInstance(int id);
+  void resumeInstance(List<Integer> ids);
 
-  void pauseInstance(int id);
+  void pauseInstance(List<Integer> ids);
 
-  void destroyInstance(int id);
+  void destroyInstance(List<Integer> ids);
 
   void execCallback(Object params, BridgeTransferType transferType);
 

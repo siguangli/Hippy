@@ -197,7 +197,7 @@ public class DevServerImpl implements DevServerInterface, View.OnClickListener,
     @Override
     public void reload() {
         if (mServerCallBack != null) {
-            mServerCallBack.onDebugReLoad();
+            mServerCallBack.onDebugReLoad(10);
         }
     }
 

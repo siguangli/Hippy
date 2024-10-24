@@ -70,7 +70,7 @@ public abstract class HippyViewController<T extends View & HippyViewBase> implem
             @NonNull String className, @Nullable Map<String, Object> props) {
         View view = null;
         Context context = rootView.getContext();
-        Object object = renderer != null ? renderer.getCustomViewCreator() : null;
+        Object object = renderer != null ? renderer.getCustomViewCreator(rootView.getId()) : null;
         if (object instanceof HippyCustomViewCreator) {
             view = ((HippyCustomViewCreator) object)
                     .createCustomView(className, context, props);

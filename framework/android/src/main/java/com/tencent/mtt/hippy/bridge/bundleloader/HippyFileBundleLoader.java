@@ -29,24 +29,20 @@ public class HippyFileBundleLoader implements HippyBundleLoader {
 
   final String mFilePath;
 
-  private boolean mCanUseCodeCache;
-
   private String mCodeCacheTag;
 
   @SuppressWarnings("unused")
   public HippyFileBundleLoader(String filePath) {
-    this(filePath, false, "");
+    this(filePath, "");
   }
 
-  public HippyFileBundleLoader(String filePath, boolean canUseCodeCache, String codeCacheTag) {
+  public HippyFileBundleLoader(String filePath, String codeCacheTag) {
     this.mFilePath = filePath;
-    this.mCanUseCodeCache = canUseCodeCache;
     this.mCodeCacheTag = codeCacheTag;
   }
 
   @SuppressWarnings("unused")
-  public void setCodeCache(boolean canUseCodeCache, String codeCacheTag) {
-    this.mCanUseCodeCache = canUseCodeCache;
+  public void setCodeCache(String codeCacheTag) {
     this.mCodeCacheTag = codeCacheTag;
   }
 
@@ -58,7 +54,7 @@ public class HippyFileBundleLoader implements HippyBundleLoader {
 
     String uri =
         (!mFilePath.startsWith(URI_SCHEME_FILE)) ? (URI_SCHEME_FILE + mFilePath) : mFilePath;
-    boolean ret = bridge.runScriptFromUri(uri, null, mCanUseCodeCache, mCodeCacheTag, callback);
+    boolean ret = bridge.runScriptFromUri(uri, null, !TextUtils.isEmpty(mCodeCacheTag), mCodeCacheTag, callback);
     LogUtils.d("HippyFileBundleLoader", "load: ret" + ret);
   }
 
@@ -83,7 +79,7 @@ public class HippyFileBundleLoader implements HippyBundleLoader {
 
   @Override
   public boolean canUseCodeCache() {
-    return mCanUseCodeCache;
+    return !TextUtils.isEmpty(mCodeCacheTag);
   }
 
   @Override

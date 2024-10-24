@@ -33,25 +33,20 @@ public class HippyAssetBundleLoader implements HippyBundleLoader {
 
   private final String mAssetPath;
 
-  private boolean mCanUseCodeCache;
-
   private String mCodeCacheTag;
 
   public HippyAssetBundleLoader(Context context, String assetName) {
-    this(context, assetName, false, "");
+    this(context, assetName, "");
   }
 
-  public HippyAssetBundleLoader(Context context, String assetName, boolean canUseCodeCache,
-      String codeCacheTag) {
+  public HippyAssetBundleLoader(Context context, String assetName, String codeCacheTag) {
     this.mContext = context;
     this.mAssetPath = assetName;
-    this.mCanUseCodeCache = canUseCodeCache;
     this.mCodeCacheTag = codeCacheTag;
   }
 
   @SuppressWarnings("unused")
-  public void setCodeCache(boolean canUseCodeCache, String codeCacheTag) {
-    this.mCanUseCodeCache = canUseCodeCache;
+  public void setCodeCache(String codeCacheTag) {
     this.mCodeCacheTag = codeCacheTag;
   }
 
@@ -72,7 +67,7 @@ public class HippyAssetBundleLoader implements HippyBundleLoader {
     }
 
     boolean ret = bridge
-        .runScriptFromUri(uri, assetManager, mCanUseCodeCache, mCodeCacheTag, callback);
+        .runScriptFromUri(uri, assetManager, !TextUtils.isEmpty(mCodeCacheTag), mCodeCacheTag, callback);
     LogUtils.d("HippyAssetBundleLoader", "load: ret" + ret);
   }
 
@@ -97,7 +92,7 @@ public class HippyAssetBundleLoader implements HippyBundleLoader {
 
   @Override
   public boolean canUseCodeCache() {
-    return mCanUseCodeCache;
+    return !TextUtils.isEmpty(mCodeCacheTag);
   }
 
   @Override

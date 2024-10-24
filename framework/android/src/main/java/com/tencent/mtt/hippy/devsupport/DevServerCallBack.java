@@ -20,5 +20,5 @@ public interface DevServerCallBack {
 
     void onInitDevError(Throwable e);
 
-    void onDebugReLoad();
+    void onDebugReLoad(int rootId);
 }

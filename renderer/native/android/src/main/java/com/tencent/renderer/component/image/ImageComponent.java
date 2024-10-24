@@ -83,7 +83,7 @@ public class ImageComponent extends Component {
 
     private void init(@NonNull RenderNode node, @Nullable Component component) {
         mImageLoader = node.getNativeRender().getImageLoader();
-        mBundlePath = node.getNativeRender().getBundlePath();
+        mBundlePath = node.getNativeRender().getBundlePath(node.getRootId());
         if (component != null) {
             mBackgroundDrawable = component.getBackgroundDrawable();
             mContentDrawable = component.getContentDrawable();

@@ -80,10 +80,7 @@ public abstract class HippyEngine {
     @SuppressWarnings("unchecked")
     final CopyOnWriteArrayList<EngineListener> mEventListeners = new CopyOnWriteArrayList();
     volatile EngineState mCurrentState = EngineState.UNINIT;
-    // Engine所属的分组ID，同一个组共享线程和isolate，不同context
     protected int mGroupId;
-    ModuleListener mModuleListener;
-
     private static HippyLogAdapter sLogAdapter = null;
 
     @SuppressWarnings("JavaJniMissingFunction")
@@ -221,11 +218,12 @@ public abstract class HippyEngine {
      *
      * @param context host container activity, if this parameter is null, the context of the target view will be
      *         used, if all context is not of activity type, an exception will be thrown
+     * @param rootId the root view id
      * @param id the target view id
      * @param callback the result callback {@link ScreenshotBuildCallback}
      * @throws IllegalArgumentException
      */
-    public abstract void getScreenshotBitmapForView(@Nullable Context context, int id,
+    public abstract void getScreenshotBitmapForView(@Nullable Context context, int rootId, int id,
             @NonNull ScreenshotBuildCallback callback);
 
     /**

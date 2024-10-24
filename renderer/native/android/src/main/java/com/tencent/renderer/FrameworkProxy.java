@@ -43,10 +43,10 @@ public interface FrameworkProxy {
     Executor getBackgroundExecutor();
 
     @Nullable
-    Object getCustomViewCreator();
+    Object getCustomViewCreator(int rootId);
 
     @Nullable
-    String getBundlePath();
+    String getBundlePath(int rootId);
 
     @NonNull
     BaseEngineContext getEngineContext();
@@ -55,7 +55,7 @@ public interface FrameworkProxy {
 
     void onFirstPaint(int rootId);
 
-    void onFirstContentfulPaint();
+    void onFirstContentfulPaint(int rootId);
 
     void handleNativeException(Exception exception);
 

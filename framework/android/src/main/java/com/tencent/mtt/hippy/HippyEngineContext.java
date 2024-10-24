@@ -26,23 +26,20 @@ import com.tencent.devtools.DevtoolsManager;
 import com.tencent.mtt.hippy.HippyEngine.ModuleLoadStatus;
 import com.tencent.mtt.hippy.bridge.HippyBridgeManager;
 import com.tencent.mtt.hippy.common.BaseEngineContext;
-import com.tencent.mtt.hippy.common.HippyMap;
 import com.tencent.mtt.hippy.common.ThreadExecutor;
 import com.tencent.mtt.hippy.devsupport.DevSupportManager;
 import com.tencent.mtt.hippy.modules.HippyModuleManager;
+import com.tencent.mtt.hippy.runtime.builtins.array.JSDenseArray;
 import com.tencent.mtt.hippy.utils.TimeMonitor;
 import com.tencent.vfs.VfsManager;
 import java.util.HashMap;
 
 public interface HippyEngineContext extends BaseEngineContext {
 
-    String getComponentName();
+    String getComponentName(int rootId);
 
     @Nullable
-    HashMap<String, Object> getNativeParams();
-
-    @Nullable
-    HippyMap getJsParams();
+    HashMap<String, Object> getNativeParams(int rootId);
 
     @NonNull
     VfsManager getVfsManager();
@@ -65,12 +62,8 @@ public interface HippyEngineContext extends BaseEngineContext {
 
     ThreadExecutor getThreadExecutor();
 
-    ViewGroup getRootView();
-
-    View getRootView(int rootId);
-
     @Nullable
-    View findViewById(int nodeId);
+    View findViewById(int rootId, int nodeId);
 
     void addEngineLifecycleEventListener(HippyEngineLifecycleEventListener listener);
 
@@ -84,11 +77,13 @@ public interface HippyEngineContext extends BaseEngineContext {
 
     int getDevtoolsId();
 
+    void onRootViewsRemoved(JSDenseArray roots);
+
     void onRuntimeInitialized();
 
     void onBridgeDestroyed(boolean isReload, Throwable e);
 
-    void onLoadModuleCompleted(ModuleLoadStatus statusCode, @Nullable String msg);
+    void onLoadModuleCompleted(int rootId, ModuleLoadStatus statusCode, @Nullable String msg);
 
     void onLoadInstanceCompleted(long result, String reason);
 }

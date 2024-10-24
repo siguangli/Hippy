@@ -96,6 +96,7 @@ public class NativeRenderer extends Renderer implements NativeRender, NativeRend
      * This specific ID is used to identify the root view of snapshot restore
      */
     public static final int SCREEN_SNAPSHOT_ROOT_ID = 10000;
+    public static final int INVALID_NODE_ID = -1;
     public static final String NODE_ID = "id";
     public static final String NODE_INDEX = "index";
     public static final String NODE_PROPS = "props";
@@ -117,7 +118,6 @@ public class NativeRenderer extends Renderer implements NativeRender, NativeRend
      */
     private static final int MAX_UI_TASK_QUEUE_CAPACITY = 1000;
     private static final int ROOT_VIEW_ID_INCREMENT = 10;
-    private static final int INVALID_NODE_ID = -1;
     private static final AtomicInteger sRootIdCounter = new AtomicInteger(0);
     private FCPBatchState mFcpBatchState = FCPBatchState.WATCHING;
     @Nullable
@@ -202,16 +202,16 @@ public class NativeRenderer extends Renderer implements NativeRender, NativeRend
 
     @Override
     @Nullable
-    public Object getCustomViewCreator() {
+    public Object getCustomViewCreator(int rootId) {
         FrameworkProxy frameworkProxy = getFrameworkProxy();
-        return (frameworkProxy != null) ? frameworkProxy.getCustomViewCreator() : null;
+        return (frameworkProxy != null) ? frameworkProxy.getCustomViewCreator(rootId) : null;
     }
 
     @Override
     @Nullable
-    public String getBundlePath() {
+    public String getBundlePath(int rootId) {
         FrameworkProxy frameworkProxy = getFrameworkProxy();
-        return (frameworkProxy != null) ? frameworkProxy.getBundlePath() : null;
+        return (frameworkProxy != null) ? frameworkProxy.getBundlePath(rootId) : null;
     }
 
     @Override
@@ -381,10 +381,10 @@ public class NativeRenderer extends Renderer implements NativeRender, NativeRend
     }
 
     @Override
-    public void onFirstContentfulPaint() {
+    public void onFirstContentfulPaint(int rootId) {
         FrameworkProxy frameworkProxy = getFrameworkProxy();
         if (frameworkProxy != null) {
-            frameworkProxy.onFirstContentfulPaint();
+            frameworkProxy.onFirstContentfulPaint(rootId);
         }
     }
 
@@ -866,7 +866,7 @@ public class NativeRenderer extends Renderer implements NativeRender, NativeRend
             addUITask(() -> {
                 mRenderManager.batch(rootId);
                 if (isFcp) {
-                    onFirstContentfulPaint();
+                    onFirstContentfulPaint(rootId);
                 }
             });
             if (isFcp) {
