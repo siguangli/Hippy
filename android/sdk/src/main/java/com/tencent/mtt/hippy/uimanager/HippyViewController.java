@@ -236,7 +236,7 @@ public abstract class HippyViewController<T extends View & HippyViewBase> implem
   @Deprecated
   @HippyControllerProps(name = "setVisible", defaultType = HippyControllerProps.BOOLEAN, defaultBoolean = true)
   public void setVisible(T view, boolean flag) {
-    view.setVisibility(flag ? View.VISIBLE : View.INVISIBLE);
+    view.setVisibility(flag ? View.VISIBLE : View.GONE);
   }
 
   @HippyControllerProps(name = "visibility", defaultType = HippyControllerProps.STRING, defaultString = NodeProps.VISIBLE)
@@ -245,6 +245,8 @@ public abstract class HippyViewController<T extends View & HippyViewBase> implem
       view.setVisibility(View.VISIBLE);
     } else if (NodeProps.HIDDEN.equals(value)) {
       view.setVisibility(View.INVISIBLE);
+    } else if (NodeProps.GONE.equals(value)) {
+      view.setVisibility(View.GONE);
     } else {
       throw new RuntimeException("Invalid visibility: " + value);
     }
