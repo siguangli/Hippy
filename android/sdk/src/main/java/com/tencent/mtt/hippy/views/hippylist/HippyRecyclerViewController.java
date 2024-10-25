@@ -49,6 +49,7 @@ public class HippyRecyclerViewController<HRW extends HippyRecyclerViewWrapper> e
     public static final String SCROLL_TO_INDEX = "scrollToIndex";
     public static final String SCROLL_TO_CONTENT_OFFSET = "scrollToContentOffset";
     public static final String SCROLL_TO_TOP = "scrollToTop";
+    public static final String STOP_SCROLL = "stopScroll";
     public static final String HORIZONTAL = "horizontal";
 
     public HippyRecyclerViewController() {
@@ -267,6 +268,10 @@ public class HippyRecyclerViewController<HRW extends HippyRecyclerViewWrapper> e
             }
             case SCROLL_TO_TOP: {
                 view.scrollToTop();
+                break;
+            }
+            case STOP_SCROLL: {
+                view.stopScroll();
                 break;
             }
         }

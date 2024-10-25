@@ -192,6 +192,10 @@ public class HippyListViewController extends HippyViewController<HippyListView> 
         view.scrollToTop(null);
         break;
       }
+      case "stopScroll": {
+        view.stopScroll();
+        break;
+      }
     }
   }
 }
