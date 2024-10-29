@@ -18,6 +18,7 @@ package com.tencent.mtt.hippy.views.text;
 import android.content.Context;
 import android.text.Layout;
 import android.text.Spannable;
+import android.text.Spanned;
 import android.view.View;
 import com.tencent.mtt.hippy.annotation.HippyController;
 import com.tencent.mtt.hippy.dom.node.HippyNativeGestureSpan;
@@ -44,8 +45,8 @@ public class HippyTextViewController extends HippyViewController<HippyTextView> 
       HippyTextView hippyTextView = (HippyTextView) view;
       Layout layout = (Layout) textExtra.mExtra;
       CharSequence textSequence = layout.getText();
-      if (textSequence instanceof Spannable) {
-        Spannable spannable = (Spannable) textSequence;
+      if (textSequence instanceof Spanned) {
+        Spanned spannable = (Spanned) textSequence;
         HippyNativeGestureSpan[] spans = spannable
             .getSpans(0, spannable.length(), HippyNativeGestureSpan.class);
         hippyTextView.setNativeGestureEnable(spans != null && spans.length > 0);

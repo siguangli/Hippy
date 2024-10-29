@@ -32,6 +32,7 @@ import android.text.SpannedString;
 import android.text.StaticLayout;
 import android.text.TextPaint;
 import android.text.TextUtils;
+import android.text.TextUtils.TruncateAt;
 import android.text.style.AbsoluteSizeSpan;
 import android.text.style.BackgroundColorSpan;
 import android.text.style.ImageSpan;
@@ -767,21 +768,26 @@ public class TextNode extends StyleNode {
     } else {
       float desiredWidth = Layout.getDesiredWidth(text, textPaint);
       if (!unconstrainedWidth && (widthMode == FlexMeasureMode.EXACTLY || desiredWidth > width)) {
-          desiredWidth = width;
+        desiredWidth = width;
       }
-      layout = buildStaticLayout(text, textPaint, (int) Math.ceil(desiredWidth));
-      if (mNumberOfLines != UNSET && mNumberOfLines > 0) {
-        if (layout.getLineCount() > mNumberOfLines) {
+      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && MODE_TAIL.equals(mEllipsizeMode)) {
+        layout = buildTruncateAtEndStaticLayout(mSpanned, textPaint, (int) Math.ceil(desiredWidth), mNumberOfLines);
+      } else {
+        layout = buildStaticLayout(mSpanned, textPaint, (int) Math.ceil(desiredWidth));
+        if (mNumberOfLines != UNSET && mNumberOfLines > 0 && layout.getLineCount() > mNumberOfLines) {
           int lastLineStart = layout.getLineStart(mNumberOfLines - 1);
           int lastLineEnd = layout.getLineEnd(mNumberOfLines - 1);
           if (lastLineStart < lastLineEnd) {
-            int measureWidth = (int)Math.ceil(unconstrainedWidth ? desiredWidth : width);
-            layout = truncateLayoutWithNumberOfLine(layout, measureWidth, mNumberOfLines);
+            int measureWidth = (int) Math.ceil(unconstrainedWidth ? desiredWidth : width);
+            try {
+              layout = truncateLayoutWithNumberOfLine(layout, measureWidth, mNumberOfLines);
+            } catch (Exception e) {
+              e.printStackTrace();
+            }
           }
         }
       }
     }
-
     assert layout != null;
     CharSequence layoutText = layout.getText();
     if (layoutText instanceof Spanned) {
@@ -795,6 +801,26 @@ public class TextNode extends StyleNode {
         }
     }
     return layout;
+  }
+
+  @RequiresApi(api = Build.VERSION_CODES.M)
+  private StaticLayout buildTruncateAtEndStaticLayout(CharSequence source, TextPaint paint, int width, int numberOfLines) {
+    Layout.Alignment alignment = mTextAlign;
+    if (I18nUtil.isRTL()) {
+      BidiFormatter bidiFormatter = BidiFormatter.getInstance();
+      if (bidiFormatter.isRtl(source.toString())
+              && mTextAlign == Layout.Alignment.ALIGN_OPPOSITE) {
+        alignment = Layout.Alignment.ALIGN_NORMAL;
+      }
+    }
+    return StaticLayout.Builder.obtain(source, 0, source.length(), paint, width)
+            .setAlignment(alignment)
+            .setLineSpacing(mLineSpacingExtra, getLineSpacingMultiplier())
+            .setIncludePad(true)
+            .setMaxLines(numberOfLines)
+            .setEllipsize(TruncateAt.END)
+            .setBreakStrategy(getBreakStrategy())
+            .build();
   }
 
   private TextPaint getTextPaint() {
