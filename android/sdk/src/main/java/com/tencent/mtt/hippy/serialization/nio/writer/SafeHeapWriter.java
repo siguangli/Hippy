@@ -15,6 +15,7 @@
  */
 package com.tencent.mtt.hippy.serialization.nio.writer;
 
+import com.tencent.mtt.hippy.utils.LogUtils;
 import java.nio.ByteBuffer;
 
 @SuppressWarnings({"unused"})
@@ -78,17 +79,21 @@ public final class SafeHeapWriter extends AbstractBinaryWriter {
     if (count + 10 > value.length) {
       enlargeBuffer(count + 10);
     }
-
+    LogUtils.d("putVarint", "putVarint l " + l + ", count " + count);
     long rest = l;
     int bytes = 0;
     byte b;
     do {
       b = (byte) rest;
+      LogUtils.d("putVarint", "putVarint origin b " + b + ", count " + count);
       b |= 0x80;
+      LogUtils.d("putVarint", "putVarint b " + Byte.toUnsignedInt(b) + ", count " + count);
       value[count++] = b;
       rest >>>= 7;
       bytes++;
     } while (rest != 0);
+    byte bb = (byte) (b & 0x7f);
+    LogUtils.d("putVarint", "putVarint bb " + Byte.toUnsignedInt(bb) + ", bytes " + bytes + ", count " + count);
     value[count - 1] = (byte) (b & 0x7f);
     return bytes;
   }
