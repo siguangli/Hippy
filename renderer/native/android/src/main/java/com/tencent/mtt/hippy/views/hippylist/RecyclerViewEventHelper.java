@@ -467,7 +467,7 @@ public class RecyclerViewEventHelper extends OnScrollListener implements OnLayou
         }
     }
 
-    protected void checkSendExposureEvent() {
+    public void checkSendExposureEvent() {
         if (!exposureEventEnable) {
             return;
         }
