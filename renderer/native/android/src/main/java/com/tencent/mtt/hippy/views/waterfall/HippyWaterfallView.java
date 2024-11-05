@@ -28,6 +28,8 @@ import com.tencent.mtt.hippy.views.hippylist.HippyRecyclerView;
 public class HippyWaterfallView extends HippyRecyclerView implements ClipChildrenView {
 
     static final String TAG = "HippyWaterfallView";
+    private int contentInsetTop = 0;
+    private int contentInsetBottom = 0;
 
     public HippyWaterfallView(Context context) {
         super(context);
@@ -60,6 +62,19 @@ public class HippyWaterfallView extends HippyRecyclerView implements ClipChildre
         if (decoration instanceof HippyGridSpacesItemDecoration) {
             ((HippyGridSpacesItemDecoration) decoration).setItemSpacing(itemSpacing);
         }
+    }
+
+    public void setContentInset(int left, int top, int right, int bottom) {
+        contentInsetTop = top;
+        contentInsetBottom = bottom;
+    }
+
+    public int getContentInsetTop() {
+        return contentInsetTop;
+    }
+
+    public int getContentInsetBottom() {
+        return contentInsetBottom;
     }
 
     @Override

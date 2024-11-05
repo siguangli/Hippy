@@ -19,6 +19,8 @@ package com.tencent.mtt.hippy.views.hippylist;
 import static androidx.recyclerview.widget.RecyclerView.SCROLL_STATE_DRAGGING;
 import static androidx.recyclerview.widget.RecyclerView.SCROLL_STATE_IDLE;
 import static androidx.recyclerview.widget.RecyclerView.SCROLL_STATE_SETTLING;
+import static com.tencent.mtt.hippy.views.list.HippyListItemView.EXPOSURE_STATE_FULL_VISIBLE;
+import static com.tencent.mtt.hippy.views.list.HippyListItemView.EXPOSURE_STATE_PART_VISIBLE;
 
 import android.graphics.Rect;
 import androidx.annotation.NonNull;
@@ -47,6 +49,8 @@ import com.tencent.mtt.hippy.uimanager.HippyViewEvent;
 import com.tencent.mtt.hippy.utils.LogUtils;
 import com.tencent.mtt.hippy.utils.PixelUtil;
 import com.tencent.mtt.hippy.views.list.HippyListItemView;
+import com.tencent.mtt.hippy.views.waterfall.HippyWaterfallView;
+import com.tencent.renderer.node.RenderNode;
 import com.tencent.renderer.utils.EventUtils;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -214,10 +218,59 @@ public class RecyclerViewEventHelper extends OnScrollListener implements OnLayou
         }
     }
 
+    private void setContentInsetIfNeeded() {
+        HippyRecyclerListAdapter adapter = hippyRecyclerView.getAdapter();
+        int childCount = hippyRecyclerView.getChildCount();
+        RenderNode firstNode = adapter.getFirstChildNode();
+        HippyListItemView listItemView = null;
+        for (int i = 0; i < childCount; i++) {
+            listItemView = (HippyListItemView) findHippyListItemView((ViewGroup) hippyRecyclerView.getChildAt(i));
+            if (listItemView != null) {
+                break;
+            }
+        }
+        if (listItemView != null && firstNode != null && listItemView.getId() == firstNode.getId()) {
+            int newState = calculateExposureState(listItemView);
+            if (EXPOSURE_STATE_FULL_VISIBLE == newState) {
+                int insetTop = ((HippyWaterfallView) hippyRecyclerView).getContentInsetTop();
+                if (hippyRecyclerView.getPaddingTop() != insetTop) {
+                    hippyRecyclerView.setPadding(hippyRecyclerView.getPaddingLeft(), insetTop,
+                            hippyRecyclerView.getPaddingLeft(), hippyRecyclerView.getPaddingBottom());
+                }
+            }
+        } else if (hippyRecyclerView.getPaddingTop() != 0) {
+            hippyRecyclerView.setPadding(hippyRecyclerView.getPaddingLeft(), 0,
+                    hippyRecyclerView.getPaddingLeft(), hippyRecyclerView.getPaddingBottom());
+        }
+        for (int i = (childCount - 1); i >= 0; i--) {
+            listItemView = (HippyListItemView) findHippyListItemView((ViewGroup) hippyRecyclerView.getChildAt(i));
+            if (listItemView != null) {
+                break;
+            }
+        }
+        RenderNode lastNode = adapter.getLastChildNode();
+        if (listItemView != null && lastNode != null && listItemView.getId() == lastNode.getId()) {
+            int newState = calculateExposureState(listItemView);
+            if (EXPOSURE_STATE_PART_VISIBLE == newState) {
+                int insetBottom = ((HippyWaterfallView) hippyRecyclerView).getContentInsetBottom();
+                if (hippyRecyclerView.getPaddingBottom() != insetBottom) {
+                    hippyRecyclerView.setPadding(hippyRecyclerView.getPaddingLeft(), hippyRecyclerView.getPaddingTop(),
+                            hippyRecyclerView.getPaddingLeft(), insetBottom);
+                }
+            }
+        } else if (hippyRecyclerView.getPaddingBottom() != 0) {
+            hippyRecyclerView.setPadding(hippyRecyclerView.getPaddingLeft(), hippyRecyclerView.getPaddingTop(),
+                    hippyRecyclerView.getPaddingLeft(), 0);
+        }
+    }
+
     @Override
     public void onScrolled(@NonNull final RecyclerView recyclerView, int dx, int dy) {
         if (scrollHappened(dx, dy)) {
             checkSendOnScrollEvent();
+        }
+        if (hippyRecyclerView instanceof HippyWaterfallView) {
+            setContentInsetIfNeeded();
         }
         checkSendExposureEvent();
         checkSendReachEndEvent();
@@ -476,9 +529,9 @@ public class RecyclerViewEventHelper extends OnScrollListener implements OnLayou
         // total area size of view
         float viewArea = view.getMeasuredWidth() * view.getMeasuredHeight();
         if (visibleArea >= viewArea) {
-            return HippyListItemView.EXPOSURE_STATE_FULL_VISIBLE;
+            return EXPOSURE_STATE_FULL_VISIBLE;
         } else if (visibleArea > viewArea * 0.1f) {
-            return HippyListItemView.EXPOSURE_STATE_PART_VISIBLE;
+            return EXPOSURE_STATE_PART_VISIBLE;
         } else {
             return HippyListItemView.EXPOSURE_STATE_INVISIBLE;
         }
@@ -514,6 +567,13 @@ public class RecyclerViewEventHelper extends OnScrollListener implements OnLayou
             if (child instanceof HippyListItemView) {
                 return child;
             }
+        }
+        return null;
+    }
+
+    private View findRealHippyListItemView(ViewGroup viewGroup) {
+        if (viewGroup instanceof HippyListItemView) {
+            return viewGroup;
         }
         return null;
     }

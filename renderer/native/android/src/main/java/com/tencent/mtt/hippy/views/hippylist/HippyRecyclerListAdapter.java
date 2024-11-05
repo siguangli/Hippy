@@ -317,6 +317,30 @@ public class HippyRecyclerListAdapter<HRCV extends HippyRecyclerView> extends Ad
         return 0;
     }
 
+    public RenderNode getFirstChildNode() {
+        RenderNode listNode = getParentNode();
+        if (listNode != null && listNode.getChildCount() > 0) {
+            RenderNode child = listNode.getChildAt(0);
+            if (child instanceof PullHeaderRenderNode) {
+                child = listNode.getChildAt(1);
+            }
+            return child;
+        }
+        return null;
+    }
+
+    public RenderNode getLastChildNode() {
+        RenderNode listNode = getParentNode();
+        if (listNode != null && listNode.getChildCount() > 0) {
+            RenderNode child = listNode.getChildAt(listNode.getChildCount() - 1);
+            if (child instanceof PullFooterRenderNode) {
+                child = listNode.getChildAt(listNode.getChildCount() - 2);
+            }
+            return child;
+        }
+        return null;
+    }
+
     /**
      * 前端展示的内容的高度
      *

@@ -203,7 +203,9 @@ public class HippyWaterfallViewController<HRW extends HippyRecyclerViewWrapper> 
         if (value instanceof Number) {
             bottom = Math.round(PixelUtil.dp2px(((Number) value).doubleValue()));
         }
-        recyclerViewWrapper.getRecyclerView().setPadding(left, top, right, bottom);
+        HippyWaterfallView waterfallView = ((HippyWaterfallView) recyclerViewWrapper.getRecyclerView());
+        waterfallView.setContentInset(left, top, right, bottom);
+        waterfallView.setPadding(left, top, right, 0);
     }
 
     @Override
