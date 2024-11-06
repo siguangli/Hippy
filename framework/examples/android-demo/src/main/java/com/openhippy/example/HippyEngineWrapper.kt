@@ -18,11 +18,10 @@ package com.openhippy.example
 import android.app.Activity
 import android.content.Context
 import android.graphics.Bitmap
-import android.os.Handler
-import android.os.Looper
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewParent
+import android.widget.ImageView
 import com.tencent.mtt.hippy.HippyAPIProvider
 import com.tencent.mtt.hippy.HippyEngine
 import com.tencent.mtt.hippy.HippyEngine.*
@@ -33,33 +32,208 @@ import com.tencent.mtt.hippy.common.HippyJsException
 import com.tencent.mtt.hippy.common.HippyMap
 import com.tencent.mtt.hippy.utils.LogUtils
 import com.tencent.mtt.hippy.utils.UIThreadUtils
+import java.lang.ref.WeakReference
 
-class HippyEngineWrapper//TODO: Coming soon
-    (
-    dm: PageConfiguration.DriverMode,
-    rm: PageConfiguration.RenderMode,
+class HippyEngineWrapper(
+    driverMode: PageConfiguration.DriverMode,
     isDebug: Boolean,
-    useNodeSnapshot: Boolean,
     debugServerHost: String
 ) {
-
-    var hippyEngine: HippyEngine
-    var hippyRootView: ViewGroup? = null
-    var hippySnapshotView: ViewGroup? = null
+    val hippyEngine: HippyEngine
+    private var engineAttachInfos: HashMap<Int, EngineAttachInfo> = HashMap()
     var devButton: View? = null
-    var screenshot: Bitmap? = null
-    var pageItem: View? = null
-    var isDebugMode: Boolean = isDebug
-    var isSnapshotMode: Boolean = useNodeSnapshot
-    val driverMode: PageConfiguration.DriverMode = dm
-    val renderMode: PageConfiguration.RenderMode = rm
-    val engineId: Int
+
+    init {
+        hippyEngine = createEngine(driverMode, isDebug, debugServerHost)
+    }
 
     companion object {
         val renderNodeSnapshot: HashMap<PageConfiguration.DriverMode, ByteArray> = HashMap()
     }
 
-    init {
+    fun onStop(rootId: Int) {
+        if (devButton == null) {
+            getRootView(rootId)?.let {
+                devButton = (hippyEngine as HippyEngineManagerImpl).getDevButton(it.id)
+            }
+        }
+        devButton?.let {
+            val parent: ViewParent? = it.parent
+            parent?.let {
+                (parent as ViewGroup).removeView(devButton)
+            }
+        }
+    }
+
+    fun onResume(context: Context, rootView: ViewGroup?) {
+        rootView?.let {
+            devButton = (hippyEngine as HippyEngineManagerImpl).getDevButton(it.id)
+            if (devButton != null) {
+                val parent: ViewParent? = devButton?.parent
+                if (parent == null) {
+                    val decorView = (context as Activity).window.decorView as ViewGroup
+                    decorView.addView(devButton)
+                }
+            }
+        }
+    }
+
+    fun destroyInstance(rootId: Int) {
+        engineAttachInfos.remove(rootId)
+        hippyEngine.destroyModule { result, e ->
+            if (engineAttachInfos.isEmpty()) {
+                hippyEngine.destroyEngine()
+            }
+        }
+    }
+
+    fun destroy() {
+        hippyEngine.destroyModule { result, e ->
+            hippyEngine.destroyEngine()
+        }
+        engineAttachInfos.clear()
+    }
+
+    fun recordRenderNodeSnapshot(rootId: Int) {
+//        val engineAttachInfo = engineAttachInfos[rootId]
+//        hippyEngine?.recordSnapshot(hippyRootView as View) {
+//                buffer, e ->
+//            run {
+//                buffer?.let {
+//                    renderNodeSnapshot[driverMode] = buffer
+//                }
+//            }
+//        }
+    }
+
+    fun getRootView(rootId: Int): ViewGroup? {
+        var engineAttachInfo = engineAttachInfos[rootId]
+        return engineAttachInfo?.rootView
+    }
+
+    fun getScreenshot(rootId: Int): Bitmap? {
+        var engineAttachInfo = engineAttachInfos[rootId]
+        return engineAttachInfo?.screenshot
+    }
+
+    fun getEngineAttachInfo(rootId: Int): EngineAttachInfo? {
+        return engineAttachInfos[rootId]
+    }
+
+    fun resetPageItem() {
+        for (engineAttachInfo in engineAttachInfos.values) {
+            engineAttachInfo.pageItem = null
+        }
+    }
+
+    fun setPageItem(rootId: Int, pageItem: View) {
+        var engineAttachInfo = engineAttachInfos[rootId]
+        engineAttachInfo?.pageItem = pageItem
+    }
+
+    fun getEngineId(): Int {
+        return hippyEngine.engineId
+    }
+
+    fun getPageCount(): Int {
+        return engineAttachInfos.size
+    }
+
+    fun collectEngineAttachInfo(engineAttachInfoList: ArrayList<EngineAttachInfo>) {
+        for (engineAttachInfo in engineAttachInfos.values) {
+            engineAttachInfoList.add(engineAttachInfo)
+        }
+    }
+
+    fun resetPageItemImage() {
+        for (engineAttachInfo in engineAttachInfos.values) {
+            engineAttachInfo.pageItem?.let {
+                val pageItemImage = it.findViewById<ImageView>(R.id.page_item_image)
+                engineAttachInfo.screenshot?.let {
+                    pageItemImage.setImageBitmap(engineAttachInfo.screenshot)
+                }
+            }
+        }
+    }
+
+    private fun buildModuleLoadParams(
+        context: Context,
+        driverMode: PageConfiguration.DriverMode
+    ): ModuleLoadParams {
+        val loadParams = ModuleLoadParams()
+        loadParams.context = context
+        loadParams.componentName = "Demo"
+        loadParams.codeCacheTag = "Demo"
+        when(driverMode) {
+            PageConfiguration.DriverMode.JS_REACT -> {
+                loadParams.jsAssetsPath = "react/index.android.js"
+            }
+            PageConfiguration.DriverMode.JS_VUE_2 -> {
+                loadParams.jsAssetsPath = "vue2/index.android.js"
+            }
+            PageConfiguration.DriverMode.JS_VUE_3 -> {
+                loadParams.jsAssetsPath = "vue3/index.android.js"
+            }
+            PageConfiguration.DriverMode.VL -> {
+                //TODO: Coming soon
+            }
+        }
+        loadParams.jsFilePath = null
+        loadParams.jsParams = HippyMap()
+        loadParams.jsParams.pushString(
+            "msgFromNative",
+            "Hi js developer, I come from native code!"
+        )
+        return loadParams
+    }
+
+    fun loadModule(context: Context,
+                   driverMode: PageConfiguration.DriverMode,
+                   isDebug: Boolean,
+                   useSnapshot: Boolean,
+                   callback: HippyEngineLoadCallback
+    ) {
+        val loadParams = buildModuleLoadParams(context, driverMode)
+        val rootView = hippyEngine.loadModule(loadParams, object : ModuleListener {
+            override fun onLoadCompleted(statusCode: ModuleLoadStatus, msg: String?) {
+                callback.onLoadModuleCompleted(statusCode, msg)
+            }
+
+            override fun onJsException(exception: HippyJsException): Boolean {
+                return true
+            }
+
+            override fun onFirstViewAdded() {
+//                snapshotView?.let {
+//                    val handler = Handler(Looper.getMainLooper())
+//                    handler.postDelayed({
+//                        hippyEngine?.removeSnapshotView()
+//                    }, 400)
+//                }
+            }
+        })
+        val loadCallbackTask = Runnable {
+            val engineAttachInfo = EngineAttachInfo(rootView, driverMode, useSnapshot, this@HippyEngineWrapper)
+            engineAttachInfos[rootView.id] = engineAttachInfo;
+            callback.onCreateRootView(rootView)
+//            snapshotView?.let {
+//                callback.onReplaySnapshotViewCompleted(snapshotView as ViewGroup)
+//            }
+        }
+        if (UIThreadUtils.isOnUiThread()) {
+            loadCallbackTask.run()
+        } else {
+            UIThreadUtils.runOnUiThread {
+                loadCallbackTask.run()
+            }
+        }
+    }
+
+    private fun createEngine(
+        driverMode: PageConfiguration.DriverMode,
+        isDebug: Boolean,
+        debugServerHost: String,
+    ): HippyEngine {
         val initParams = EngineInitParams()
         initParams.context = applicationContext
         initParams.debugServerHost = debugServerHost
@@ -97,153 +271,69 @@ class HippyEngineWrapper//TODO: Coming soon
         providers.add(ExampleAPIProvider())
         initParams.providers = providers
         initParams.enableTurbo = true
-        hippyEngine = create(initParams)
-        engineId = hippyEngine.engineId
+        return create(initParams)
     }
 
-    fun onStop() {
-        if (devButton == null) {
-            hippyRootView?.let {
-                devButton = (hippyEngine as HippyEngineManagerImpl).getDevButton(it.id)
-            }
-        }
-        devButton?.let {
-            val parent: ViewParent? = it.parent
-            parent?.let {
-                (parent as ViewGroup).removeView(devButton)
-            }
-        }
-    }
-
-    fun onResume(context: Context) {
-        hippyRootView?.let {
-            devButton = (hippyEngine as HippyEngineManagerImpl).getDevButton(it.id)
-            if (devButton != null) {
-                val parent: ViewParent? = devButton?.parent
-                if (parent == null) {
-                    val decorView = (context as Activity).window.decorView as ViewGroup
-                    decorView.addView(devButton)
-                }
+    fun initEngine(context: Context,
+                   driverMode: PageConfiguration.DriverMode,
+                   isDebug: Boolean,
+                   useSnapshot: Boolean,
+                   callback: HippyEngineLoadCallback) {
+        hippyEngine.initEngine { statusCode, msg ->
+            callback.onInitEngineCompleted(statusCode, msg)
+            if (statusCode == EngineInitStatus.STATUS_OK) {
+                loadModule(context, driverMode, isDebug, useSnapshot, callback)
+                //                    var snapshotView: View? = null
+                //                    if (!isDebug && useSnapshot) {
+                //                        val buffer = renderNodeSnapshot[driverMode]
+                //                        buffer?.let {
+                //                            snapshotView = hippyEngine.replaySnapshot(context, it)
+                //                        }
+                //                        snapshotView?.let {
+                //                            hippySnapshotView = snapshotView as ViewGroup
+                //                        }
+                //                    }
             }
         }
     }
 
-    fun destroy() {
-        hippyEngine.destroyModule(hippyRootView) { result, e ->
-            hippyEngine.destroyEngine()
-        }
-        hippyRootView = null
-        hippySnapshotView = null
-    }
-
-    fun recordRenderNodeSnapshot() {
-        hippyEngine.recordSnapshot(hippyRootView as View) {
-                buffer, e ->
-            run {
-                buffer?.let {
-                    renderNodeSnapshot[driverMode] = buffer
-                }
-            }
-        }
-    }
-
-    fun load(context: Context, callback: HippyEngineLoadCallback) {
-        hippyEngine.initEngine(object: EngineListener {
-            override fun onInitialized(statusCode: EngineInitStatus, msg: String?) {
-                callback.onInitEngineCompleted(statusCode, msg)
-                if (statusCode == EngineInitStatus.STATUS_OK) {
-                    val loadParams = ModuleLoadParams()
-                    loadParams.context = context
-                    loadParams.componentName = "Demo"
-                    loadParams.codeCacheTag = "Demo"
-                    when(driverMode) {
-                        PageConfiguration.DriverMode.JS_REACT -> {
-                            loadParams.jsAssetsPath = "react/index.android.js"
+    fun buildRootViewScreenshot(context: Context, rootId: Int, callback: PageConfiguration.GenerateScreenshotCallback) {
+        var engineAttachInfo = engineAttachInfos[rootId]
+        if (engineAttachInfo != null) {
+            try {
+                hippyEngine.getScreenshotBitmapForView(context, engineAttachInfo.rootView as View
+                ) { bitmap, result ->
+                    run {
+                        if (result == 0) {
+                            engineAttachInfo.screenshot = bitmap
+                        } else {
+                            LogUtils.e("Demo", "buildRootViewScreenshot error code: $result")
                         }
-                        PageConfiguration.DriverMode.JS_VUE_2 -> {
-                            loadParams.jsAssetsPath = "vue2/index.android.js"
-                        }
-                        PageConfiguration.DriverMode.JS_VUE_3 -> {
-                            loadParams.jsAssetsPath = "vue3/index.android.js"
-                        }
-                        PageConfiguration.DriverMode.VL -> {
-                            //TODO: Coming soon
-                        }
-                    }
-                    loadParams.jsFilePath = null
-                    loadParams.jsParams = HippyMap()
-                    loadParams.jsParams.pushString(
-                        "msgFromNative",
-                        "Hi js developer, I come from native code!"
-                    )
-                    var snapshotView: View? = null
-                    if (!isDebugMode && isSnapshotMode) {
-                        val buffer = renderNodeSnapshot[driverMode]
-                        buffer?.let {
-                            snapshotView = hippyEngine.replaySnapshot(context, it)
-                        }
-                        snapshotView?.let {
-                            hippySnapshotView = snapshotView as ViewGroup
-                        }
-                    }
-                    hippyRootView = hippyEngine.loadModule(loadParams, object : ModuleListener {
-                        override fun onLoadCompleted(statusCode: ModuleLoadStatus, msg: String?) {
-                            callback.onLoadModuleCompleted(statusCode, msg)
-                        }
-
-                        override fun onJsException(exception: HippyJsException): Boolean {
-                            return true
-                        }
-
-                        override fun onFirstViewAdded() {
-                            snapshotView?.let {
-                                val handler = Handler(Looper.getMainLooper())
-                                handler.postDelayed({
-                                    hippyEngine.removeSnapshotView()
-                                }, 400)
-                            }
-                        }
-                    })
-
-                    val loadCallbackTask = Runnable {
-                        callback.onCreateRootView(hippyRootView)
-                        snapshotView?.let {
-                            callback.onReplaySnapshotViewCompleted(snapshotView as ViewGroup)
-                        }
-                    }
-                    if (UIThreadUtils.isOnUiThread()) {
-                        loadCallbackTask.run()
-                    } else {
-                        UIThreadUtils.runOnUiThread {
-                            loadCallbackTask.run()
-                        }
+                        callback.onScreenshotBuildFinished()
                     }
                 }
+            } catch (e: IllegalArgumentException) {
+                LogUtils.e("Demo", "buildRootViewScreenshot exception message: ${e.message}")
+                callback.onScreenshotBuildFinished()
             }
-        })
-    }
-
-    fun buildRootViewScreenshot(context: Context, callback: PageConfiguration.GenerateScreenshotCallback) {
-        hippyRootView?:let {
-            callback.onScreenshotBuildFinished()
-            return
-        }
-        try {
-            hippyEngine.getScreenshotBitmapForView(context, hippyRootView as View
-            ) { bitmap, result ->
-                run {
-                    if (result == 0) {
-                        screenshot = bitmap
-                    } else {
-                        LogUtils.e("Demo", "buildRootViewScreenshot error code: $result")
-                    }
-                    callback.onScreenshotBuildFinished()
-                }
-            }
-        } catch (e: IllegalArgumentException) {
-            LogUtils.e("Demo", "buildRootViewScreenshot exception message: ${e.message}")
+        } else {
             callback.onScreenshotBuildFinished()
         }
+    }
+
+    class EngineAttachInfo(
+        root: ViewGroup,
+        driver: PageConfiguration.DriverMode,
+        snapshot: Boolean,
+        engineWrapper: HippyEngineWrapper
+    ) {
+        var snapshotView: ViewGroup? = null
+        var screenshot: Bitmap? = null
+        var pageItem: View? = null
+        val rootView: ViewGroup = root
+        val driverMode: PageConfiguration.DriverMode = driver
+        val useSnapshot: Boolean = snapshot
+        val engineWrapperRef: WeakReference<HippyEngineWrapper> = WeakReference(engineWrapper)
     }
 
     interface HippyEngineLoadCallback {

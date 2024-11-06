@@ -53,21 +53,12 @@
     <androidx.constraintlayout.widget.ConstraintLayout
       android:id="@+id/page_item_tips_container"
       android:layout_width="wrap_content"
-      android:layout_height="17dp"
+      android:layout_height="20dp"
       android:layout_marginTop="6dp"
       app:layout_constraintLeft_toLeftOf="@id/page_item_container"
       app:layout_constraintTop_toBottomOf="@id/page_item_container"
       app:layout_constraintRight_toRightOf="@id/page_item_container"
       >
-        <ImageView
-          android:id="@+id/page_item_tips_image"
-          android:layout_width="12dp"
-          android:layout_height="12dp"
-          android:src="@drawable/page_item_add_4x"
-          app:layout_constraintLeft_toLeftOf="parent"
-          app:layout_constraintTop_toTopOf="parent"
-          app:layout_constraintBottom_toBottomOf="parent" />
-
         <TextView
           android:id="@+id/page_item_tips"
           android:layout_width="wrap_content"
@@ -78,9 +69,8 @@
           android:textColor="#4A5970"
           android:textFontWeight="400"
           android:textSize="12sp"
-          app:layout_constraintLeft_toRightOf="@id/page_item_tips_image"
-          app:layout_constraintTop_toTopOf="parent"
-          app:layout_constraintRight_toRightOf="parent" />
+          app:layout_constraintLeft_toLeftOf="parent"
+          app:layout_constraintTop_toTopOf="parent" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 
 </com.openhippy.example.PageIndexItem>

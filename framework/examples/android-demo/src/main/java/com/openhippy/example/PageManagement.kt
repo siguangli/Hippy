@@ -28,6 +28,8 @@ import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.WindowInsetsControllerCompat
+import com.openhippy.example.HippyEngineWrapper.EngineAttachInfo
+import java.util.SortedMap
 import kotlin.math.floor
 
 class PageManagement : AppCompatActivity() {
@@ -36,7 +38,7 @@ class PageManagement : AppCompatActivity() {
     private lateinit var pageManagementContainer: View
     private lateinit var scrollerView: ScrollView
     private var pageAddItem: View? = null
-    private var pageCount: Int = -1
+    private var pageCount: Int = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -67,7 +69,7 @@ class PageManagement : AppCompatActivity() {
         (pageManagementContainer as? ViewGroup)?.addView(scrollerView, layoutParams)
         val hippyEngineList = HippyEngineHelper.getHippyEngineList()
         for (hippyEngineWrapper in hippyEngineList) {
-            hippyEngineWrapper.pageItem = null
+            hippyEngineWrapper.resetPageItem()
         }
     }
 
@@ -78,23 +80,27 @@ class PageManagement : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        if (pageCount != HippyEngineHelper.getHippyEngineList().size) {
+        val count = getTotalPageCount()
+        if (pageCount != count || count == 0) {
+            pageCount = count
             relayoutPageItem()
-            pageCount = HippyEngineHelper.getHippyEngineList().size
-        } else {
-            resetPageItemImage()
         }
+        resetPageItemImage()
+    }
+
+    private fun getTotalPageCount(): Int {
+        var count = 0
+        val hippyEngineList = HippyEngineHelper.getHippyEngineList()
+        for (hippyEngineWrapper in hippyEngineList) {
+            count += hippyEngineWrapper.getPageCount()
+        }
+        return count
     }
 
     private fun resetPageItemImage() {
         val hippyEngineList = HippyEngineHelper.getHippyEngineList()
         for (hippyEngineWrapper in hippyEngineList) {
-            hippyEngineWrapper.pageItem?.let {
-                val pageItemImage = it.findViewById<ImageView>(R.id.page_item_image)
-                hippyEngineWrapper.screenshot?.let {
-                    pageItemImage.setImageBitmap(hippyEngineWrapper.screenshot)
-                }
-            }
+            hippyEngineWrapper.resetPageItemImage()
         }
     }
 
@@ -106,30 +112,42 @@ class PageManagement : AppCompatActivity() {
         pageItemHeight = (pageItemWidth * ratio).toInt()
     }
 
+    private fun collectEngineAttachInfo(): ArrayList<EngineAttachInfo> {
+        val hippyEngineList = HippyEngineHelper.getHippyEngineList()
+        val engineAttachInfoList: ArrayList<EngineAttachInfo>  = ArrayList()
+        for (hippyEngineWrapper in hippyEngineList) {
+            hippyEngineWrapper.collectEngineAttachInfo(engineAttachInfoList)
+        }
+        engineAttachInfoList.sortBy { engineAttachInfo -> engineAttachInfo.rootView.id }
+        return engineAttachInfoList
+    }
+
     private fun relayoutPageItem() {
         resetPageItemSize()
         val scrollerContainer = scrollerView.getChildAt(0)
         (scrollerContainer as ViewGroup).removeAllViews()
-        val hippyEngineList = HippyEngineHelper.getHippyEngineList()
-        for ((index, hippyEngineWrapper) in hippyEngineList.withIndex()) {
-            resetPageItemLayout(index, hippyEngineWrapper, hippyEngineList)
+        val engineAttachInfos = collectEngineAttachInfo()
+        for ((index, engineAttachInfo) in engineAttachInfos.withIndex()) {
+            resetPageItemLayout(index, engineAttachInfo, engineAttachInfos)
         }
-        resetPageItemLayout(hippyEngineList.size, null, hippyEngineList)
+        resetPageItemLayout(pageCount, null, engineAttachInfos)
     }
 
     private fun resetPageItemLayout(
         index: Int,
-        currentEngineWrapper: HippyEngineWrapper?,
-        hippyEngineList: MutableList<HippyEngineWrapper>
+        engineAttachInfo: EngineAttachInfo?,
+        engineAttachInfos: ArrayList<EngineAttachInfo>
     ) {
+        val currentEngineWrapper = engineAttachInfo?.engineWrapperRef?.get()
+        val rootId = engineAttachInfo?.rootView?.id ?: -1
         val scrollerContainer = scrollerView.getChildAt(0)
         val margin = resources.getDimension(R.dimen.page_index_item_margin).toInt()
         val row = floor(index / 2.0f)
         val column = index % 2
         var pageItem =
-            if (currentEngineWrapper == null) pageAddItem else currentEngineWrapper.pageItem
+            if (currentEngineWrapper == null) pageAddItem else engineAttachInfo.pageItem
         if (pageItem == null) {
-            pageItem = initPageItem(currentEngineWrapper)
+            pageItem = initPageItem(rootId, currentEngineWrapper)
             if (currentEngineWrapper == null) {
                 pageAddItem = pageItem
             }
@@ -143,7 +161,7 @@ class PageManagement : AppCompatActivity() {
             layoutParams.topToTop = scrollerContainer.id
             layoutParams.topToBottom = ConstraintLayout.LayoutParams.UNSET
         } else {
-            val before2EngineWrapper = hippyEngineList[index - 2]
+            val before2EngineWrapper = engineAttachInfos[index - 2]
             before2EngineWrapper.pageItem?.let {
                 layoutParams.topToBottom = it.id
                 layoutParams.topToTop = ConstraintLayout.LayoutParams.UNSET
@@ -167,22 +185,21 @@ class PageManagement : AppCompatActivity() {
         (scrollerContainer as ViewGroup).addView(pageItem, layoutParams)
     }
 
-    private fun getDriverText(hippyEngineWrapper: HippyEngineWrapper): CharSequence {
-        return when (hippyEngineWrapper.driverMode) {
-            PageConfiguration.DriverMode.JS_REACT -> resources.getText(R.string.react)
-            PageConfiguration.DriverMode.JS_VUE_2 -> resources.getText(R.string.vue2)
-            PageConfiguration.DriverMode.JS_VUE_3 -> resources.getText(R.string.vue3)
-            PageConfiguration.DriverMode.VL -> resources.getText(R.string.driver_js_vl)
-        }
-    }
+//    private fun getDriverText(hippyEngineWrapper: HippyEngineWrapper): CharSequence {
+//        return when (hippyEngineWrapper.driverMode) {
+//            PageConfiguration.DriverMode.JS_REACT -> resources.getText(R.string.react)
+//            PageConfiguration.DriverMode.JS_VUE_2 -> resources.getText(R.string.vue2)
+//            PageConfiguration.DriverMode.JS_VUE_3 -> resources.getText(R.string.vue3)
+//            PageConfiguration.DriverMode.VL -> resources.getText(R.string.driver_js_vl)
+//        }
+//    }
 
-    private fun initPageItem(hippyEngineWrapper: HippyEngineWrapper?): View {
+    private fun initPageItem(rootId: Int, hippyEngineWrapper: HippyEngineWrapper?): View {
         val pageItem = layoutInflater.inflate(R.layout.page_index_item, null)
         pageItem.id = pageItemIdCounter.getAndIncrement()
         val pageItemContainer = pageItem.findViewById<View>(R.id.page_item_container)
         val pageItemImage = pageItem.findViewById<ImageView>(R.id.page_item_image)
         val deletePageButton = pageItem.findViewById<View>(R.id.page_item_delete)
-        val pageItemTipsImage = pageItem.findViewById<ImageView>(R.id.page_item_tips_image)
         val pageItemTips = pageItem.findViewById<TextView>(R.id.page_item_tips)
         if (hippyEngineWrapper == null) {
             deletePageButton.visibility = View.GONE
@@ -192,34 +209,29 @@ class PageManagement : AppCompatActivity() {
                 it.height = resources.getDimension(R.dimen.page_item_add_image_height).toInt()
             }
             pageItemTips.text = resources.getText(R.string.page_add_item_tips_text)
-            pageItemTipsImage.setImageResource(R.drawable.page_item_add_4x)
         } else {
-            hippyEngineWrapper.screenshot?.let {
+            hippyEngineWrapper.getScreenshot(rootId)?.let {
                 pageItemImage.setImageBitmap(it)
             }
             deletePageButton.setOnClickListener { v ->
-                HippyEngineHelper.onHippyEngineDestroy(hippyEngineWrapper)
+                HippyEngineHelper.destroyInstance(rootId, hippyEngineWrapper)
+                pageCount = getTotalPageCount()
                 relayoutPageItem()
-                pageCount = HippyEngineHelper.getHippyEngineList().size
-                hippyEngineWrapper.destroy()
             }
-            var tips: String = getDriverText(hippyEngineWrapper) as String
-            if (hippyEngineWrapper.isDebugMode) {
-                tips += " + debug"
-            }
+            var tips = "${hippyEngineWrapper.getEngineId()},  $rootId"
             pageItemTips.text = tips
-            pageItemTipsImage.setImageResource(R.drawable.page_item_tips_4x)
         }
         pageItemContainer.layoutParams?.let {
             it.width = pageItemWidth
             it.height = pageItemHeight - resources.getDimension(R.dimen.page_item_attribute_prompt_height).toInt()
         }
         pageItemImage.setOnClickListener { v ->
-            PageConfiguration.currentEngineId = hippyEngineWrapper?.engineId?: -1
+            PageConfiguration.currentEngineId = hippyEngineWrapper?.getEngineId()?: -1
+            PageConfiguration.currentRootId = rootId
             val intent = Intent(this, PageConfiguration::class.java)
             startActivity(intent)
         }
-        hippyEngineWrapper?.pageItem = pageItem
+        hippyEngineWrapper?.setPageItem(rootId, pageItem)
         return pageItem
     }
 }

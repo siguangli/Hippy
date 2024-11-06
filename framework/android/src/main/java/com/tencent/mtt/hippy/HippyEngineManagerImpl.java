@@ -565,11 +565,34 @@ public abstract class HippyEngineManagerImpl extends HippyEngineManager implemen
         return rootView;
     }
 
-    public void destroyModule(int rootId, @NonNull Callback<Boolean> callback) {
-        if (mDestroyModuleListeners == null) {
-            mDestroyModuleListeners = new HashMap<>();
+    @Override
+    public void destroyModule(@Nullable Callback<Boolean> callback) {
+        List<Integer> ids = new ArrayList<>();
+        ViewGroup rootView = null;
+        for (HippyInstanceInfo instanceInfo : mInstanceInfoMap.values()) {
+            if (instanceInfo.rootView != null) {
+                ids.add(instanceInfo.rootView.getId());
+                rootView = instanceInfo.rootView;
+            }
         }
-        mDestroyModuleListeners.put(rootId, callback);
+        if (rootView != null && callback != null) {
+            if (mDestroyModuleListeners == null) {
+                mDestroyModuleListeners = new HashMap<>();
+            }
+            mDestroyModuleListeners.put(rootView.getId(), callback);
+        }
+        if (mEngineContext != null && mEngineContext.getBridgeManager() != null) {
+            mEngineContext.getBridgeManager().destroyInstance(ids);
+        }
+    }
+
+    public void destroyModule(int rootId, @Nullable Callback<Boolean> callback) {
+        if (callback != null) {
+            if (mDestroyModuleListeners == null) {
+                mDestroyModuleListeners = new HashMap<>();
+            }
+            mDestroyModuleListeners.put(rootId, callback);
+        }
         if (mEngineContext != null && mEngineContext.getBridgeManager() != null) {
             List<Integer> ids = new ArrayList<>();
             ids.add(rootId);

@@ -45,6 +45,7 @@ class PageConfiguration : AppCompatActivity(), View.OnClickListener {
 
     companion object {
         var currentEngineId: Int = -1
+        var currentRootId: Int = -1
     }
 
     private lateinit var pageConfigurationRoot: View
@@ -54,9 +55,10 @@ class PageConfiguration : AppCompatActivity(), View.OnClickListener {
     private lateinit var driverSettingText: View
     private lateinit var rendererSettingText: View
     private var hasRunOnCreate = false
-    private var hippyEngineWrapper: HippyEngineWrapper? = null
+    private var reuseEngineWrapper: HippyEngineWrapper? = null
     private var debugMode: Boolean = false
     private var snapshotMode: Boolean = false
+    private var multiRootMode: Boolean = false
     private var debugServerHost: String = "localhost:38989"
     private var dialog: Dialog? = null
     private var driverMode: DriverMode = DriverMode.JS_REACT
@@ -87,7 +89,7 @@ class PageConfiguration : AppCompatActivity(), View.OnClickListener {
     }
 
     override fun onStop() {
-        hippyEngineWrapper?.onStop()
+        findCurrentEngineWrapper()?.onStop(currentRootId)
         super.onStop()
     }
 
@@ -99,17 +101,15 @@ class PageConfiguration : AppCompatActivity(), View.OnClickListener {
                     resources.getText(R.string.page_configuration_navigation_title)
                 (pageConfigurationContainer as ViewGroup).addView(pageConfigurationSetting)
             } else {
-                val hippyEngineList = HippyEngineHelper.getHippyEngineList()
-                for (engine in hippyEngineList) {
-                    if (engine.engineId == currentEngineId) {
-                        hippyEngineWrapper = engine
+                val currentEngineWrapper: HippyEngineWrapper? = findCurrentEngineWrapper()
+                val rootView: ViewGroup? = currentEngineWrapper?.getRootView(currentRootId)
+                if (currentEngineWrapper != null && rootView != null) {
+                    (pageConfigurationTitle as TextView).text =
+                        resources.getText(R.string.page_configuration_navigation_title_demo)
+                    currentEngineWrapper.let {
+                        (pageConfigurationContainer as ViewGroup).addView(rootView)
+                        it.onResume(this, rootView)
                     }
-                }
-                (pageConfigurationTitle as TextView).text =
-                    resources.getText(R.string.page_configuration_navigation_title_demo)
-                hippyEngineWrapper?.let {
-                    (pageConfigurationContainer as ViewGroup).addView(it.hippyRootView)
-                    it.onResume(this)
                 }
             }
         }
@@ -123,7 +123,7 @@ class PageConfiguration : AppCompatActivity(), View.OnClickListener {
                 moveTaskToBack(true)
             }
         }
-        hippyEngineWrapper?.apply {
+        findCurrentEngineWrapper()?.apply {
             if (hippyEngine.onBackPressed(goBack)) {
                 return
             }
@@ -131,23 +131,33 @@ class PageConfiguration : AppCompatActivity(), View.OnClickListener {
         goBack()
     }
 
+    private fun findCurrentEngineWrapper(): HippyEngineWrapper? {
+        val hippyEngineList = HippyEngineHelper.getHippyEngineList()
+        for (ew in hippyEngineList) {
+            if (ew.getEngineId() == currentEngineId) {
+                return ew
+            }
+        }
+        return null
+    }
+
     private fun buildSnapshot(runnable: Runnable) {
-        val rootView = hippyEngineWrapper?.hippyRootView
-        if (rootView == null || currentEngineId == -1) {
+        val currentEngineWrapper = findCurrentEngineWrapper()
+        val engineAttachInfo = currentEngineWrapper?.getEngineAttachInfo(currentRootId)
+        if (engineAttachInfo?.rootView == null) {
             runnable.run()
         } else {
-            hippyEngineWrapper?.let {
-                if (!it.isDebugMode) {
-                    hippyEngineWrapper?.recordRenderNodeSnapshot()
+//            if (!engineAttachInfo.isDebug) {
+//                currentEngineWrapper?.recordRenderNodeSnapshot(rootId)
+//            }
+            currentEngineWrapper.buildRootViewScreenshot(this, currentRootId, object : GenerateScreenshotCallback {
+                override fun onScreenshotBuildFinished() {
+                    (pageConfigurationContainer as ViewGroup).removeAllViews()
+                    runnable.run()
+                    currentEngineId = -1
+                    currentRootId = -1
                 }
-                it.buildRootViewScreenshot(this, object : GenerateScreenshotCallback {
-                    override fun onScreenshotBuildFinished() {
-                        (pageConfigurationContainer as ViewGroup).removeAllViews()
-                        runnable.run()
-                        hippyEngineWrapper = null
-                    }
-                })
-            }
+            })
         }
     }
 
@@ -193,6 +203,17 @@ class PageConfiguration : AppCompatActivity(), View.OnClickListener {
                 true
             }
         }
+        val multiRootButton =
+            pageConfigurationRoot.findViewById<View>(R.id.page_configuration_multi_root_setting_image)
+        multiRootButton.setOnClickListener {
+            multiRootMode = if (multiRootMode) {
+                (multiRootButton as ImageView).setImageResource(R.drawable.page_config_debug_off_2x)
+                false
+            } else {
+                (multiRootButton as ImageView).setImageResource(R.drawable.page_config_debug_on_2x)
+                true
+            }
+        }
         val createButton =
             pageConfigurationRoot.findViewById<View>(R.id.page_configuration_create_image)
         createButton.setOnClickListener { v ->
@@ -205,22 +226,13 @@ class PageConfiguration : AppCompatActivity(), View.OnClickListener {
         }
     }
 
-    private fun onCreateClick() {
-        (pageConfigurationTitle as TextView).text =
-            resources.getText(R.string.page_configuration_navigation_title_demo)
-        (pageConfigurationContainer as ViewGroup).removeAllViews()
-        pageConfigurationContainer.post {
-            hippyEngineWrapper = HippyEngineHelper.createHippyEngine(
-                driverMode,
-                renderMode,
-                debugMode,
-                snapshotMode,
-                debugServerHost
-            )
-            hippyEngineWrapper?.let {
-                currentEngineId = it.engineId
-            }
-            hippyEngineWrapper?.load(this, object : HippyEngineWrapper.HippyEngineLoadCallback {
+    private fun doLoadModule() {
+        reuseEngineWrapper?.loadModule(
+            this,
+            driverMode,
+            debugMode,
+            snapshotMode,
+            object : HippyEngineWrapper.HippyEngineLoadCallback {
                 override fun onInitEngineCompleted(
                     statusCode: HippyEngine.EngineInitStatus,
                     msg: String?
@@ -230,6 +242,7 @@ class PageConfiguration : AppCompatActivity(), View.OnClickListener {
 
                 override fun onCreateRootView(hippyRootView: ViewGroup?) {
                     hippyRootView?.let {
+                        currentRootId = it.id
                         (pageConfigurationContainer as ViewGroup).addView(hippyRootView)
                     }
                 }
@@ -245,6 +258,53 @@ class PageConfiguration : AppCompatActivity(), View.OnClickListener {
                     LogUtils.e("hippy", "onLoadModuleCompleted: statusCode $statusCode, msg $msg")
                 }
             })
+    }
+
+    private fun doCreateAndInitEngine() {
+        val engineWrapper = HippyEngineHelper.createHippyEngine(driverMode, debugMode, debugServerHost)
+        currentEngineId = engineWrapper.hippyEngine.engineId
+        reuseEngineWrapper ?: {
+            reuseEngineWrapper = engineWrapper
+        }
+        engineWrapper.initEngine(this, driverMode, debugMode, snapshotMode,
+            object : HippyEngineWrapper.HippyEngineLoadCallback {
+                override fun onInitEngineCompleted(
+                    statusCode: HippyEngine.EngineInitStatus,
+                    msg: String?
+                ) {
+                    LogUtils.e("hippy", "onInitEngineCompleted: statusCode $statusCode, msg $msg")
+                }
+
+                override fun onCreateRootView(hippyRootView: ViewGroup?) {
+                    hippyRootView?.let {
+                        currentRootId = it.id
+                        (pageConfigurationContainer as ViewGroup).addView(hippyRootView)
+                    }
+                }
+
+                override fun onReplaySnapshotViewCompleted(snapshotView: ViewGroup) {
+                    (pageConfigurationContainer as ViewGroup).addView(snapshotView)
+                }
+
+                override fun onLoadModuleCompleted(
+                    statusCode: HippyEngine.ModuleLoadStatus,
+                    msg: String?
+                ) {
+                    LogUtils.e("hippy", "onLoadModuleCompleted: statusCode $statusCode, msg $msg")
+                }
+            })
+    }
+
+    private fun onCreateClick() {
+        (pageConfigurationTitle as TextView).text =
+            resources.getText(R.string.page_configuration_navigation_title_demo)
+        (pageConfigurationContainer as ViewGroup).removeAllViews()
+        pageConfigurationContainer.post {
+            if (multiRootMode && reuseEngineWrapper != null) {
+                doLoadModule()
+            } else {
+                doCreateAndInitEngine()
+            }
         }
     }
 
@@ -296,21 +356,25 @@ class PageConfiguration : AppCompatActivity(), View.OnClickListener {
                 (driverSettingText as TextView).text = resources.getText(R.string.driver_js_react)
                 dialog?.dismiss()
             }
+
             R.id.page_configuration_driver_vue2 -> {
                 driverMode = DriverMode.JS_VUE_2
                 (driverSettingText as TextView).text = resources.getText(R.string.driver_js_vue2)
                 dialog?.dismiss()
             }
+
             R.id.page_configuration_driver_vue3 -> {
                 driverMode = DriverMode.JS_VUE_3
                 (driverSettingText as TextView).text = resources.getText(R.string.driver_js_vue3)
                 dialog?.dismiss()
             }
+
             R.id.page_configuration_renderer_native -> {
                 renderMode = RenderMode.NATIVE
                 (rendererSettingText as TextView).text = resources.getText(R.string.renderer_native)
                 dialog?.dismiss()
             }
+
             R.id.page_configuration_renderer_tdf_core,
             R.id.page_configuration_renderer_flutter,
             R.id.page_configuration_driver_vl -> {

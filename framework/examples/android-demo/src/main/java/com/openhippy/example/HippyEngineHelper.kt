@@ -24,19 +24,11 @@ class HippyEngineHelper {
 
 
         fun createHippyEngine(
-            driverType: PageConfiguration.DriverMode,
-            rendererType: PageConfiguration.RenderMode,
-            isDebugMode: Boolean,
-            isSnapshotMode: Boolean,
+            driverMode: PageConfiguration.DriverMode,
+            isDebug: Boolean,
             debugServerHost: String
         ): HippyEngineWrapper {
-            val hippyEngineWrapper = HippyEngineWrapper(
-                driverType,
-                rendererType,
-                isDebugMode,
-                isSnapshotMode,
-                debugServerHost
-            )
+            val hippyEngineWrapper = HippyEngineWrapper(driverMode, isDebug, debugServerHost)
             hippyEngineList.add(hippyEngineWrapper)
             return hippyEngineWrapper
         }
@@ -45,9 +37,12 @@ class HippyEngineHelper {
             return hippyEngineList
         }
 
-        fun onHippyEngineDestroy(hippyEngineWrapper: HippyEngineWrapper) {
-            hippyEngineList.remove(hippyEngineWrapper)
-            abandonHippyEngineList.add(hippyEngineWrapper)
+        fun destroyInstance(rootId: Int, hippyEngineWrapper: HippyEngineWrapper) {
+            hippyEngineWrapper.destroyInstance(rootId)
+            if (hippyEngineWrapper.getPageCount() == 0) {
+                hippyEngineList.remove(hippyEngineWrapper)
+                abandonHippyEngineList.add(hippyEngineWrapper)
+            }
         }
 
         fun clearAbandonHippyEngine() {
