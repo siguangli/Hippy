@@ -16,6 +16,7 @@
 
 package com.tencent.renderer;
 
+import static com.tencent.mtt.hippy.common.LogAdapter.LOG_SEVERITY_WARNING;
 import static com.tencent.mtt.hippy.dom.node.NodeProps.PADDING_BOTTOM;
 import static com.tencent.mtt.hippy.dom.node.NodeProps.PADDING_LEFT;
 import static com.tencent.mtt.hippy.dom.node.NodeProps.PADDING_RIGHT;
@@ -452,8 +453,8 @@ public class NativeRenderer extends Renderer implements NativeRender, NativeRend
             return;
         }
         if (LogUtils.isDebugMode() && !eventName.equals(ChoreographerUtils.DO_FRAME)) {
-            LogUtils.d(TAG, "dispatchEvent: id " + nodeId + ", eventName " + eventName
-                    + ", eventType " + eventType + ", params " + params + "\n ");
+//            LogUtils.d(TAG, "dispatchEvent: id " + nodeId + ", eventName " + eventName
+//                    + ", eventType " + eventType + ", params " + params + "\n ");
         }
         mRenderProvider.dispatchEvent(rootId, nodeId, lowerCaseEventName, params, useCapture,
                 useBubble);
@@ -544,6 +545,16 @@ public class NativeRenderer extends Renderer implements NativeRender, NativeRend
                                 + nodeIndex + ", className " + className);
             }
             final Map<String, Object> props = MapUtils.getMapValue(node, NODE_PROPS);
+            FrameworkProxy frameworkProxy = getFrameworkProxy();
+            if (frameworkProxy != null) {
+                LogAdapter logAdapter = frameworkProxy.getLogAdapter();
+                if (logAdapter != null) {
+                    String msg = "createNode: id " + nodeId + ", pid " + nodePid
+                            + ", index " + nodeIndex + ", name " + className + "\n  props " + props
+                            + "\n ";
+                    logAdapter.onReceiveLogMessage(LOG_SEVERITY_WARNING, "maxli", msg);
+                }
+            }
             if (LogUtils.isDebugMode()) {
                 LogUtils.d(TAG, "createNode: id " + nodeId + ", pid " + nodePid
                         + ", index " + nodeIndex + ", name " + className + "\n  props " + props
@@ -743,8 +754,8 @@ public class NativeRenderer extends Renderer implements NativeRender, NativeRend
             final TextRenderSupplier supplier = mVirtualNodeManager
                     .updateLayout(rootId, nodeId, width, layoutInfo);
             if (LogUtils.isDebugMode()) {
-//                LogUtils.d(TAG, "updateLayout: id " + nodeId + ", left " + left
-//                        + ", top " + top + ", width " + width + ", height " + height + "\n ");
+                LogUtils.d(TAG, "updateLayout: id " + nodeId + ", left " + left
+                        + ", top " + top + ", width " + width + ", height " + height + "\n ");
             }
             // If restoring snapshots, update layout is called directly on the UI thread,
             // and do not need to use the UI task

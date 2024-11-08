@@ -143,6 +143,7 @@ public abstract class PullRefreshHelper {
             lpChild.width = mRenderNode.getWidth();
             lpChild.height = mRenderNode.getHeight();
             if (mItemView instanceof HippyPullHeaderView) {
+                ((HippyPullHeaderView) mItemView).setIsVertical(isVertical);
                 ((LinearLayout.LayoutParams) lpChild).gravity = isVertical ? Gravity.BOTTOM : Gravity.RIGHT;
             } else if (mItemView instanceof HippyPullFooterView) {
                 ((LinearLayout.LayoutParams) lpChild).gravity = isVertical ? Gravity.TOP : Gravity.LEFT;
@@ -166,6 +167,7 @@ public abstract class PullRefreshHelper {
         }
         LinearLayout.LayoutParams lpChild = new LinearLayout.LayoutParams(mRenderNode.getWidth(), mRenderNode.getHeight());
         if (itemView instanceof HippyPullHeaderView) {
+            ((HippyPullHeaderView) mItemView).setIsVertical(isVertical);
             lpChild.gravity = isVertical ? Gravity.BOTTOM : Gravity.RIGHT;
         } else if (itemView instanceof HippyPullFooterView) {
             lpChild.gravity = isVertical ? Gravity.TOP : Gravity.LEFT;

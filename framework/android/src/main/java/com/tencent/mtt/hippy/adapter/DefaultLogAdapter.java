@@ -29,8 +29,8 @@ public class DefaultLogAdapter implements HippyLogAdapter {
                 LogUtils.i(tag, msg);
                 break;
             case LOG_SEVERITY_WARNING:
-                LogUtils.w(tag, msg);
-                break;
+//                LogUtils.w(tag, msg);
+//                break;
             case LOG_SEVERITY_ERROR:
                 // fall through
             case LOG_SEVERITY_FATAL:

@@ -25,6 +25,7 @@ import com.tencent.mtt.hippy.views.view.HippyViewGroup;
 public class HippyPullHeaderView extends HippyViewGroup {
 
     private View mRecyclerView;
+    private boolean mIsVertical = true;
 
     public HippyPullHeaderView(Context context) {
         super(context);
@@ -36,6 +37,14 @@ public class HippyPullHeaderView extends HippyViewGroup {
 
     public View getRecyclerView() {
         return mRecyclerView;
+    }
+
+    public boolean isVertical() {
+        return mIsVertical;
+    }
+
+    public void setIsVertical(boolean isVertical) {
+        mIsVertical = isVertical;
     }
 
     void onDestroy() {

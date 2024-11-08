@@ -32,7 +32,8 @@ const styles = StyleSheet.create({
   },
   pullContainer: {
     height: 50,
-    backgroundColor: '#4c9afa',
+    collapsable: false,
+    //backgroundColor: '#4c9afa',
   },
   pullContent: {
     lineHeight: 50,

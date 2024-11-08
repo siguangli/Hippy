@@ -15,6 +15,8 @@
 
 package com.tencent.mtt.hippy;
 
+import static com.tencent.mtt.hippy.common.LogAdapter.LOG_SEVERITY_WARNING;
+
 import android.app.Activity;
 import android.app.Dialog;
 import android.content.Context;
@@ -41,6 +43,7 @@ import com.openhippy.connector.NativeRenderConnector;
 import com.openhippy.connector.RenderConnector;
 import com.openhippy.framework.BuildConfig;
 import com.tencent.devtools.DevtoolsManager;
+import com.tencent.mtt.hippy.adapter.HippyLogAdapter;
 import com.tencent.mtt.hippy.adapter.device.HippyDeviceAdapter;
 import com.tencent.mtt.hippy.adapter.executor.HippyExecutorSupplierAdapter;
 import com.tencent.mtt.hippy.adapter.thirdparty.HippyThirdPartyAdapter;
@@ -348,6 +351,11 @@ public abstract class HippyEngineManagerImpl extends HippyEngineManager implemen
 
     @Override
     public void handleNativeException(Exception exception) {
+        HippyLogAdapter logAdapter = mGlobalConfigs.getLogAdapter();
+        if (logAdapter != null) {
+            String msg = (exception != null) ? exception.getMessage() : "";
+            logAdapter.onReceiveLogMessage(LOG_SEVERITY_WARNING, "maxli", "handleNativeException: " + msg);
+        }
         mGlobalConfigs.getExceptionHandler().handleNativeException(exception, true);
     }
 
@@ -717,16 +725,28 @@ public abstract class HippyEngineManagerImpl extends HippyEngineManager implemen
                 mEngineContext.destroy(false);
             }
         }
+        final HippyLogAdapter logAdapter = mGlobalConfigs.getLogAdapter();
         try {
             mEngineContext = new HippyEngineContextImpl(domManager);
         } catch (RuntimeException e) {
+            if (logAdapter != null) {
+                logAdapter.onReceiveLogMessage(LOG_SEVERITY_WARNING, "maxli", "HippyEngineContextImpl init error: "
+                        + (e != null ? e.getMessage() : ""));
+            }
             LogUtils.e(TAG, "new HippyEngineContextImpl(): " + e.getMessage());
             notifyEngineInitialized(EngineInitStatus.STATUS_INIT_EXCEPTION, e);
             return;
         }
+        if (logAdapter != null) {
+            logAdapter.onReceiveLogMessage(LOG_SEVERITY_WARNING, "maxli", "restartEngineInBackground: ");
+        }
         mEngineContext.getBridgeManager().initBridge(new Callback<Boolean>() {
             @Override
             public void callback(Boolean result, Throwable e) {
+                if (logAdapter != null) {
+                    logAdapter.onReceiveLogMessage(LOG_SEVERITY_WARNING, "maxli", "initBridge: callback result "
+                            + result + ", msg " + ((e != null) ? e.getMessage() : ""));
+                }
                 if (mCurrentState != EngineState.INITING
                         && mCurrentState != EngineState.ONRESTART) {
                     LogUtils.e(TAG,
@@ -775,6 +795,10 @@ public abstract class HippyEngineManagerImpl extends HippyEngineManager implemen
                         "load module error. jsBundleLoader==null");
                 return;
             }
+        }
+        HippyLogAdapter logAdapter = mGlobalConfigs.getLogAdapter();
+        if (logAdapter != null) {
+            logAdapter.onReceiveLogMessage(LOG_SEVERITY_WARNING, "maxli", "loadJsModule: loadInstance root id " + mRootView.getId());
         }
         mEngineContext.getBridgeManager()
                 .loadInstance(moduleLoadParams.componentName, mRootView.getId(),
@@ -1063,6 +1087,11 @@ public abstract class HippyEngineManagerImpl extends HippyEngineManager implemen
 
         @Override
         public void handleException(Throwable throwable) {
+            HippyLogAdapter logAdapter = mGlobalConfigs.getLogAdapter();
+            if (logAdapter != null) {
+                String msg = (throwable != null) ? throwable.getMessage() : "";
+                logAdapter.onReceiveLogMessage(LOG_SEVERITY_WARNING, "maxli", "handleException: " + msg);
+            }
             if (mDebugMode && mDevSupportManager != null) {
                 mDevSupportManager.handleException(throwable);
             } else {

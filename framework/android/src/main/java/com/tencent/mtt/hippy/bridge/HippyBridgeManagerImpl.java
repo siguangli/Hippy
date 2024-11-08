@@ -15,6 +15,8 @@
 
 package com.tencent.mtt.hippy.bridge;
 
+import static com.tencent.mtt.hippy.common.LogAdapter.LOG_SEVERITY_WARNING;
+
 import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
@@ -31,6 +33,7 @@ import com.openhippy.connector.NativeCallback;
 import com.openhippy.framework.BuildConfig;
 import com.tencent.mtt.hippy.HippyEngine.ModuleLoadStatus;
 import com.tencent.mtt.hippy.HippyEngineContext;
+import com.tencent.mtt.hippy.adapter.HippyLogAdapter;
 import com.tencent.mtt.hippy.adapter.thirdparty.HippyThirdPartyAdapter;
 import com.tencent.mtt.hippy.bridge.bundleloader.HippyBundleLoader;
 import com.tencent.mtt.hippy.bridge.jsi.TurboModuleManager;
@@ -165,7 +168,6 @@ public class HippyBridgeManagerImpl implements HippyBridgeManager, HippyBridge.B
                 buffer = ByteBuffer.allocateDirect(bytes.length);
                 buffer.put(bytes);
             }
-
             mHippyBridge.callFunction(functionId, mCallFunctionCallback, buffer);
         } else {
             if (mEnableV8Serialization) {
@@ -181,6 +183,12 @@ public class HippyBridgeManagerImpl implements HippyBridgeManager, HippyBridge.B
                 ByteBuffer buffer = safeHeapWriter.chunked();
                 int offset = buffer.arrayOffset() + buffer.position();
                 int length = buffer.limit() - buffer.position();
+                if (functionId == FUNCTION_ACTION_LOAD_INSTANCE) {
+                    final HippyLogAdapter logAdapter = mContext.getGlobalConfigs().getLogAdapter();
+                    if (logAdapter != null) {
+                        logAdapter.onReceiveLogMessage(LOG_SEVERITY_WARNING, "maxli", "handleCallFunction: FUNCTION_ACTION_LOAD_INSTANCE ");
+                    }
+                }
                 mHippyBridge.callFunction(functionId, mCallFunctionCallback, buffer.array(), offset,
                         length);
             } else {
@@ -231,16 +239,24 @@ public class HippyBridgeManagerImpl implements HippyBridgeManager, HippyBridge.B
     @Override
     public boolean handleMessage(Message msg) {
         final TimeMonitor timeMonitor = mContext.getMonitor();
+        final HippyLogAdapter logAdapter = mContext.getGlobalConfigs().getLogAdapter();
         try {
             switch (msg.what) {
                 case MSG_CODE_INIT_BRIDGE: {
                     @SuppressWarnings("unchecked") final com.tencent.mtt.hippy.common.Callback<Boolean> callback = (com.tencent.mtt.hippy.common.Callback<Boolean>) msg.obj;
                     final int code = msg.arg1;
                     try {
+                        if (logAdapter != null) {
+                            logAdapter.onReceiveLogMessage(LOG_SEVERITY_WARNING, "maxli", "initJSBridge: before ");
+                        }
                         mHippyBridge.initJSBridge(getGlobalConfigs(), new NativeCallback(mHandler) {
                             @Override
                             public void Call(long result, Message message, String action,
                                     String reason) {
+                                if (logAdapter != null) {
+                                    logAdapter.onReceiveLogMessage(LOG_SEVERITY_WARNING, "maxli", "initJSBridge: after result "
+                                            + result + ", action " + action + ", reason " + reason + ", message " + message);
+                                }
                                 if (result != 0 || mBridgeState == BridgeState.DESTROYED) {
                                     String info =
                                             "initJSBridge error: result " + result + ", reason "
@@ -263,11 +279,18 @@ public class HippyBridgeManagerImpl implements HippyBridgeManager, HippyBridge.B
                                 if (mCoreBundleLoader != null) {
                                     timeMonitor.addPoint(TimeMonitor.MONITOR_GROUP_INIT_ENGINE,
                                             TimeMonitor.MONITOR_POINT_LOAD_VENDOR_JS);
+                                    if (logAdapter != null) {
+                                        logAdapter.onReceiveLogMessage(LOG_SEVERITY_WARNING, "maxli", "core bundle load before: ");
+                                    }
                                     mCoreBundleLoader
                                             .load(mHippyBridge, new NativeCallback(mHandler) {
                                                 @Override
                                                 public void Call(long result, Message message,
                                                         String action, String reason) {
+                                                    if (logAdapter != null) {
+                                                        logAdapter.onReceiveLogMessage(LOG_SEVERITY_WARNING, "maxli", "core bundle load after Call: result "
+                                                                + result + ", action " + action + ", reason " + reason + ", message " + message);
+                                                    }
                                                     if (mBridgeState == BridgeState.DESTROYED) {
                                                         return;
                                                     }
@@ -320,10 +343,17 @@ public class HippyBridgeManagerImpl implements HippyBridgeManager, HippyBridge.B
                         }
                         mLoadedBundleInfo.add(bundleUniKey);
                         final WeakReference<HippyEngineContext> contextWeakRef = new WeakReference<>(mContext);
+                        if (logAdapter != null) {
+                            logAdapter.onReceiveLogMessage(LOG_SEVERITY_WARNING, "maxli", "js bundle load before: ");
+                        }
                         loader.load(mHippyBridge, new NativeCallback(mHandler) {
                             @Override
                             public void Call(long result, Message message, String action,
                                     String reason) {
+                                if (logAdapter != null) {
+                                    logAdapter.onReceiveLogMessage(LOG_SEVERITY_WARNING, "maxli", "js bundle load after Call: result "
+                                            + result + ", action " + action + ", reason " + reason + ", message " + message);
+                                }
                                 if (result == 0) {
                                     if (contextWeakRef.get() != null) {
                                         contextWeakRef.get().onLoadModuleCompleted(ModuleLoadStatus.STATUS_OK,
@@ -397,6 +427,10 @@ public class HippyBridgeManagerImpl implements HippyBridgeManager, HippyBridge.B
             map.pushString("name", name);
             map.pushInt("id", id);
             map.pushMap("params", params);
+            final HippyLogAdapter logAdapter = mContext.getGlobalConfigs().getLogAdapter();
+            if (logAdapter != null) {
+                logAdapter.onReceiveLogMessage(LOG_SEVERITY_WARNING, "maxli", "loadInstance: name " + name + ", id " + id);
+            }
             Message message = mHandler
                     .obtainMessage(MSG_CODE_CALL_FUNCTION, 0, FUNCTION_ACTION_LOAD_INSTANCE, map);
             mHandler.sendMessage(message);

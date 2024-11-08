@@ -17,17 +17,22 @@
 package com.tencent.mtt.hippy.views.refresh;
 
 import android.content.Context;
+import android.view.Gravity;
 import android.view.View;
 
 import android.view.ViewGroup;
 
+import android.view.ViewParent;
+import android.widget.LinearLayout;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.tencent.mtt.hippy.annotation.HippyController;
 import com.tencent.mtt.hippy.common.HippyArray;
 import com.tencent.mtt.hippy.uimanager.ControllerManager;
+import com.tencent.mtt.hippy.uimanager.ControllerRegistry;
 import com.tencent.mtt.hippy.uimanager.HippyViewController;
+import com.tencent.mtt.hippy.views.hippylist.HippyRecyclerViewWrapper;
 import com.tencent.renderer.node.PullHeaderRenderNode;
 import com.tencent.renderer.node.RenderNode;
 import com.tencent.mtt.hippy.utils.LogUtils;
@@ -99,6 +104,31 @@ public class HippyPullHeaderViewController extends HippyViewController<HippyPull
             default: {
                 LogUtils.w(TAG, "Unknown function name: " + functionName);
             }
+        }
+    }
+
+    @Override
+    public void updateLayout(int rootId, int id, int x, int y, int width, int height,
+            ControllerRegistry componentHolder) {
+        super.updateLayout(rootId, id, x, y, width, height, componentHolder);
+        View view = componentHolder.getView(rootId, id);
+        if (view instanceof HippyPullHeaderView && view.getParent() instanceof ViewGroup) {
+            int w = view.getWidth();
+            int h = view.getHeight();
+            ViewGroup.LayoutParams lp = view.getLayoutParams();
+            LogUtils.e(TAG, "updateLayout: id " + id + ", w " + w + ", h " + h
+                    + ", width " + width + ", height " + height + ", lp.width " + lp.width + ", lp.height " + lp.height);
+            lp.width = width;
+            lp.height = height;
+
+//            if (lp.width != width || lp.height != height) {
+//                ViewGroup parent = (ViewGroup) view.getParent();
+//                parent.removeAllViews();
+//                LinearLayout.LayoutParams lpChild = new LinearLayout.LayoutParams(width, height);
+//                boolean isVertical = ((HippyPullHeaderView) view).isVertical();
+//                lpChild.gravity = isVertical ? Gravity.BOTTOM : Gravity.RIGHT;
+//                parent.addView(view, lpChild);
+//            }
         }
     }
 
