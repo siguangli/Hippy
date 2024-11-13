@@ -31,6 +31,7 @@ import com.openhippy.framework.BuildConfig;
 import com.tencent.mtt.hippy.HippyGlobalConfigs;
 import com.tencent.mtt.hippy.utils.LogUtils;
 import com.tencent.mtt.hippy.utils.UIThreadUtils;
+import java.util.EmptyStackException;
 import java.util.HashMap;
 import java.util.Stack;
 
@@ -214,12 +215,16 @@ public class DevServerImpl implements DevServerInterface, View.OnClickListener,
                 if (mExceptionDialog != null && mExceptionDialog.isShowing()) {
                     return;
                 }
-                DevFloatButton button = mDevButtonStack.peek();
-                if (button != null) {
-                    mExceptionDialog = new DevExceptionDialog(button.getContext());
-                    mExceptionDialog.handleException(throwable);
-                    mExceptionDialog.setOnReloadListener(DevServerImpl.this);
-                    mExceptionDialog.show();
+                try {
+                    DevFloatButton button = mDevButtonStack.peek();
+                    if (button != null) {
+                        mExceptionDialog = new DevExceptionDialog(button.getContext());
+                        mExceptionDialog.handleException(throwable);
+                        mExceptionDialog.setOnReloadListener(DevServerImpl.this);
+                        mExceptionDialog.show();
+                    }
+                } catch (EmptyStackException e) {
+                    e.printStackTrace();
                 }
             }
         });
