@@ -73,6 +73,16 @@ public class HippyRecyclerPagerView<ADP extends HippyRecyclerListAdapter> extend
         mPagerScrollHelper.setPageUpDownOffsetRatio(ratio);
     }
 
+    public void setPageUpDownTouchDuration(int duration) {
+        mPagerScrollHelper.setPageUpDownTouchDuration(duration);
+    }
+
+    @Override
+    public void setInitialContentIndex(int initialContentIndex) {
+        super.setInitialContentIndex(initialContentIndex);
+        mPagerScrollHelper.setInitialContentIndex(initialContentIndex);
+    }
+
     public void setPreCreateRowsNumber(int count) {
         mPagerScrollHelper.setPreCreateRowsNumber(count);
     }

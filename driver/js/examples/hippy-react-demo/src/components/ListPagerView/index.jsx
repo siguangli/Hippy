@@ -382,6 +382,9 @@ onFooterPulling(evt) {
           getRowStyle={this.getRowStyle} // configure listItem style if needed
           getRowKey={this.getRowKey}
           initialListSize={15} // configure initial render list data size
+          initialContentIndex={3}
+          pageUpDownOffsetRatio={0.5}
+          pageUpDownTouchDuration={50}
           renderPullHeader={this.renderPullHeader}
           renderPullFooter={this.renderPullFooter}
           onHeaderReleased={this.onHeaderReleased}

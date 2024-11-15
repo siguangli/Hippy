@@ -64,6 +64,7 @@ public class HippyRecyclerView<ADP extends HippyRecyclerListAdapter> extends Hip
     private ViewStickEventHelper viewStickEventHelper;
     private boolean stickEventEnable;
     private int mInitialContentOffset;
+    private int mInitialContentIndex;
     private ArrayList<View> mFocusableViews;
     private final int[] mScrollConsumedPair = new int[2];
     private final Priority[] mNestedScrollPriority = {Priority.SELF, Priority.NOT_SET,
@@ -229,6 +230,10 @@ public class HippyRecyclerView<ADP extends HippyRecyclerListAdapter> extends Hip
         mInitialContentOffset = initialContentOffset;
     }
 
+    public void setInitialContentIndex(int initialContentIndex) {
+        mInitialContentIndex = initialContentIndex;
+    }
+
     private int getFirstVisiblePositionByOffset(int offset) {
         int position = 0;
         int distanceToPosition = 0;
@@ -249,6 +254,11 @@ public class HippyRecyclerView<ADP extends HippyRecyclerListAdapter> extends Hip
         int positionOffset = -(mInitialContentOffset - getTotalHeightBefore(position));
         scrollToPositionWithOffset(position, positionOffset);
         mInitialContentOffset = 0;
+    }
+
+    private void scrollToInitContentIndex() {
+        scrollToPositionWithOffset(mInitialContentIndex, 0);
+        mInitialContentIndex = 0;
     }
 
     /**
@@ -279,8 +289,12 @@ public class HippyRecyclerView<ADP extends HippyRecyclerListAdapter> extends Hip
             getRecyclerViewEventHelper().onListDataChanged();
         }
         renderNodeCount = currentNodeCount;
-        if (renderNodeCount > 0 && mInitialContentOffset > 0) {
-            scrollToInitContentOffset();
+        if (renderNodeCount > 0) {
+            if (mInitialContentIndex > 0) {
+                scrollToInitContentIndex();
+            } else if (mInitialContentOffset > 0) {
+                scrollToInitContentOffset();
+            }
         }
         //notifyDataSetChanged 本身是可以触发requestLayout的，但是Hippy框架下 HippyRootView 已经把
         //onLayout方法重载写成空方法，requestLayout不会回调孩子节点的onLayout，这里需要自己发起dispatchLayout

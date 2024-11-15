@@ -257,6 +257,11 @@ public class HippyRecyclerViewController<HRW extends HippyRecyclerViewWrapper> e
         viewWrapper.getRecyclerView().setInitialContentOffset((int) PixelUtil.dp2px(offset));
     }
 
+    @HippyControllerProps(name = "initialContentIndex", defaultType = HippyControllerProps.NUMBER, defaultNumber = 0)
+    public void setInitialContentIndex(HRW viewWrapper, int index) {
+        viewWrapper.getRecyclerView().setInitialContentIndex(index);
+    }
+
     @HippyControllerProps(name = "itemViewCacheSize", defaultType = HippyControllerProps.NUMBER, defaultNumber = 0)
     public void setItemViewCacheSize(HRW viewWrapper, int size) {
         viewWrapper.getRecyclerView().setItemViewCacheSize(Math.max(size, 2));

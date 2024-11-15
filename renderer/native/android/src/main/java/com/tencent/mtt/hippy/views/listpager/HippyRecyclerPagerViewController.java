@@ -128,20 +128,16 @@ public class HippyRecyclerPagerViewController<HRW extends HippyRecyclerViewWrapp
         layoutManager.setItemPrefetchEnabled(false);
         recyclerView.setItemAnimator(null);
         recyclerView.setOverScrollMode(View.OVER_SCROLL_NEVER);
-        boolean enableOverPull = false;
         boolean hasStableIds = true;
         if (props != null) {
             if (MapUtils.getBooleanValue(props, HORIZONTAL)) {
                 layoutManager.setOrientation(LinearLayoutManager.HORIZONTAL);
             }
-            enableOverPull = MapUtils.getBooleanValue(props, NodeProps.OVER_PULL, false);
             hasStableIds = MapUtils.getBooleanValue(props, NodeProps.HAS_STABLE_IDS, true);
         }
         recyclerView.setLayoutManager(layoutManager);
         recyclerView.initRecyclerView(hasStableIds);
-        if (HippyListUtils.isVerticalLayout(recyclerView)) {
-            recyclerView.setEnableOverPull(enableOverPull);
-        }
+        recyclerView.setEnableOverPull(false);
         if (context instanceof NativeRenderContext) {
             int rootId = ((NativeRenderContext) context).getRootId();
             if (rootId == SCREEN_SNAPSHOT_ROOT_ID) {
@@ -173,13 +169,13 @@ public class HippyRecyclerPagerViewController<HRW extends HippyRecyclerViewWrapp
         }
     }
 
-    @HippyControllerProps(name = "onScrollBeginDrag", defaultType = HippyControllerProps.BOOLEAN, defaultBoolean =
+    @HippyControllerProps(name = "onScrollBeginDrag", defaultType = HippyControllerProps.EVENT, defaultBoolean =
             false)
     public void setScrollBeginDragEventEnable(HRW view, boolean flag) {
         view.getRecyclerViewEventHelper().setScrollBeginDragEventEnable(flag);
     }
 
-    @HippyControllerProps(name = "onScrollEndDrag", defaultType = HippyControllerProps.BOOLEAN, defaultBoolean = false)
+    @HippyControllerProps(name = "onScrollEndDrag", defaultType = HippyControllerProps.EVENT, defaultBoolean = false)
     public void setScrollEndDragEventEnable(HRW view, boolean flag) {
         view.getRecyclerViewEventHelper().setScrollEndDragEventEnable(flag);
     }
@@ -224,17 +220,14 @@ public class HippyRecyclerPagerViewController<HRW extends HippyRecyclerViewWrapp
         }
     }
 
-    @HippyControllerProps(name = OVER_PULL, defaultType = HippyControllerProps.BOOLEAN, defaultBoolean = true)
-    public void setBounces(HRW viewWrapper, boolean flag) {
-        HippyRecyclerView<?> recyclerView = viewWrapper.getRecyclerView();
-        if (recyclerView != null) {
-            recyclerView.setEnableOverPull(flag);
-        }
-    }
-
     @HippyControllerProps(name = "initialContentOffset", defaultType = HippyControllerProps.NUMBER, defaultNumber = 0)
     public void setInitialContentOffset(HRW viewWrapper, int offset) {
         viewWrapper.getRecyclerView().setInitialContentOffset((int) PixelUtil.dp2px(offset));
+    }
+
+    @HippyControllerProps(name = "initialContentIndex", defaultType = HippyControllerProps.NUMBER, defaultNumber = 0)
+    public void setInitialContentIndex(HRW viewWrapper, int index) {
+        viewWrapper.getRecyclerView().setInitialContentIndex(index);
     }
 
     @HippyControllerProps(name = "itemViewCacheSize", defaultType = HippyControllerProps.NUMBER, defaultNumber = 0)
@@ -257,6 +250,14 @@ public class HippyRecyclerPagerViewController<HRW extends HippyRecyclerViewWrapp
         HippyRecyclerView recyclerView = viewWrapper.getRecyclerView();
         if (recyclerView instanceof HippyRecyclerPagerView) {
             ((HippyRecyclerPagerView) recyclerView).setPageUpDownOffsetRatio(ratio);
+        }
+    }
+
+    @HippyControllerProps(name = "pageUpDownTouchDuration", defaultType = HippyControllerProps.NUMBER, defaultNumber = 50)
+    public void setPageUpDownTouchDuration(HRW viewWrapper, int duration) {
+        HippyRecyclerView recyclerView = viewWrapper.getRecyclerView();
+        if (recyclerView instanceof HippyRecyclerPagerView) {
+            ((HippyRecyclerPagerView) recyclerView).setPageUpDownTouchDuration(duration);
         }
     }
 

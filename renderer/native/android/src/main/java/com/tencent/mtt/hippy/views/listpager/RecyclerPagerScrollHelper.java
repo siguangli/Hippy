@@ -45,6 +45,9 @@ public class RecyclerPagerScrollHelper {
     private int pageScrollDuration = 160;
     private int preCreateCount = 0;
     private float pageUpDownOffsetRatio = 0.01f;
+    private int pageUpDownTouchDuration = 50;
+    private long firstTouchTime = 0;
+    private long touchDuration = 0;
 
     public RecyclerPagerScrollHelper(@NonNull HippyRecyclerView recyclerView) {
         recyclerViewRef = new WeakReference<>(recyclerView);
@@ -69,6 +72,16 @@ public class RecyclerPagerScrollHelper {
         }
     }
 
+    public void setPageUpDownTouchDuration(int duration) {
+        if (duration > 0) {
+            pageUpDownTouchDuration = duration;
+        }
+    }
+
+    public void setInitialContentIndex(int index) {
+        currentPageIndex = Math.max(0, (index - 1));
+    }
+
     public void setPreCreateRowsNumber(int count) {
         if (count > 0) {
             preCreateCount = count;
@@ -84,6 +97,7 @@ public class RecyclerPagerScrollHelper {
         @Override
         public boolean onTouch(View v, MotionEvent event) {
             if (firstTouch) {
+                firstTouchTime = System.currentTimeMillis();
                 firstTouch = false;
                 final HippyRecyclerView recyclerView = recyclerViewRef.get();
                 if (recyclerView != null) {
@@ -95,6 +109,8 @@ public class RecyclerPagerScrollHelper {
             }
             if (event.getAction() == MotionEvent.ACTION_UP || event.getAction() == MotionEvent.ACTION_CANCEL) {
                 firstTouch = true;
+                touchDuration = System.currentTimeMillis() - firstTouchTime;
+                LogUtils.d(TAG, "onTouch: touchDuration " + touchDuration);
             }
             return false;
         }
@@ -132,6 +148,7 @@ public class RecyclerPagerScrollHelper {
                 startPoint = offsetY;
                 int absY = Math.abs(offsetY - startY);
                 boolean move = absY > (recyclerView.getHeight() * pageUpDownOffsetRatio);
+                move |= (touchDuration <= pageUpDownTouchDuration);
                 if ((offsetY > startY && velocityY < 0) || (offsetY < startY && velocityY > 0)) {
                     move = false;
                 }
