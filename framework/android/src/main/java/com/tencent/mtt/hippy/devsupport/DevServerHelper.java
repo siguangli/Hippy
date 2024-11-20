@@ -15,14 +15,7 @@
  */
 package com.tencent.mtt.hippy.devsupport;
 
-
 import android.text.TextUtils;
-import com.tencent.mtt.hippy.HippyGlobalConfigs;
-import com.tencent.mtt.hippy.adapter.http.HippyHttpAdapter;
-import com.tencent.mtt.hippy.adapter.http.HippyHttpRequest;
-import com.tencent.mtt.hippy.adapter.http.HippyHttpResponse;
-
-import java.io.*;
 import java.util.Locale;
 
 @SuppressWarnings({"unused"})
@@ -37,12 +30,10 @@ public class DevServerHelper {
   private static final String DEBUG_URL_APPEND = "role=android_client&clientId=%s&hash=%s&contextName=%s";
   private static final String DEFAULT_BUNDLE_SCHEME = "http";
 
-  private final HippyGlobalConfigs mGlobalConfigs;
   private final String mServerHost;
   DevRemoteServerData mRemoteServerData;
 
-  public DevServerHelper(HippyGlobalConfigs configs, String serverHost, String remoteServerUrl) {
-    mGlobalConfigs = configs;
+  public DevServerHelper(String serverHost, String remoteServerUrl) {
     mServerHost = serverHost;
     mRemoteServerData = new DevRemoteServerData(remoteServerUrl);
   }

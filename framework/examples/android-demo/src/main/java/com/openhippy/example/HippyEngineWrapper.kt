@@ -42,6 +42,7 @@ class HippyEngineWrapper(
     val hippyEngine: HippyEngine
     private var engineAttachInfos: HashMap<Int, EngineAttachInfo> = HashMap()
     var devButton: View? = null
+    var destroyed: Boolean = false
 
     init {
         hippyEngine = createEngine(driverMode, isDebug, debugServerHost)
@@ -80,8 +81,12 @@ class HippyEngineWrapper(
 
     fun destroyInstance(rootId: Int) {
         engineAttachInfos.remove(rootId)
+        val doEngineDestroy = engineAttachInfos.isEmpty()
+        if (doEngineDestroy) {
+            destroyed = true
+        }
         hippyEngine.destroyModule { result, e ->
-            if (engineAttachInfos.isEmpty()) {
+            if (doEngineDestroy) {
                 hippyEngine.destroyEngine()
             }
         }

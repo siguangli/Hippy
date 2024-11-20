@@ -18,6 +18,7 @@ package com.tencent.mtt.hippy.devsupport;
 import android.content.Context;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import com.tencent.mtt.hippy.HippyEngineContext;
 import com.tencent.mtt.hippy.HippyGlobalConfigs;
 import java.util.UUID;
 
@@ -28,9 +29,9 @@ public class DevSupportManager {
     final boolean mSupportDev;
     private UUID mInstanceUUID = UUID.randomUUID();
 
-    public DevSupportManager(HippyGlobalConfigs configs, boolean debugMode, String serverHost,
+    public DevSupportManager(boolean debugMode, String serverHost,
             String bundleName, String remoteServerUrl) {
-        mDevImp = new DevServerImpl(configs, serverHost, bundleName, remoteServerUrl, debugMode);
+        mDevImp = new DevServerImpl(serverHost, bundleName, remoteServerUrl, debugMode);
         mSupportDev = debugMode;
     }
 
@@ -40,6 +41,10 @@ public class DevSupportManager {
 
     public void setDevCallback(DevServerCallBack devCallback) {
         mDevImp.setDevServerCallback(devCallback);
+    }
+
+    public void setDebugRoot(int rootId) {
+        mDevImp.setDebugRoot(rootId);
     }
 
     public void attachToHost(Context context, int rootId) {

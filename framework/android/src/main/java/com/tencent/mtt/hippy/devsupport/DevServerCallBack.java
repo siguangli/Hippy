@@ -16,9 +16,13 @@
 
 package com.tencent.mtt.hippy.devsupport;
 
+import java.util.List;
+
 public interface DevServerCallBack {
 
     void onInitDevError(Throwable e);
 
     void onDebugReLoad(int rootId);
+
+    List<Integer> getRootAvailableForReload();
 }

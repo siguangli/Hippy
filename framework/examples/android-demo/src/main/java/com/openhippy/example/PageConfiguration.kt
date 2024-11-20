@@ -263,7 +263,7 @@ class PageConfiguration : AppCompatActivity(), View.OnClickListener {
     private fun doCreateAndInitEngine() {
         val engineWrapper = HippyEngineHelper.createHippyEngine(driverMode, debugMode, debugServerHost)
         currentEngineId = engineWrapper.hippyEngine.engineId
-        reuseEngineWrapper ?: {
+        if (reuseEngineWrapper == null) {
             reuseEngineWrapper = engineWrapper
         }
         engineWrapper.initEngine(this, driverMode, debugMode, snapshotMode,
@@ -300,7 +300,11 @@ class PageConfiguration : AppCompatActivity(), View.OnClickListener {
             resources.getText(R.string.page_configuration_navigation_title_demo)
         (pageConfigurationContainer as ViewGroup).removeAllViews()
         pageConfigurationContainer.post {
+            if (reuseEngineWrapper?.destroyed == true) {
+                reuseEngineWrapper = null
+            }
             if (multiRootMode && reuseEngineWrapper != null) {
+                currentEngineId = reuseEngineWrapper!!.hippyEngine.engineId
                 doLoadModule()
             } else {
                 doCreateAndInitEngine()

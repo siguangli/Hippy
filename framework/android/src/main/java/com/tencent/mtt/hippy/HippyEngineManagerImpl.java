@@ -183,7 +183,7 @@ public abstract class HippyEngineManagerImpl extends HippyEngineManager implemen
             mEventListeners.add(listener);
         }
         try {
-            mDevSupportManager = new DevSupportManager(mGlobalConfigs, mDebugMode, mServerHost,
+            mDevSupportManager = new DevSupportManager(mDebugMode, mServerHost,
                     mServerBundleName, mRemoteServerUrl);
             mDevSupportManager.setDevCallback(this);
             if (mDebugMode) {
@@ -754,6 +754,7 @@ public abstract class HippyEngineManagerImpl extends HippyEngineManager implemen
         }
         try {
             mEngineContext = new HippyEngineContextImpl(domManager);
+
         } catch (RuntimeException e) {
             LogUtils.e(TAG, "new HippyEngineContextImpl(): " + e.getMessage());
             notifyEngineInitialized(EngineInitStatus.STATUS_INIT_EXCEPTION, e);
@@ -815,6 +816,24 @@ public abstract class HippyEngineManagerImpl extends HippyEngineManager implemen
         if (mDebugMode) {
             notifyModuleLoaded(instanceInfo.rootView.getId(), ModuleLoadStatus.STATUS_OK, null);
         }
+    }
+
+    public List<Integer> getRootIds() {
+        List<Integer> rootIds = null;
+        for (HippyInstanceInfo info : mInstanceInfoMap.values()) {
+            if (info.rootView != null) {
+                if (rootIds == null) {
+                    rootIds = new ArrayList<>();
+                }
+                rootIds.add(info.rootView.getId());
+            }
+        }
+        return rootIds;
+    }
+
+    @Override
+    public List<Integer> getRootAvailableForReload() {
+        return getRootIds();
     }
 
     @Override
@@ -1051,8 +1070,8 @@ public abstract class HippyEngineManagerImpl extends HippyEngineManager implemen
             } else {
                 HashMap<String, Object> nativeParams = new HashMap<>();
                 for (HippyInstanceInfo info : mInstanceInfoMap.values()) {
-                    if (info.moduleLoadParams != null && instanceInfo.moduleLoadParams.nativeParams != null) {
-                        nativeParams.putAll(instanceInfo.moduleLoadParams.nativeParams);
+                    if (info.moduleLoadParams != null && info.moduleLoadParams.nativeParams != null) {
+                        nativeParams.putAll(info.moduleLoadParams.nativeParams);
                     }
                 }
                 return nativeParams;
@@ -1126,19 +1145,6 @@ public abstract class HippyEngineManagerImpl extends HippyEngineManager implemen
         @Override
         public void onInstanceLoad(int rootId) {
 
-        }
-
-        private List<Integer> getRootIds() {
-            List<Integer> rootIds = null;
-            for (HippyInstanceInfo info : mInstanceInfoMap.values()) {
-                if (info.rootView != null) {
-                    if (rootIds == null) {
-                        rootIds = new ArrayList<>();
-                    }
-                    rootIds.add(info.rootView.getId());
-                }
-            }
-            return rootIds;
         }
 
         @Override

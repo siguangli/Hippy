@@ -28,10 +28,10 @@ import android.view.ViewParent;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import com.openhippy.framework.BuildConfig;
-import com.tencent.mtt.hippy.HippyGlobalConfigs;
 import com.tencent.mtt.hippy.utils.LogUtils;
 import com.tencent.mtt.hippy.utils.UIThreadUtils;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Stack;
 
 public class DevServerImpl implements DevServerInterface, View.OnClickListener,
@@ -39,6 +39,7 @@ public class DevServerImpl implements DevServerInterface, View.OnClickListener,
 
     private static final String TAG = "DevServerImpl";
     private final boolean mDebugMode;
+    private int mCurrentDebugRootId = -1;
     @NonNull
     private final DevServerHelper mFetchHelper;
     @NonNull
@@ -50,53 +51,47 @@ public class DevServerImpl implements DevServerInterface, View.OnClickListener,
     @Nullable
     private DevServerConfig mServerConfig;
 
-    DevServerImpl(HippyGlobalConfigs configs, String serverHost, String bundleName,
+    DevServerImpl(String serverHost, String bundleName,
             String remoteServerUrl, boolean debugMode) {
         mDebugMode = debugMode;
-        mFetchHelper = new DevServerHelper(configs, serverHost, remoteServerUrl);
+        mFetchHelper = new DevServerHelper(serverHost, remoteServerUrl);
         if (mDebugMode) {
             mServerConfig = new DevServerConfig(serverHost, bundleName);
         }
     }
 
-    private void handleItemsClick(int which) {
-        switch (which) {
-            case 0:
-                if (mDebugMode) {
-                    reload();
-                } else {
-
-                }
-                break;
-            case 1:
-                if (!mDebugMode) {
-                    reload();
-                }
-                break;
-            default:
-                LogUtils.w(TAG, "handleItemsClick: Unexpected item index " + which);
+    private void handleItemsClick(int which, List<Integer> rootIds) {
+        if (rootIds != null && which < rootIds.size()) {
+            reload(rootIds.get(which));
+        } else {
+            LogUtils.e(TAG, "handleItemsClick: Unexpected item index " + which);
         }
-
     }
 
     @Override
     public void onClick(final View v) {
         if (v.getContext() instanceof Application) {
             LogUtils.e(TAG, "Hippy context is an Application, so can not show a dialog!");
-        } else {
-            String[] debugItems = {"Reload"};
-            //String[] developItems = {"Destroy", "Create"};
-            new AlertDialog.Builder(v.getContext()).setItems (
-                    debugItems,
-                    new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            if (which == 0) {
-                                reload();
-                            }
-                        }
-                    }).show();
+            return;
         }
+        String[] debugItems;
+        final List<Integer> rootIds = mServerCallBack.getRootAvailableForReload();
+        if (rootIds == null || rootIds.isEmpty()) {
+            debugItems = new String[] {"Reload"};
+        } else {
+            debugItems = new String[rootIds.size()];
+            for(int i = 0; i < rootIds.size(); i++) {
+                debugItems[i] = "Reload root id " + rootIds.get(i);
+            }
+        }
+        new AlertDialog.Builder(v.getContext()).setItems (
+                debugItems,
+                new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        handleItemsClick(which, rootIds);
+                    }
+                }).show();
     }
 
     private void attachToHostImpl(Context context, int rootId) {
@@ -109,6 +104,7 @@ public class DevServerImpl implements DevServerInterface, View.OnClickListener,
         if (mDevButtonMaps.get(rootId) != null) {
             return;
         }
+        mCurrentDebugRootId = rootId;
         DevFloatButton devButton = new DevFloatButton(context);
         devButton.setOnClickListener(this);
         if (context instanceof Activity) {
@@ -124,12 +120,7 @@ public class DevServerImpl implements DevServerInterface, View.OnClickListener,
         if (UIThreadUtils.isOnUiThread()) {
             attachToHostImpl(context, rootId);
         } else {
-            UIThreadUtils.runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    attachToHostImpl(context, rootId);
-                }
-            });
+            UIThreadUtils.runOnUiThread(() -> attachToHostImpl(context, rootId));
         }
     }
 
@@ -196,8 +187,15 @@ public class DevServerImpl implements DevServerInterface, View.OnClickListener,
 
     @Override
     public void reload() {
+        if (mCurrentDebugRootId > 0) {
+            reload(mCurrentDebugRootId);
+        }
+    }
+
+    @Override
+    public void reload(int rootId) {
         if (mServerCallBack != null) {
-            mServerCallBack.onDebugReLoad(10);
+            mServerCallBack.onDebugReLoad(rootId);
         }
     }
 
@@ -207,20 +205,22 @@ public class DevServerImpl implements DevServerInterface, View.OnClickListener,
     }
 
     @Override
+    public void setDebugRoot(int rootId) {
+        mCurrentDebugRootId = rootId;
+    }
+
+    @Override
     public void handleException(final Throwable throwable) {
-        UIThreadUtils.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                if (mExceptionDialog != null && mExceptionDialog.isShowing()) {
-                    return;
-                }
-                DevFloatButton button = mDevButtonStack.peek();
-                if (button != null) {
-                    mExceptionDialog = new DevExceptionDialog(button.getContext());
-                    mExceptionDialog.handleException(throwable);
-                    mExceptionDialog.setOnReloadListener(DevServerImpl.this);
-                    mExceptionDialog.show();
-                }
+        UIThreadUtils.runOnUiThread(() -> {
+            if (mExceptionDialog != null && mExceptionDialog.isShowing()) {
+                return;
+            }
+            DevFloatButton button = mDevButtonStack.peek();
+            if (button != null) {
+                mExceptionDialog = new DevExceptionDialog(button.getContext());
+                mExceptionDialog.handleException(throwable);
+                mExceptionDialog.setOnReloadListener(DevServerImpl.this);
+                mExceptionDialog.show();
             }
         });
     }

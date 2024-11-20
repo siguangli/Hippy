@@ -310,12 +310,12 @@ public class HippyBridgeManagerImpl implements HippyBridgeManager, HippyBridge.B
                         return true;
                     }
                     final String bundleUniKey = loader.getBundleUniKey();
-                    if (mLoadedBundleInfo != null && !TextUtils.isEmpty(bundleUniKey)
-                            && mLoadedBundleInfo.contains(bundleUniKey)) {
-                        mContext.onLoadModuleCompleted(rootId, ModuleLoadStatus.STATUS_REPEAT_LOAD,
-                                "repeat load module. loader.getBundleUniKey=" + bundleUniKey);
-                        return true;
-                    }
+//                    if (mLoadedBundleInfo != null && !TextUtils.isEmpty(bundleUniKey)
+//                            && mLoadedBundleInfo.contains(bundleUniKey)) {
+//                        mContext.onLoadModuleCompleted(rootId, ModuleLoadStatus.STATUS_REPEAT_LOAD,
+//                                "repeat load module. loader.getBundleUniKey=" + bundleUniKey);
+//                        return true;
+//                    }
                     if (!TextUtils.isEmpty(bundleUniKey)) {
                         if (mLoadedBundleInfo == null) {
                             mLoadedBundleInfo = new ArrayList<>();

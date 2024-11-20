@@ -25,6 +25,10 @@ public interface DevServerInterface {
 
     void reload();
 
+    void reload(int rootId);
+
+    void setDebugRoot(int rootId);
+
     String createResourceUrl(String resName);
 
     void onLoadResourceFailed(@NonNull String url, @Nullable String errorMessage);
