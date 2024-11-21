@@ -557,7 +557,7 @@ void SetRootNode(__unused JNIEnv* j_env,
   auto& persistent_map = RootNode::PersistentMap();
   auto flag = persistent_map.Find(root_id, root_node);
   FOOTSTONE_CHECK(flag);
-  scope->SetRootNode(root_node);
+  scope->SetRootNode(root_id, root_node);
 }
 
 void SetDomManager(__unused JNIEnv* j_env,
