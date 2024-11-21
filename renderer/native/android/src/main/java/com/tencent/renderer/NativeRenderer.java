@@ -452,7 +452,7 @@ public class NativeRenderer extends Renderer implements NativeRender, NativeRend
             return;
         }
         if (LogUtils.isDebugMode() && !eventName.equals(ChoreographerUtils.DO_FRAME)) {
-            LogUtils.d(TAG, "dispatchEvent: id " + nodeId + ", eventName " + eventName
+            LogUtils.d(TAG, "dispatchEvent: rootId " + rootId + ", id " + nodeId + ", eventName " + eventName
                     + ", eventType " + eventType + ", params " + params + "\n ");
         }
         mRenderProvider.dispatchEvent(rootId, nodeId, lowerCaseEventName, params, useCapture,
@@ -525,6 +525,9 @@ public class NativeRenderer extends Renderer implements NativeRender, NativeRend
     @Override
     public void createNode(final int rootId, @NonNull List<Object> nodeList)
             throws NativeRenderException {
+        if (LogUtils.isDebugMode()) {
+            LogUtils.d(TAG, "===================createNode: rootId " + rootId + ", list size " + nodeList.size() + "\n ");
+        }
         final List<UITaskExecutor> createNodeTaskList = new ArrayList<>(nodeList.size());
         final List<UITaskExecutor> createViewTaskList = new ArrayList<>(nodeList.size());
         for (int i = 0; i < nodeList.size(); i++) {
@@ -597,6 +600,9 @@ public class NativeRenderer extends Renderer implements NativeRender, NativeRend
     @Override
     public void updateNode(final int rootId, @NonNull List<Object> nodeList)
             throws NativeRenderException {
+        if (LogUtils.isDebugMode()) {
+            LogUtils.d(TAG, "===================updateNode: rootId " + rootId + ", list size " + nodeList.size() + "\n ");
+        }
         final List<UITaskExecutor> taskList = new ArrayList<>(nodeList.size());
         for (int i = 0; i < nodeList.size(); i++) {
             final Map<String, Object> node = ArrayUtils.getMapValue(nodeList, i);
@@ -644,7 +650,7 @@ public class NativeRenderer extends Renderer implements NativeRender, NativeRend
     public void deleteNode(final int rootId, @NonNull int[] ids) throws NativeRenderException {
         final List<UITaskExecutor> taskList = new ArrayList<>(ids.length);
         if (LogUtils.isDebugMode()) {
-            LogUtils.d(TAG, "deleteNode " + Arrays.toString(ids) + "\n ");
+            LogUtils.d(TAG, "===================deleteNode " + Arrays.toString(ids) + "\n ");
         }
         for (final int nodeId : ids) {
             // The node id should not be negative number.
@@ -671,7 +677,7 @@ public class NativeRenderer extends Renderer implements NativeRender, NativeRend
     public void moveNode(final int rootId, final int[] ids, final int newPid, final int oldPid,
             final int insertIndex) throws NativeRenderException {
         if (LogUtils.isDebugMode()) {
-            LogUtils.d(TAG, "moveNode: ids " + Arrays.toString(ids) + ", newPid " +
+            LogUtils.d(TAG, "===================moveNode: rootId " + rootId + "ids " + Arrays.toString(ids) + ", newPid " +
                     newPid + ", oldPid " + oldPid + ", insertIndex " + insertIndex + "\n ");
         }
         addUITask(() -> mRenderManager.moveNode(rootId, ids, newPid, oldPid, insertIndex));
@@ -680,7 +686,7 @@ public class NativeRenderer extends Renderer implements NativeRender, NativeRend
     @Override
     public void moveNode(final int rootId, @NonNull final List<Object> list) {
         if (LogUtils.isDebugMode()) {
-            LogUtils.d(TAG, "moveNode: node list " + list + "\n ");
+            LogUtils.d(TAG, "===================moveNode: rootId " + rootId + "node list " + list + "\n ");
         }
         final Map<Integer, List<Object>> nodeMap = new HashMap<>();
         for (int i = 0; i < list.size(); i++) {
@@ -845,7 +851,7 @@ public class NativeRenderer extends Renderer implements NativeRender, NativeRend
     @Override
     public void endBatch(final int rootId) throws NativeRenderException {
         if (LogUtils.isDebugMode()) {
-            LogUtils.d(TAG, "=============================endBatch " + rootId);
+            LogUtils.d(TAG, "===================endBatch " + rootId);
         }
         Map<Integer, Layout> layoutToUpdate = mVirtualNodeManager.endBatch(rootId);
         if (layoutToUpdate != null) {

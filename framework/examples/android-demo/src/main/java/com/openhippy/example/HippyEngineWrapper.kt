@@ -85,7 +85,7 @@ class HippyEngineWrapper(
         if (doEngineDestroy) {
             destroyed = true
         }
-        hippyEngine.destroyModule { result, e ->
+        hippyEngine.destroyModule(rootId) { result, e ->
             if (doEngineDestroy) {
                 hippyEngine.destroyEngine()
             }
@@ -192,6 +192,55 @@ class HippyEngineWrapper(
         return loadParams
     }
 
+    private fun buildAndRunCallbackTask(rootView: ViewGroup,
+                                        driverMode: PageConfiguration.DriverMode,
+                                        useSnapshot: Boolean,
+                                        callback: HippyEngineLoadCallback) {
+        val loadCallbackTask = Runnable {
+            val engineAttachInfo = EngineAttachInfo(rootView, driverMode, useSnapshot, this@HippyEngineWrapper)
+            engineAttachInfos[rootView.id] = engineAttachInfo;
+            callback.onCreateRootView(rootView)
+//            snapshotView?.let {
+//                callback.onReplaySnapshotViewCompleted(snapshotView as ViewGroup)
+//            }
+        }
+        if (UIThreadUtils.isOnUiThread()) {
+            loadCallbackTask.run()
+        } else {
+            UIThreadUtils.runOnUiThread {
+                loadCallbackTask.run()
+            }
+        }
+    }
+
+    fun loadInstance(context: Context,
+                     driverMode: PageConfiguration.DriverMode,
+                     isDebug: Boolean,
+                     useSnapshot: Boolean,
+                     callback: HippyEngineLoadCallback
+    ) {
+        val loadParams = buildModuleLoadParams(context, driverMode)
+        val rootView = hippyEngine.loadInstance(loadParams, object : ModuleListener {
+            override fun onLoadCompleted(statusCode: ModuleLoadStatus, msg: String?) {
+                callback.onLoadModuleCompleted(statusCode, msg)
+            }
+
+            override fun onJsException(exception: HippyJsException): Boolean {
+                return true
+            }
+
+            override fun onFirstViewAdded() {
+//                snapshotView?.let {
+//                    val handler = Handler(Looper.getMainLooper())
+//                    handler.postDelayed({
+//                        hippyEngine?.removeSnapshotView()
+//                    }, 400)
+//                }
+            }
+        })
+        buildAndRunCallbackTask(rootView, driverMode, useSnapshot, callback)
+    }
+
     fun loadModule(context: Context,
                    driverMode: PageConfiguration.DriverMode,
                    isDebug: Boolean,
@@ -217,21 +266,7 @@ class HippyEngineWrapper(
 //                }
             }
         })
-        val loadCallbackTask = Runnable {
-            val engineAttachInfo = EngineAttachInfo(rootView, driverMode, useSnapshot, this@HippyEngineWrapper)
-            engineAttachInfos[rootView.id] = engineAttachInfo;
-            callback.onCreateRootView(rootView)
-//            snapshotView?.let {
-//                callback.onReplaySnapshotViewCompleted(snapshotView as ViewGroup)
-//            }
-        }
-        if (UIThreadUtils.isOnUiThread()) {
-            loadCallbackTask.run()
-        } else {
-            UIThreadUtils.runOnUiThread {
-                loadCallbackTask.run()
-            }
-        }
+        buildAndRunCallbackTask(rootView, driverMode, useSnapshot, callback)
     }
 
     private fun createEngine(

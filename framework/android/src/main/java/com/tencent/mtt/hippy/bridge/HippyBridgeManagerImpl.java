@@ -446,6 +446,18 @@ public class HippyBridgeManagerImpl implements HippyBridgeManager, HippyBridge.B
     }
 
     @Override
+    public void destroyInstance(int id) {
+        if (mHandler != null) {
+            JSObject jsObject = new JSObject();
+            jsObject.set("id", id);
+            Message message = mHandler
+                    .obtainMessage(MSG_CODE_CALL_FUNCTION, 0, FUNCTION_ACTION_DESTROY_INSTANCE,
+                            jsObject);
+            mHandler.sendMessage(message);
+        }
+    }
+
+    @Override
     public void execCallback(Object params, BridgeTransferType transferType) {
         if (mHandler != null) {
             Message message = mHandler

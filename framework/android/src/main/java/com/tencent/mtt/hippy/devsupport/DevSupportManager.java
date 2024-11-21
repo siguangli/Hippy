@@ -59,8 +59,8 @@ public class DevSupportManager {
         return mDevImp.createResourceUrl(resName);
     }
 
-    public String createDebugUrl(String host) {
-        return mDevImp.createDebugUrl(host, null, mInstanceUUID.toString());
+    public String createDebugUrl(String host, int debugRootId) {
+        return mDevImp.createDebugUrl(host, null, mInstanceUUID.toString(), debugRootId);
     }
 
     public void handleException(Throwable throwable) {

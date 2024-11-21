@@ -55,10 +55,6 @@ public abstract class HippyEngineManager extends HippyEngine {
     return mCurrentState;
   }
 
-  public abstract ViewGroup loadInstance(HippyRootViewParams params);
-
-  public abstract ViewGroup loadInstance(HippyRootViewParams params, ModuleListener listener);
-
   public abstract HippyEngineContext getCurrentEngineContext();
 
   public void putExtendData(String key, Object value) {

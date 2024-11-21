@@ -185,6 +185,10 @@ public abstract class HippyEngine {
 
     public abstract ViewGroup loadModule(ModuleLoadParams loadParams, ModuleListener listener);
 
+    public abstract ViewGroup loadInstance(ModuleLoadParams loadParams, ModuleListener listener);
+
+    public abstract void destroyModule(int rootId, @NonNull Callback<Boolean> callback);
+
     public abstract void destroyModule(@Nullable ViewGroup rootView, @NonNull Callback<Boolean> callback);
 
     public abstract void destroyModule(@NonNull Callback<Boolean> callback);

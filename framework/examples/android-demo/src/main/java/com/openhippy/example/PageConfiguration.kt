@@ -226,6 +226,40 @@ class PageConfiguration : AppCompatActivity(), View.OnClickListener {
         }
     }
 
+    private fun doLoadInstance() {
+        reuseEngineWrapper?.loadInstance(
+            this,
+            driverMode,
+            debugMode,
+            snapshotMode,
+            object : HippyEngineWrapper.HippyEngineLoadCallback {
+                override fun onInitEngineCompleted(
+                    statusCode: HippyEngine.EngineInitStatus,
+                    msg: String?
+                ) {
+                    LogUtils.e("hippy", "onInitEngineCompleted: statusCode $statusCode, msg $msg")
+                }
+
+                override fun onCreateRootView(hippyRootView: ViewGroup?) {
+                    hippyRootView?.let {
+                        currentRootId = it.id
+                        (pageConfigurationContainer as ViewGroup).addView(hippyRootView)
+                    }
+                }
+
+                override fun onReplaySnapshotViewCompleted(snapshotView: ViewGroup) {
+                    (pageConfigurationContainer as ViewGroup).addView(snapshotView)
+                }
+
+                override fun onLoadModuleCompleted(
+                    statusCode: HippyEngine.ModuleLoadStatus,
+                    msg: String?
+                ) {
+                    LogUtils.e("hippy", "onLoadModuleCompleted: statusCode $statusCode, msg $msg")
+                }
+            })
+    }
+
     private fun doLoadModule() {
         reuseEngineWrapper?.loadModule(
             this,
@@ -305,7 +339,8 @@ class PageConfiguration : AppCompatActivity(), View.OnClickListener {
             }
             if (multiRootMode && reuseEngineWrapper != null) {
                 currentEngineId = reuseEngineWrapper!!.hippyEngine.engineId
-                doLoadModule()
+                doLoadInstance()
+                //doLoadModule()
             } else {
                 doCreateAndInitEngine()
             }

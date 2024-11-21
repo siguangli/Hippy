@@ -27,7 +27,7 @@ public class DevServerHelper {
   private static final String WEBSOCKET_LIVERELOAD_URL_FORMAT = "ws://%s/debugger-live-reload";
   // --Commented out by Inspection (2021/5/4 20:10):private static final String	ONCHANGE_ENDPOINT_URL_FORMAT			= "http://%s/onchange";
   private static final String DEBUG_URL_PREFIX = "ws://%s/debugger-proxy";
-  private static final String DEBUG_URL_APPEND = "role=android_client&clientId=%s&hash=%s&contextName=%s";
+  private static final String DEBUG_URL_APPEND = "role=android_client&clientId=%s&hash=%s&contextName=%s&rootId=%s";
   private static final String DEFAULT_BUNDLE_SCHEME = "http";
 
   private final String mServerHost;
@@ -48,19 +48,20 @@ public class DevServerHelper {
     return String.format(Locale.US, BUNDLE_URL_FORMAT, DEFAULT_BUNDLE_SCHEME, host, bundleName, devMode, hmr, jsMinify);
   }
 
-  public String createDebugURL(String host, String componentName, String clientId) {
+  public String createDebugURL(String host, String componentName, String clientId, int debugRootId) {
+    String rootId = (debugRootId > 0) ? String.valueOf(debugRootId) : "";
     String debugUrl = DEBUG_URL_PREFIX + "?" + DEBUG_URL_APPEND;
     if (mRemoteServerData.isValid()) {
       // remote debugging in non usb
       if (!TextUtils.isEmpty(mRemoteServerData.getWsUrl())) {
         // use the remoteServer ws url first
         debugUrl = mRemoteServerData.getWsUrl() + (mRemoteServerData.getWsUrl().contains("?") ? "&" : "?") + DEBUG_URL_APPEND;
-        return String.format(Locale.US, debugUrl, clientId, mRemoteServerData.getVersionId(), componentName);
+        return String.format(Locale.US, debugUrl, clientId, mRemoteServerData.getVersionId(), componentName, rootId);
       }
       return String.format(Locale.US, debugUrl, mRemoteServerData.getHost(), clientId,
-              mRemoteServerData.getVersionId(), componentName);
+              mRemoteServerData.getVersionId(), componentName, rootId);
     }
-    return String.format(Locale.US, debugUrl, host, clientId, "", componentName);
+    return String.format(Locale.US, debugUrl, host, clientId, "", componentName, rootId);
   }
 
   public String getLiveReloadURL() {

@@ -33,7 +33,7 @@ public interface DevServerInterface {
 
     void onLoadResourceFailed(@NonNull String url, @Nullable String errorMessage);
 
-    String createDebugUrl(String host, String componentName, String debugClientId);
+    String createDebugUrl(String host, String componentName, String debugClientId, int debugRootId);
 
     void setDevServerCallback(DevServerCallBack devServerCallback);
 

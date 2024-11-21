@@ -521,6 +521,39 @@ public abstract class HippyEngineManagerImpl extends HippyEngineManager implemen
         }
     }
 
+    public ViewGroup loadInstance(ModuleLoadParams loadParams, ModuleListener listener) {
+        if (mCurrentState == EngineState.DESTROYED) {
+            LogUtils.e(TAG, "load instance error wrong state, Engine destroyed");
+            return null;
+        }
+        checkModuleLoadParams(loadParams);
+        ViewGroup rootView = (ViewGroup) mEngineContext.createRootView(loadParams.context);
+        if (rootView == null) {
+            LogUtils.e(TAG, "load instance error rootView==null");
+            return null;
+        }
+        int rootId = rootView.getId();
+        HippyInstanceInfo instanceInfo = ensureInstanceInfo(rootId);
+        instanceInfo.rootView = rootView;
+        instanceInfo.moduleLoadParams = loadParams;
+        instanceInfo.moduleListener = listener;
+        if (loadParams.bundleLoader != null) {
+            instanceInfo.bundleLoader = loadParams.bundleLoader;
+        } else {
+            if (!TextUtils.isEmpty(loadParams.jsAssetsPath)) {
+                instanceInfo.bundleLoader = new HippyAssetBundleLoader(loadParams.context, loadParams.jsAssetsPath,
+                        loadParams.codeCacheTag);
+            } else if (!TextUtils.isEmpty(loadParams.jsFilePath)) {
+                instanceInfo.bundleLoader = new HippyFileBundleLoader(loadParams.jsFilePath, loadParams.codeCacheTag);
+            }
+        }
+        mDevSupportManager.attachToHost(loadParams.context, rootId);
+        mEngineContext.getBridgeManager()
+                .loadInstance(instanceInfo.moduleLoadParams.componentName, instanceInfo.rootView.getId(),
+                        instanceInfo.moduleLoadParams.jsParams);
+        return rootView;
+    }
+
     @Override
     public ViewGroup loadModule(ModuleLoadParams loadParams) {
         return loadModule(loadParams, null);
@@ -566,7 +599,7 @@ public abstract class HippyEngineManagerImpl extends HippyEngineManager implemen
     }
 
     @Override
-    public void destroyModule(@Nullable Callback<Boolean> callback) {
+    public void destroyModule(@NonNull Callback<Boolean> callback) {
         List<Integer> ids = new ArrayList<>();
         ViewGroup rootView = null;
         for (HippyInstanceInfo instanceInfo : mInstanceInfoMap.values()) {
@@ -586,7 +619,8 @@ public abstract class HippyEngineManagerImpl extends HippyEngineManager implemen
         }
     }
 
-    public void destroyModule(int rootId, @Nullable Callback<Boolean> callback) {
+    @Override
+    public void destroyModule(int rootId, @NonNull Callback<Boolean> callback) {
         if (callback != null) {
             if (mDestroyModuleListeners == null) {
                 mDestroyModuleListeners = new HashMap<>();
@@ -594,9 +628,7 @@ public abstract class HippyEngineManagerImpl extends HippyEngineManager implemen
             mDestroyModuleListeners.put(rootId, callback);
         }
         if (mEngineContext != null && mEngineContext.getBridgeManager() != null) {
-            List<Integer> ids = new ArrayList<>();
-            ids.add(rootId);
-            mEngineContext.getBridgeManager().destroyInstance(ids);
+            mEngineContext.getBridgeManager().destroyInstance(rootId);
         }
     }
 
@@ -754,7 +786,6 @@ public abstract class HippyEngineManagerImpl extends HippyEngineManager implemen
         }
         try {
             mEngineContext = new HippyEngineContextImpl(domManager);
-
         } catch (RuntimeException e) {
             LogUtils.e(TAG, "new HippyEngineContextImpl(): " + e.getMessage());
             notifyEngineInitialized(EngineInitStatus.STATUS_INIT_EXCEPTION, e);
@@ -940,7 +971,7 @@ public abstract class HippyEngineManagerImpl extends HippyEngineManager implemen
                 String localCachePath = getGlobalConfigs().getContext().getCacheDir()
                         .getAbsolutePath();
                 mDevtoolsManager.create(localCachePath,
-                        getDevSupportManager().createDebugUrl(mServerHost));
+                        getDevSupportManager().createDebugUrl(mServerHost, mReloadRootId));
                 //mVfsManager.addProcessorAtFirst(new DevtoolsProcessor(mDevtoolsManager.getId()));
             }
             mModuleManager = new HippyModuleManagerImpl(this, mProviders,

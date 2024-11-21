@@ -39,6 +39,8 @@ public interface HippyBridgeManager {
 
   void destroyInstance(List<Integer> ids);
 
+  void destroyInstance(int id);
+
   void execCallback(Object params, BridgeTransferType transferType);
 
   void destroyBridge(boolean isReload);

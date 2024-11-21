@@ -174,13 +174,13 @@ public class DevServerImpl implements DevServerInterface, View.OnClickListener,
 
     @Override
     @Nullable
-    public String createDebugUrl(String host, String componentName, String debugClientId) {
+    public String createDebugUrl(String host, String componentName, String debugClientId, int debugRootId) {
         if (mDebugMode) {
             assert mServerConfig != null;
             if (TextUtils.isEmpty(componentName)) {
                 componentName = mServerConfig.getBundleName();
             }
-            return mFetchHelper.createDebugURL(host, componentName, debugClientId);
+            return mFetchHelper.createDebugURL(host, componentName, debugClientId, debugRootId);
         }
         return null;
     }
