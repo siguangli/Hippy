@@ -188,8 +188,8 @@ public class VirtualNodeManager {
                             + "only text node and parent==null need do measure");
         }
         TextVirtualNode textNode = (TextVirtualNode) node;
-        Layout layout = textNode.createLayout(width, widthMode);
-        return FlexUtils.makeSizeToLong(layout.getWidth(), layout.getHeight());
+        textNode.createLayout(width, widthMode);
+        return FlexUtils.makeSizeToLong(textNode.getMeasureWidth(), textNode.getMeasureHeight());
     }
 
     public VirtualNode getVirtualNode(int rootId, int nodeId) {

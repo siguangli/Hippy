@@ -528,6 +528,14 @@ public class TextVirtualNode extends VirtualNode {
         return mLineSpacingMultiplier <= 0 ? 1.0f : mLineSpacingMultiplier;
     }
 
+    public int getMeasureWidth() {
+        return (mLayout != null) ? mLayout.getWidth() : 0;
+    }
+
+    public int getMeasureHeight() {
+        return (mLayout != null) ? mLayout.getHeight() : 0;
+    }
+
     @NonNull
     protected Layout createLayout() {
         return createLayout(mLastLayoutWidth, FlexMeasureMode.EXACTLY);
