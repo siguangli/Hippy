@@ -341,6 +341,41 @@
                         app:layout_constraintBottom_toBottomOf="parent" />
                 </androidx.constraintlayout.widget.ConstraintLayout>
 
+              <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/page_configuration_component_name"
+                android:layout_width="match_parent"
+                android:layout_height="58dp"
+                android:layout_marginTop="1dp"
+                android:layout_marginLeft="16dp"
+                android:layout_marginRight="16dp"
+                android:background="@color/white"
+                android:visibility="gone"
+                android:clickable="false"
+                app:layout_constraintRight_toRightOf="parent"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/page_configuration_multi_root" >
+                <EditText
+                  android:id="@+id/page_configuration_component_name_input"
+                  android:layout_width="match_parent"
+                  android:layout_height="match_parent"
+                  android:layout_marginTop="13dp"
+                  android:layout_marginBottom="13dp"
+                  android:layout_marginRight="16dp"
+                  android:layout_marginLeft="16dp"
+                  android:paddingLeft="12dp"
+                  android:background="#F6F8FB"
+                  android:text="Demo"
+                  android:textColor="#7B889C"
+                  android:textSize="14sp"
+                  android:layout_gravity="center"
+                  android:clickable="true"
+                  android:focusable="true"
+                  app:layout_constraintLeft_toLeftOf="parent"
+                  app:layout_constraintRight_toRightOf="parent"
+                  app:layout_constraintTop_toTopOf="parent"
+                  app:layout_constraintBottom_toBottomOf="parent" />
+              </androidx.constraintlayout.widget.ConstraintLayout>
+
                 <androidx.constraintlayout.widget.ConstraintLayout
                   android:id="@+id/page_configuration_debug"
                   android:layout_width="match_parent"
@@ -352,7 +387,7 @@
                   android:clickable="false"
                   app:layout_constraintRight_toRightOf="parent"
                   app:layout_constraintLeft_toLeftOf="parent"
-                  app:layout_constraintTop_toBottomOf="@id/page_configuration_multi_root" >
+                  app:layout_constraintTop_toBottomOf="@id/page_configuration_component_name" >
                     <ImageView
                       android:id="@+id/page_configuration_debug_image"
                       android:layout_width="24dp"

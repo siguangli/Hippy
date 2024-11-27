@@ -60,6 +60,7 @@ class PageConfiguration : AppCompatActivity(), View.OnClickListener {
     private var snapshotMode: Boolean = false
     private var multiRootMode: Boolean = false
     private var debugServerHost: String = "localhost:38989"
+    private var componentName: String = "Demo"
     private var dialog: Dialog? = null
     private var driverMode: DriverMode = DriverMode.JS_REACT
     private var renderMode: RenderMode = RenderMode.NATIVE
@@ -115,6 +116,20 @@ class PageConfiguration : AppCompatActivity(), View.OnClickListener {
         }
         hasRunOnCreate = false
         super.onResume()
+    }
+
+    override fun onPause() {
+      val currentEngineWrapper: HippyEngineWrapper? = findCurrentEngineWrapper()
+      val rootView: ViewGroup? = currentEngineWrapper?.getRootView(currentRootId)
+      if (currentEngineWrapper != null && rootView != null) {
+        (pageConfigurationTitle as TextView).text =
+          resources.getText(R.string.page_configuration_navigation_title_demo)
+        currentEngineWrapper.let {
+          (pageConfigurationContainer as ViewGroup).removeView(rootView)
+          it.onPause(this, rootView)
+        }
+      }
+      super.onPause()
     }
 
     override fun onBackPressed() {
@@ -205,13 +220,17 @@ class PageConfiguration : AppCompatActivity(), View.OnClickListener {
         }
         val multiRootButton =
             pageConfigurationRoot.findViewById<View>(R.id.page_configuration_multi_root_setting_image)
+        val componentNameParent =
+          pageConfigurationRoot.findViewById<View>(R.id.page_configuration_component_name)
         multiRootButton.setOnClickListener {
-            multiRootMode = if (multiRootMode) {
+            if (multiRootMode) {
                 (multiRootButton as ImageView).setImageResource(R.drawable.page_config_debug_off_2x)
-                false
+                componentNameParent.visibility = View.GONE
+                multiRootMode = false
             } else {
                 (multiRootButton as ImageView).setImageResource(R.drawable.page_config_debug_on_2x)
-                true
+                componentNameParent.visibility = View.VISIBLE
+                multiRootMode = true
             }
         }
         val createButton =
@@ -221,6 +240,11 @@ class PageConfiguration : AppCompatActivity(), View.OnClickListener {
                 pageConfigurationRoot.findViewById<View>(R.id.page_configuration_debug_server_host_input)
             (debugServerHostInput as AppCompatEditText).let {
                 debugServerHost = it.text.toString()
+            }
+            val componentNameInput =
+            pageConfigurationRoot.findViewById<View>(R.id.page_configuration_component_name_input)
+            (componentNameInput as AppCompatEditText).let {
+              componentName = it.text.toString()
             }
             onCreateClick()
         }
@@ -232,6 +256,7 @@ class PageConfiguration : AppCompatActivity(), View.OnClickListener {
             driverMode,
             debugMode,
             snapshotMode,
+            componentName,
             object : HippyEngineWrapper.HippyEngineLoadCallback {
                 override fun onInitEngineCompleted(
                     statusCode: HippyEngine.EngineInitStatus,
@@ -266,6 +291,7 @@ class PageConfiguration : AppCompatActivity(), View.OnClickListener {
             driverMode,
             debugMode,
             snapshotMode,
+            componentName,
             object : HippyEngineWrapper.HippyEngineLoadCallback {
                 override fun onInitEngineCompleted(
                     statusCode: HippyEngine.EngineInitStatus,
@@ -300,7 +326,7 @@ class PageConfiguration : AppCompatActivity(), View.OnClickListener {
         if (reuseEngineWrapper == null) {
             reuseEngineWrapper = engineWrapper
         }
-        engineWrapper.initEngine(this, driverMode, debugMode, snapshotMode,
+        engineWrapper.initEngine(this, driverMode, debugMode, snapshotMode, componentName,
             object : HippyEngineWrapper.HippyEngineLoadCallback {
                 override fun onInitEngineCompleted(
                     statusCode: HippyEngine.EngineInitStatus,
@@ -339,8 +365,8 @@ class PageConfiguration : AppCompatActivity(), View.OnClickListener {
             }
             if (multiRootMode && reuseEngineWrapper != null) {
                 currentEngineId = reuseEngineWrapper!!.hippyEngine.engineId
-                doLoadInstance()
-                //doLoadModule()
+//                doLoadInstance()
+                doLoadModule()
             } else {
                 doCreateAndInitEngine()
             }

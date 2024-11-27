@@ -67,6 +67,7 @@ class HippyEngineWrapper(
     }
 
     fun onResume(context: Context, rootView: ViewGroup?) {
+        hippyEngine.onEngineResume();
         rootView?.let {
             devButton = (hippyEngine as HippyEngineManagerImpl).getDevButton(it.id)
             if (devButton != null) {
@@ -77,6 +78,20 @@ class HippyEngineWrapper(
                 }
             }
         }
+    }
+
+    fun onPause(context: Context, rootView: ViewGroup?) {
+      hippyEngine.onEnginePause();
+      rootView?.let {
+        devButton = (hippyEngine as HippyEngineManagerImpl).getDevButton(it.id)
+        if (devButton != null) {
+          val parent: ViewParent? = devButton?.parent
+          if (parent == null) {
+            val decorView = (context as Activity).window.decorView as ViewGroup
+            decorView.removeView(devButton)
+          }
+        }
+      }
     }
 
     fun destroyInstance(rootId: Int) {
@@ -163,12 +178,13 @@ class HippyEngineWrapper(
 
     private fun buildModuleLoadParams(
         context: Context,
-        driverMode: PageConfiguration.DriverMode
+        driverMode: PageConfiguration.DriverMode,
+        componentName: String,
     ): ModuleLoadParams {
         val loadParams = ModuleLoadParams()
         loadParams.context = context
-        loadParams.componentName = "Demo"
-        loadParams.codeCacheTag = "Demo"
+        loadParams.componentName = componentName
+        loadParams.codeCacheTag = componentName
         when(driverMode) {
             PageConfiguration.DriverMode.JS_REACT -> {
                 loadParams.jsAssetsPath = "react/index.android.js"
@@ -217,9 +233,10 @@ class HippyEngineWrapper(
                      driverMode: PageConfiguration.DriverMode,
                      isDebug: Boolean,
                      useSnapshot: Boolean,
+                     componentName: String,
                      callback: HippyEngineLoadCallback
     ) {
-        val loadParams = buildModuleLoadParams(context, driverMode)
+        val loadParams = buildModuleLoadParams(context, driverMode, componentName)
         val rootView = hippyEngine.loadInstance(loadParams, object : ModuleListener {
             override fun onLoadCompleted(statusCode: ModuleLoadStatus, msg: String?) {
                 callback.onLoadModuleCompleted(statusCode, msg)
@@ -245,9 +262,10 @@ class HippyEngineWrapper(
                    driverMode: PageConfiguration.DriverMode,
                    isDebug: Boolean,
                    useSnapshot: Boolean,
+                   componentName: String,
                    callback: HippyEngineLoadCallback
     ) {
-        val loadParams = buildModuleLoadParams(context, driverMode)
+        val loadParams = buildModuleLoadParams(context, driverMode, componentName)
         val rootView = hippyEngine.loadModule(loadParams, object : ModuleListener {
             override fun onLoadCompleted(statusCode: ModuleLoadStatus, msg: String?) {
                 callback.onLoadModuleCompleted(statusCode, msg)
@@ -318,11 +336,12 @@ class HippyEngineWrapper(
                    driverMode: PageConfiguration.DriverMode,
                    isDebug: Boolean,
                    useSnapshot: Boolean,
+                   componentName: String,
                    callback: HippyEngineLoadCallback) {
         hippyEngine.initEngine { statusCode, msg ->
             callback.onInitEngineCompleted(statusCode, msg)
             if (statusCode == EngineInitStatus.STATUS_OK) {
-                loadModule(context, driverMode, isDebug, useSnapshot, callback)
+                loadModule(context, driverMode, isDebug, useSnapshot, componentName, callback)
                 //                    var snapshotView: View? = null
                 //                    if (!isDebug && useSnapshot) {
                 //                        val buffer = renderNodeSnapshot[driverMode]
