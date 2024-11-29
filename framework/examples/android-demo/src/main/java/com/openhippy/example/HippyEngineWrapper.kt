@@ -25,7 +25,13 @@ import android.view.ViewGroup
 import android.view.ViewParent
 import com.tencent.mtt.hippy.HippyAPIProvider
 import com.tencent.mtt.hippy.HippyEngine
-import com.tencent.mtt.hippy.HippyEngine.*
+import com.tencent.mtt.hippy.HippyEngine.EngineInitParams
+import com.tencent.mtt.hippy.HippyEngine.EngineInitStatus
+import com.tencent.mtt.hippy.HippyEngine.EngineListener
+import com.tencent.mtt.hippy.HippyEngine.ModuleListener
+import com.tencent.mtt.hippy.HippyEngine.ModuleLoadParams
+import com.tencent.mtt.hippy.HippyEngine.ModuleLoadStatus
+import com.tencent.mtt.hippy.HippyEngine.create
 import com.tencent.mtt.hippy.HippyEngineManagerImpl
 import com.tencent.mtt.hippy.adapter.DefaultLogAdapter
 import com.tencent.mtt.hippy.adapter.exception.HippyExceptionHandlerAdapter
@@ -179,7 +185,7 @@ class HippyEngineWrapper//TODO: Coming soon
                     if (!isDebugMode && isSnapshotMode) {
                         var buffer = renderNodeSnapshot[driverMode]
                         buffer?.let {
-                            snapshotView = hippyEngine.replaySnapshot(context, it)
+                            snapshotView = hippyEngine.replaySnapshot(context, it, null)
                         }
                         snapshotView?.let {
                             hippySnapshotView = snapshotView as ViewGroup
@@ -201,6 +207,10 @@ class HippyEngineWrapper//TODO: Coming soon
                                     hippyEngine.removeSnapshotView()
                                 }, 400)
                             }
+                        }
+
+                        override fun onFirstContentfulPaint() {
+
                         }
                     })
 
