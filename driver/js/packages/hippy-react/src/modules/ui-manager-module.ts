@@ -20,9 +20,10 @@
 
 import { Fiber } from '@hippy/react-reconciler';
 import { Device, UIManager } from '../global';
-import { getRootViewId, findNodeById, findNodeByCondition } from '../utils/node';
+import { findNodeById, findNodeByCondition } from '../utils/node';
 import { isFunction, warn, trace } from '../utils';
 import Element from '../dom/element-node';
+import { RootManager } from '../rootview';
 
 const {
   createNode,
@@ -106,12 +107,12 @@ function getNodeIdByRef(ref: string | Fiber | Element): number {
  * @param {Array} options - function options.
  */
 function callUIFunction(ref: Element | Fiber, funcName: string, ...options: any[]): void {
-  let { nativeName: componentName, nodeId } = ref as Element;
+  let { nativeName: componentName, nodeId, rootViewId } = ref as Element;
 
   if (!nodeId || !componentName) {
     const targetElement = getElementFromFiberRef(ref);
     if (targetElement) {
-      ({ nodeId, nativeName: componentName } = targetElement);
+      ({ nodeId, nativeName: componentName, rootViewId } = targetElement);
     }
   }
 
@@ -129,9 +130,9 @@ function callUIFunction(ref: Element | Fiber, funcName: string, ...options: any[
     paramList = [];
   }
 
-  const rootViewId = getRootViewId();
 
-  if (rootViewId === null) {
+  const rootViewIds = RootManager.getInstance().getActiveRootViewIds();
+  if (rootViewIds.length === 0 || rootViewIds.includes(rootViewId)) {
     return;
   }
   trace(...LOG_TYPE, 'callUIFunction', { nodeId, funcName, paramList });

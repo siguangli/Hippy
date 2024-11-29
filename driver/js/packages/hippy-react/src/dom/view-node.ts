@@ -45,6 +45,7 @@ interface NodeMeta {
 
 class ViewNode {
   public nodeId: number;
+  public rootViewId = 10;
 
   // Component meta information, such as native component will use.
   public meta: NodeMeta = {

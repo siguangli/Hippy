@@ -20,53 +20,38 @@
 
 import { Fiber } from '@hippy/react-reconciler';
 import ElementNode from '../dom/element-node';
+import { RootManager } from '../rootview';
 
-type RootContainer = any;
-
-// Single root instance
-let rootContainer: RootContainer;
-let rootViewId: number;
 const fiberNodeCache = new Map();
-const rootViewMap = new Map<number, RootContainer>();
-
-function setRootContainer(rootId: number, root: RootContainer) {
-  rootViewId = rootId;
-  rootContainer = root;
-  rootViewMap.set(rootViewId, rootContainer);
-}
-
-function getRootContainer(): RootContainer {
-  return rootContainer;
-}
-
-function getRootViewId() {
-  if (!rootViewId) {
-    throw new Error('getRootViewId must execute after setRootContainer');
-  }
-  return rootViewId;
-}
 
 function findNodeByCondition(condition: (node: Fiber) => boolean): null | Fiber {
-  if (!rootContainer) {
+  const activeRootViewIds = RootManager.getInstance().getActiveRootViewIds();
+  if (activeRootViewIds.length === 0) {
     return null;
-  }
-  const { current: root } = rootContainer;
-  const queue: Fiber[] = [root];
-  while (queue.length) {
-    const targetNode = queue.shift();
-    if (!targetNode) {
-      break;
+  };
+  activeRootViewIds.forEach((rootViewId) => {
+    const rootContainer = RootManager.getInstance().getRootContainer(rootViewId);
+    if (!rootContainer) {
+      return null;
     }
-    if (condition(targetNode)) {
-      return targetNode;
+    const { current: root } = rootContainer;
+    const queue: Fiber[] = [root];
+    while (queue.length) {
+      const targetNode = queue.shift();
+      if (!targetNode) {
+        break;
+      }
+      if (condition(targetNode)) {
+        return targetNode;
+      }
+      if (targetNode.child) {
+        queue.push(targetNode.child);
+      }
+      if (targetNode.sibling) {
+        queue.push(targetNode.sibling);
+      }
     }
-    if (targetNode.child) {
-      queue.push(targetNode.child);
-    }
-    if (targetNode.sibling) {
-      queue.push(targetNode.sibling);
-    }
-  }
+  });
   return null;
 }
 
@@ -236,9 +221,6 @@ export {
   translateToNativeEventName,
   requestIdleCallback,
   cancelIdleCallback,
-  setRootContainer,
-  getRootContainer,
-  getRootViewId,
   findNodeByCondition,
   findNodeById,
   preCacheFiberNode,
@@ -248,5 +230,4 @@ export {
   unCacheFiberNodeOnIdle,
   recursivelyUnCacheFiberNode,
   isTextNode,
-  rootViewMap,
 };

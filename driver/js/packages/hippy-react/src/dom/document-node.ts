@@ -31,11 +31,15 @@ class DocumentNode extends ViewNode {
   }
 
   public createElement(tagName: string) {
-    return new Element(tagName);
+    const element = new Element(tagName);
+    element.rootViewId = this.nodeId;
+    return element;
   }
 
   public createElementNS(namespace: string, tagName: string) {
-    return new Element(`${namespace}:${tagName}`);
+    const element = new Element(tagName);
+    element.rootViewId = this.nodeId;
+    return element;
   }
 }
 

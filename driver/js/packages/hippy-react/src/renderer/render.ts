@@ -23,14 +23,13 @@
 import ViewNode from '../dom/view-node';
 import Element from '../dom/element-node';
 import {
-  getRootViewId,
-  getRootContainer,
   translateToNativeEventName,
   eventHandlerType,
   nativeEventMap,
   isTextNode,
 } from '../utils/node';
 import { deepCopy, isDev, isTraceEnabled, trace, warn, isStyleNotEmpty } from '../utils';
+import { RootManager } from '../rootview';
 
 const componentName = ['%c[native]%c', 'color: red', 'color: auto'];
 
@@ -46,6 +45,7 @@ const NODE_OPERATION_TYPES: BatchType = {
 };
 
 interface BatchChunk {
+  rootViewId: number,
   type: symbol,
   nodes: HippyTypes.TranslatedNodes[],
   eventNodes: HippyTypes.EventNode[],
@@ -62,10 +62,11 @@ function chunkNodes(batchNodes: BatchChunk[]) {
   const result: BatchChunk[] = [];
   for (let i = 0; i < batchNodes.length; i += 1) {
     const chunk: BatchChunk = batchNodes[i];
-    const { type, nodes, eventNodes, printedNodes } = chunk;
+    const { type, nodes, eventNodes, printedNodes, rootViewId } = chunk;
     const lastChunk = result[result.length - 1];
     if (!lastChunk || lastChunk.type !== type) {
       result.push({
+        rootViewId,
         type,
         nodes,
         eventNodes,
@@ -123,8 +124,9 @@ function printNodesOperation(printedNodes: HippyTypes.PrintedNode[], nodeType: s
  * batch Updates from js to native
  * @param {number} rootViewId
  */
-function batchUpdate(rootViewId: number): void {
+function batchUpdate(): void {
   const chunks = chunkNodes(batchNodes);
+  const { rootViewId } = chunks[0];
   const sceneBuilder = new global.Hippy.SceneBuilder(rootViewId);
   chunks.forEach((chunk) => {
     switch (chunk.type) {
@@ -163,15 +165,14 @@ function endBatch(isHookUsed = false): void {
     batchIdle = true;
     return;
   }
-  const rootViewId = getRootViewId();
   // if commitEffectsHook used, call batchUpdate synchronously
   if (isHookUsed) {
-    batchUpdate(rootViewId);
+    batchUpdate();
     batchNodes = [];
     batchIdle = true;
   } else {
     Promise.resolve().then(() => {
-      batchUpdate(rootViewId);
+      batchUpdate();
       batchNodes = [];
       batchIdle = true;
     });
@@ -352,7 +353,7 @@ function renderToNativeWithChildren(
 }
 
 function isLayout(node: ViewNode) {
-  const container = getRootContainer();
+  const container = RootManager.getInstance().getRootContainer(node.rootViewId);
   if (!container) {
     return false;
   }
@@ -360,20 +361,23 @@ function isLayout(node: ViewNode) {
   return node instanceof container.containerInfo.constructor;
 }
 
-function insertChild(parentNode: ViewNode, childNode: ViewNode, refInfo: HippyTypes.ReferenceInfo = {}) {
+function insertChild(
+  parentNode: ViewNode,
+  childNode: ViewNode,
+  refInfo: HippyTypes.ReferenceInfo = {},
+) {
   if (!parentNode || !childNode) {
     return;
   }
   if (childNode.meta.skipAddToDom) {
     return;
   }
-  const rootViewId = getRootViewId();
   const renderRootNodeCondition = isLayout(parentNode) && !parentNode.isMounted;
   const renderOtherNodeCondition = parentNode.isMounted && !childNode.isMounted;
   // Render the root node or other nodes
   if (renderRootNodeCondition || renderOtherNodeCondition) {
     const [nativeLanguages, eventLanguages, printedLanguages] = renderToNativeWithChildren(
-      rootViewId,
+      childNode.rootViewId,
       childNode,
       (node: ViewNode) => {
         if (!node.isMounted) {
@@ -383,6 +387,7 @@ function insertChild(parentNode: ViewNode, childNode: ViewNode, refInfo: HippyTy
       refInfo,
     );
     batchNodes.push({
+      rootViewId: childNode.rootViewId,
       type: NODE_OPERATION_TYPES.createNode,
       nodes: nativeLanguages,
       eventNodes: eventLanguages,
@@ -391,15 +396,17 @@ function insertChild(parentNode: ViewNode, childNode: ViewNode, refInfo: HippyTy
   }
 }
 
-function removeChild(parentNode: ViewNode, childNode: ViewNode | null) {
+function removeChild(
+  parentNode: ViewNode,
+  childNode: ViewNode | null,
+) {
   if (!childNode || childNode.meta.skipAddToDom) {
     return;
   }
   childNode.isMounted = false;
-  const rootViewId = getRootViewId();
   const nativeNode =  {
     id: childNode.nodeId,
-    pId: childNode.parentNode ? childNode.parentNode.nodeId : rootViewId,
+    pId: childNode.parentNode ? childNode.parentNode.nodeId : childNode.rootViewId,
   };
   const deleteNodeIds: HippyTypes.TranslatedNodes[] = [
     [
@@ -409,6 +416,7 @@ function removeChild(parentNode: ViewNode, childNode: ViewNode | null) {
   ];
   const printedNodes = isDev() ? [nativeNode] : [];
   batchNodes.push({
+    rootViewId: childNode.rootViewId,
     printedNodes,
     type: NODE_OPERATION_TYPES.deleteNode,
     nodes: deleteNodeIds,
@@ -416,17 +424,20 @@ function removeChild(parentNode: ViewNode, childNode: ViewNode | null) {
   });
 }
 
-function moveChild(parentNode: ViewNode, childNode: ViewNode, refInfo: HippyTypes.ReferenceInfo = {}) {
+function moveChild(
+  parentNode: ViewNode,
+  childNode: ViewNode,
+  refInfo: HippyTypes.ReferenceInfo = {},
+) {
   if (!parentNode || !childNode) {
     return;
   }
   if (childNode.meta.skipAddToDom) {
     return;
   }
-  const rootViewId = getRootViewId();
   const nativeNode =  {
     id: childNode.nodeId,
-    pId: childNode.parentNode ? childNode.parentNode.nodeId : rootViewId,
+    pId: childNode.parentNode ? childNode.parentNode.nodeId : childNode.rootViewId,
   };
   const moveNodeIds: HippyTypes.TranslatedNodes[] = [
     [
@@ -436,6 +447,7 @@ function moveChild(parentNode: ViewNode, childNode: ViewNode, refInfo: HippyType
   ];
   const printedNodes = isDev() ? [{ ...nativeNode, ...refInfo }] : [];
   batchNodes.push({
+    rootViewId: parentNode.rootViewId,
     printedNodes,
     type: NODE_OPERATION_TYPES.moveNode,
     nodes: moveNodeIds,
@@ -447,10 +459,10 @@ function updateChild(parentNode: Element) {
   if (!parentNode.isMounted) {
     return;
   }
-  const rootViewId = getRootViewId();
-  const [nativeNode, eventNode, printedNode] = renderToNative(rootViewId, parentNode);
+  const [nativeNode, eventNode, printedNode] = renderToNative(parentNode.rootViewId, parentNode);
   if (nativeNode) {
     batchNodes.push({
+      rootViewId: parentNode.rootViewId,
       type: NODE_OPERATION_TYPES.updateNode,
       nodes: [nativeNode],
       eventNodes: [eventNode],
@@ -463,10 +475,10 @@ function updateWithChildren(parentNode: ViewNode) {
   if (!parentNode.isMounted) {
     return;
   }
-  const rootViewId = getRootViewId();
-  const [nativeLanguages, eventLanguages, printedLanguages] = renderToNativeWithChildren(rootViewId, parentNode) || {};
+  const [nativeLanguages, eventLanguages, printedLanguages] = renderToNativeWithChildren(parentNode.rootViewId, parentNode) || {};
   if (nativeLanguages) {
     batchNodes.push({
+      rootViewId: parentNode.rootViewId,
       type: NODE_OPERATION_TYPES.updateNode,
       nodes: nativeLanguages,
       eventNodes: eventLanguages,

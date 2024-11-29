@@ -21,8 +21,8 @@
 import React, { FunctionComponent, ComponentClass } from 'react';
 import Document from './dom/document-node';
 import renderer from './renderer';
+import { RootManager } from './rootview';
 import * as Native from './native';
-import { setRootContainer } from './utils/node';
 import { trace, warn, setSilent, setBubbles, isDev } from './utils';
 
 const {
@@ -143,7 +143,7 @@ class HippyReact implements HippyReact {
       setBubbles(bubbles);
     }
     // Save the root container
-    setRootContainer(rootViewId, this.rootContainer);
+    RootManager.getInstance().setRootContainer(rootViewId, this.rootContainer);
 
     // Render to screen.
     const rootElement = React.createElement(entryPage, superProps);

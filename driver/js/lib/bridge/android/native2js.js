@@ -29,7 +29,7 @@ global.hippyBridge = (_action, _callObj) => {
     callObj = {
       methodName: 'receiveNativeEvent',
       moduleName: 'EventDispatcher',
-      params: ['@hippy:pauseInstance', null],
+      params: ['@hippy:pauseInstance', _callObj],
     };
   }
 
@@ -38,7 +38,7 @@ global.hippyBridge = (_action, _callObj) => {
     callObj = {
       methodName: 'receiveNativeEvent',
       moduleName: 'EventDispatcher',
-      params: ['@hippy:resumeInstance', null],
+      params: ['@hippy:resumeInstance', _callObj],
     };
   }
 
