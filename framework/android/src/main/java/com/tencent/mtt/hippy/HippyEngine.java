@@ -217,35 +217,6 @@ public abstract class HippyEngine {
 
     public abstract void removeSnapshotView();
 
-    /**
-     * Generate screenshots of specified views
-     *
-     * @param context host container activity, if this parameter is null, the context of the target view will be
-     *         used, if all context is not of activity type, an exception will be thrown
-     * @param id the target view id
-     * @param callback the result callback {@link ScreenshotBuildCallback}
-     * @throws IllegalArgumentException
-     */
-    public abstract void getScreenshotBitmapForView(@Nullable Context context, int id,
-            @NonNull ScreenshotBuildCallback callback);
-
-    /**
-     * Generate screenshots of specified views
-     *
-     * @param context host container activity, if this parameter is null, the context of the target view will be
-     *         used, if all context is not of activity type, an exception will be thrown
-     * @param view the target view
-     * @param callback the result callback {@link ScreenshotBuildCallback}
-     * @throws IllegalArgumentException
-     */
-    public abstract void getScreenshotBitmapForView(@Nullable Context context, @NonNull View view,
-            @NonNull ScreenshotBuildCallback callback);
-
-    public interface ScreenshotBuildCallback {
-
-        void onScreenshotBuildCompleted(Bitmap bitmap, int result);
-    }
-
     public interface BackPressHandler {
 
         void handleBackPress();
