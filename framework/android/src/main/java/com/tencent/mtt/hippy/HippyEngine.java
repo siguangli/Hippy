@@ -210,9 +210,9 @@ public abstract class HippyEngine {
 
     public abstract void recordSnapshot(@NonNull View rootView, @NonNull final Callback<byte[]> callback);
 
-    public abstract View replaySnapshot(@NonNull Context context, byte[] buffer);
+    public abstract View replaySnapshot(@NonNull Context context, byte[] buffer, String bundlePath);
 
-    public abstract View replaySnapshot(@NonNull Context context, @NonNull Map<String, Object> snapshotMap);
+    public abstract View replaySnapshot(@NonNull Context context, @NonNull Map<String, Object> snapshotMap, String bundlePath);
 
     public abstract void removeSnapshotView();
 
@@ -479,5 +479,7 @@ public abstract class HippyEngine {
         boolean onJsException(HippyJsException exception);
 
         void onFirstViewAdded();
+
+        void onFirstContentfulPaint();
     }
 }
