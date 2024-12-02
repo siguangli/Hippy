@@ -17,6 +17,10 @@ package com.tencent.mtt.hippy;
 
 import static com.tencent.mtt.hippy.common.LogAdapter.LOG_SEVERITY_WARNING;
 
+import static com.tencent.vfs.UrlUtils.PREFIX_ASSETS;
+import static com.tencent.vfs.UrlUtils.PREFIX_FILE;
+import android.app.Activity;
+import android.app.Dialog;
 import android.content.Context;
 import android.text.TextUtils;
 import android.view.View;
@@ -104,6 +108,7 @@ public abstract class HippyEngineManagerImpl extends HippyEngineManager implemen
     HippyEngineContextImpl mEngineContext;
     private ModuleLoadParams moduleLoadParams;
     private HippyBundleLoader jsBundleLoader;
+    private String mBundlePath = null;
     // 从网络上加载jsbundle
     final boolean mDebugMode;
     // Hippy Server的jsbundle名字，调试模式下有效
@@ -145,7 +150,7 @@ public abstract class HippyEngineManagerImpl extends HippyEngineManager implemen
         mGroupId = params.groupId;
         mThirdPartyAdapter = params.thirdPartyAdapter;
         v8InitParams = params.v8InitParams;
-        mMonitor = new TimeMonitor();
+        mMonitor = new TimeMonitor(getEngineId());
     }
 
     @Override
@@ -241,6 +246,9 @@ public abstract class HippyEngineManagerImpl extends HippyEngineManager implemen
         mEngineContext.getJsDriver().recordFirstContentfulPaintEndTime(System.currentTimeMillis());
         mEngineContext.getMonitor().endGroup(TimeMonitor.MONITOR_GROUP_PAINT);
         mGlobalConfigs.getEngineMonitorAdapter().onFirstContentfulPaintCompleted(mEngineContext.getComponentName());
+        if (mModuleListener != null) {
+            mModuleListener.onFirstContentfulPaint();
+        }
     }
 
     @Override
@@ -329,8 +337,11 @@ public abstract class HippyEngineManagerImpl extends HippyEngineManager implemen
     public String getBundlePath() {
         if (jsBundleLoader != null) {
             return jsBundleLoader.getPath();
+        } else if (mBundlePath != null && !mBundlePath.startsWith(PREFIX_FILE)
+                && !mBundlePath.startsWith(PREFIX_ASSETS)) {
+            return PREFIX_FILE + mBundlePath;
         }
-        return null;
+        return mBundlePath;
     }
 
     @Override
@@ -350,7 +361,8 @@ public abstract class HippyEngineManagerImpl extends HippyEngineManager implemen
     }
 
     @Nullable
-    public View replaySnapshot(@NonNull Context context, @NonNull byte[] buffer) {
+    public View replaySnapshot(@NonNull Context context, @NonNull byte[] buffer, String bundlePath) {
+        mBundlePath = bundlePath;
         if (mEngineContext != null) {
             return mEngineContext.getRenderer().replaySnapshot(context, buffer);
         }
@@ -358,7 +370,8 @@ public abstract class HippyEngineManagerImpl extends HippyEngineManager implemen
     }
 
     @Nullable
-    public View replaySnapshot(@NonNull Context context, @NonNull Map<String, Object> snapshotMap) {
+    public View replaySnapshot(@NonNull Context context, @NonNull Map<String, Object> snapshotMap, String bundlePath) {
+        mBundlePath = bundlePath;
         if (mEngineContext != null) {
             return mEngineContext.getRenderer().replaySnapshot(context, snapshotMap);
         }
@@ -664,8 +677,8 @@ public abstract class HippyEngineManagerImpl extends HippyEngineManager implemen
     }
 
     /**
-     * After init engine callback, send load instance message to js invoke render If debug mode js
-     * bundle load with common bundle after init engine
+     * After init engine callback, send load instance message to js invoke render If debug mode js bundle load with
+     * common bundle after init engine
      */
     private void loadJsModule() {
         if (mEngineContext == null || mRootView == null || moduleLoadParams == null) {
