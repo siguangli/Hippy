@@ -99,7 +99,7 @@ public interface NativeRender extends RenderExceptionHandler, RenderLogHandler {
 
     void onFirstPaint();
 
-    void onFirstContentfulPaint();
+    void onFirstContentfulPaint(int rootId);
 
     void onSizeChanged(int rootId, int width, int height, int oldWidth, int oldHeight);
 
