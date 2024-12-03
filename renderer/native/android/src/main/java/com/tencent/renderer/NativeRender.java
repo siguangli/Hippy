@@ -62,6 +62,9 @@ public interface NativeRender extends RenderExceptionHandler, RenderLogHandler {
     ImageDecoderAdapter getImageDecoderAdapter();
 
     @Nullable
+    SnapshotAdapter getSnapshotAdapter();
+
+    @Nullable
     Executor getBackgroundExecutor();
 
     @Nullable
