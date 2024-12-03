@@ -31,6 +31,9 @@ public interface FrameworkProxy {
     ImageDecoderAdapter getImageDecoderAdapter();
 
     @Nullable
+    SnapshotAdapter getSnapshotAdapter();
+
+    @Nullable
     FontAdapter getFontAdapter();
 
     @Nullable

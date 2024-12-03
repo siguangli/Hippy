@@ -239,6 +239,13 @@ public class NativeRenderer extends Renderer implements NativeRender, NativeRend
 
     @Override
     @Nullable
+    public SnapshotAdapter getSnapshotAdapter() {
+        FrameworkProxy frameworkProxy = getFrameworkProxy();
+        return (frameworkProxy != null) ? frameworkProxy.getSnapshotAdapter() : null;
+    }
+
+    @Override
+    @Nullable
     public FontAdapter getFontAdapter() {
         FrameworkProxy frameworkProxy = getFrameworkProxy();
         return (frameworkProxy != null) ? frameworkProxy.getFontAdapter() : null;
@@ -532,6 +539,7 @@ public class NativeRenderer extends Renderer implements NativeRender, NativeRend
     @Override
     public void createNode(final int rootId, @NonNull List<Object> nodeList)
             throws NativeRenderException {
+        SnapshotAdapter snapshotAdapter = getSnapshotAdapter();
         final List<UITaskExecutor> createNodeTaskList = new ArrayList<>(nodeList.size());
         final List<UITaskExecutor> createViewTaskList = new ArrayList<>(nodeList.size());
         for (int i = 0; i < nodeList.size(); i++) {
@@ -564,6 +572,9 @@ public class NativeRenderer extends Renderer implements NativeRender, NativeRend
             // and do not need to use the UI task
             if (rootId == SCREEN_SNAPSHOT_ROOT_ID) {
                 if (parent == null) {
+                    if (snapshotAdapter != null) {
+                        snapshotAdapter.onCreateSnapshotNode(rootId, nodeId, nodePid, nodeIndex, className, props);
+                    }
                     mRenderManager.createNode(rootId, nodeId, nodePid, nodeIndex, className, props);
                 }
                 continue;

@@ -37,6 +37,7 @@ import com.tencent.devtools.DevtoolsManager;
 import com.tencent.mtt.hippy.adapter.HippyLogAdapter;
 import com.tencent.mtt.hippy.adapter.device.HippyDeviceAdapter;
 import com.tencent.mtt.hippy.adapter.executor.HippyExecutorSupplierAdapter;
+import com.tencent.mtt.hippy.adapter.snapshot.HippySnapshotAdapter;
 import com.tencent.mtt.hippy.adapter.thirdparty.HippyThirdPartyAdapter;
 import com.tencent.mtt.hippy.bridge.HippyBridgeManager;
 import com.tencent.mtt.hippy.bridge.HippyBridgeManagerImpl;
@@ -309,6 +310,11 @@ public abstract class HippyEngineManagerImpl extends HippyEngineManager implemen
     @Override
     public ImageDecoderAdapter getImageDecoderAdapter() {
         return mEngineContext.getGlobalConfigs().getImageDecoderAdapter();
+    }
+
+    @Override
+    public HippySnapshotAdapter getSnapshotAdapter() {
+        return mEngineContext.getGlobalConfigs().getSnapshotAdapter();
     }
 
     @NonNull

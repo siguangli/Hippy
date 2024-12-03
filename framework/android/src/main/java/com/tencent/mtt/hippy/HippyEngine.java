@@ -43,6 +43,7 @@ import com.tencent.mtt.hippy.adapter.monitor.DefaultEngineMonitorAdapter;
 import com.tencent.mtt.hippy.adapter.monitor.HippyEngineMonitorAdapter;
 import com.tencent.mtt.hippy.adapter.sharedpreferences.DefaultSharedPreferencesAdapter;
 import com.tencent.mtt.hippy.adapter.sharedpreferences.HippySharedPreferencesAdapter;
+import com.tencent.mtt.hippy.adapter.snapshot.HippySnapshotAdapter;
 import com.tencent.mtt.hippy.adapter.soloader.DefaultSoLoaderAdapter;
 import com.tencent.mtt.hippy.adapter.soloader.HippySoLoaderAdapter;
 import com.tencent.mtt.hippy.adapter.storage.DefaultStorageAdapter;
@@ -267,7 +268,7 @@ public abstract class HippyEngine {
         public ImageDecoderAdapter imageDecoderAdapter;
         //可选参数 接收RuntimeId
         public HippyThirdPartyAdapter thirdPartyAdapter;
-
+        public HippySnapshotAdapter snapshotAdapter;
         // 可选参数 接收异常
         public HippyExceptionHandlerAdapter exceptionHandler;
         // 可选参数 设置相关
