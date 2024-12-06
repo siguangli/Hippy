@@ -136,6 +136,7 @@ class HippyReact implements HippyReact {
 
     // Update nodeId for container
     this.rootContainer.containerInfo.nodeId = rootViewId;
+    this.rootContainer.containerInfo.rootViewId = rootViewId;
     if (silent) {
       setSilent(silent);
     }

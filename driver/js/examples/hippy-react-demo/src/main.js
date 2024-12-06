@@ -11,6 +11,15 @@ global.Hippy.on('unhandledRejection', (reason) => {
 });
 
 new Hippy({
+  appName: 'Demo',
+  entryPage: App,
+  // set global bubbles, default is false
+  bubbles: false,
+  // set log output, default is false
+  silent: false,
+}).start();
+
+new Hippy({
   appName: 'Demo0',
   entryPage: App,
   // set global bubbles, default is false
