@@ -68,6 +68,8 @@ public class HippyModuleManagerImpl implements HippyModuleManager, Handler.Callb
     private static final int MSG_CODE_DESTROY_MODULE = 2;
     private static final int MSG_CODE_ON_DESTROY = 3;
     private static final int MSG_CODE_REMOVE_ROOT_VIEW = 4;
+    private static final ConcurrentHashMap<Integer, ModuleDeserializerComponent> mModuleDeserializerGroup = new ConcurrentHashMap<>();
+    private ModuleDeserializerComponent mDeserializerComponent;
     private final ConcurrentHashMap<String, HippyNativeModuleInfo> mNativeModuleInfo;
     //Only multi-threaded read
     private final HashMap<Class<? extends HippyJavaScriptModule>, HippyJavaScriptModule> mJsModules;
@@ -76,12 +78,6 @@ public class HippyModuleManagerImpl implements HippyModuleManager, Handler.Callb
     private volatile Handler mModuleThreadHandler;
     private volatile Handler mBridgeThreadHandler;
     private final boolean mEnableV8Serialization;
-    private BinaryReader mSafeHeapReader;
-    private BinaryReader mSafeDirectReader;
-    @Nullable
-    private Deserializer mCompatibleDeserializer;
-    @Nullable
-    private com.tencent.mtt.hippy.serialization.recommend.Deserializer mRecommendDeserializer;
 
     public HippyModuleManagerImpl(HippyEngineContext context, List<HippyAPIProvider> packages,
             boolean enableV8Serialization) {
@@ -89,12 +85,23 @@ public class HippyModuleManagerImpl implements HippyModuleManager, Handler.Callb
         mEnableV8Serialization = enableV8Serialization;
         mNativeModuleInfo = new ConcurrentHashMap<>();
         mJsModules = new HashMap<>();
-        if (enableV8Serialization) {
-            mCompatibleDeserializer = new Deserializer(null, new InternalizedStringTable());
-            mRecommendDeserializer = new com.tencent.mtt.hippy.serialization.recommend.Deserializer(
-                    null, new InternalizedStringTable());
-        }
+        initDeserializerComponent();
         initModules(context, packages);
+    }
+
+    private void initDeserializerComponent() {
+        Integer groupId = mContext.getGroupId();
+        if (groupId == -1) {
+            mDeserializerComponent = new ModuleDeserializerComponent();
+        } else {
+            ModuleDeserializerComponent dc = mModuleDeserializerGroup.get(groupId);
+            if (dc == null) {
+                mDeserializerComponent = new ModuleDeserializerComponent();
+                mModuleDeserializerGroup.put(groupId, mDeserializerComponent);
+            } else {
+                mDeserializerComponent = dc;
+            }
+        }
     }
 
     private void initModules(@NonNull HippyEngineContext context, List<HippyAPIProvider> packages) {
@@ -189,11 +196,15 @@ public class HippyModuleManagerImpl implements HippyModuleManager, Handler.Callb
     }
 
     private void onDestroy() {
-        if (mCompatibleDeserializer != null) {
-            mCompatibleDeserializer.getStringTable().release();
-        }
-        if (mRecommendDeserializer != null) {
-            mRecommendDeserializer.getStringTable().release();
+        if (mContext.isEngineGroupEmpty()) {
+            if (mDeserializerComponent.compatibleDeserializer != null) {
+                mDeserializerComponent.compatibleDeserializer.getStringTable().release();
+            }
+            if (mDeserializerComponent.recommendDeserializer != null) {
+                mDeserializerComponent.recommendDeserializer.getStringTable().release();
+            }
+            Integer groupId = mContext.getGroupId();
+            mModuleDeserializerGroup.remove(groupId);
         }
     }
 
@@ -290,19 +301,30 @@ public class HippyModuleManagerImpl implements HippyModuleManager, Handler.Callb
 
     @Nullable
     private Object parseV8SerializeData(ByteBuffer buffer, boolean useJSValueType) {
-        PrimitiveValueDeserializer deserializer =
-                useJSValueType ? mRecommendDeserializer : mCompatibleDeserializer;
+        PrimitiveValueDeserializer deserializer;
+        if (useJSValueType) {
+            if (mDeserializerComponent.recommendDeserializer == null) {
+                mDeserializerComponent.recommendDeserializer = new com.tencent.mtt.hippy.serialization.recommend.Deserializer(
+                        null, new InternalizedStringTable());
+            }
+            deserializer = mDeserializerComponent.recommendDeserializer;
+        } else {
+            if (mDeserializerComponent.compatibleDeserializer == null) {
+                mDeserializerComponent.compatibleDeserializer = new Deserializer(null, new InternalizedStringTable());
+            }
+            deserializer = mDeserializerComponent.compatibleDeserializer;
+        }
         final BinaryReader binaryReader;
         if (buffer.isDirect()) {
-            if (mSafeDirectReader == null) {
-                mSafeDirectReader = new SafeDirectReader();
+            if (mDeserializerComponent.safeDirectReader == null) {
+                mDeserializerComponent.safeDirectReader = new SafeDirectReader();
             }
-            binaryReader = mSafeDirectReader;
+            binaryReader = mDeserializerComponent.safeDirectReader;
         } else {
-            if (mSafeHeapReader == null) {
-                mSafeHeapReader = new SafeHeapReader();
+            if (mDeserializerComponent.safeHeapReader == null) {
+                mDeserializerComponent.safeHeapReader  = new SafeHeapReader();
             }
-            binaryReader = mSafeHeapReader;
+            binaryReader = mDeserializerComponent.safeHeapReader;
         }
         binaryReader.reset(buffer);
         deserializer.setReader(binaryReader);
@@ -495,5 +517,12 @@ public class HippyModuleManagerImpl implements HippyModuleManager, Handler.Callb
 
     public ConcurrentHashMap<String, HippyNativeModuleInfo> getNativeModuleInfo() {
         return mNativeModuleInfo;
+    }
+
+    private static class ModuleDeserializerComponent {
+        public BinaryReader safeHeapReader;
+        public BinaryReader safeDirectReader;
+        public Deserializer compatibleDeserializer;
+        public com.tencent.mtt.hippy.serialization.recommend.Deserializer recommendDeserializer;
     }
 }

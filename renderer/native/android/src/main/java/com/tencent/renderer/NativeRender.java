@@ -23,7 +23,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.tencent.mtt.hippy.HippyInstanceLifecycleEventListener;
-import com.tencent.mtt.hippy.common.BaseEngineContext;
 import com.tencent.mtt.hippy.uimanager.RenderManager;
 
 import com.tencent.renderer.component.image.ImageDecoderAdapter;
@@ -63,9 +62,6 @@ public interface NativeRender extends RenderExceptionHandler, RenderLogHandler {
 
     @Nullable
     Executor getBackgroundExecutor();
-
-    @Nullable
-    BaseEngineContext getEngineContext();
 
     void deleteVirtualChildNode(int rootId, int nodeId);
 

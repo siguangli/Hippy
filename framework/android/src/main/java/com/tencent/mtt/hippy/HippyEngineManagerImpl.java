@@ -209,7 +209,19 @@ public abstract class HippyEngineManagerImpl extends HippyEngineManager implemen
     @Override
     public void destroyEngine() {
         if (mEngineContext != null) {
+            removeEngineFromGroup();
             mEngineContext.destroyBridge(false);
+        }
+    }
+
+    private void removeEngineFromGroup() {
+        ArrayList<Integer> engineList = mEngineGroup.get(mGroupId);
+        if (engineList != null) {
+            Integer engineId = getEngineId();
+            engineList.remove(engineId);
+            if (engineList.isEmpty()) {
+                mEngineGroup.remove(mGroupId);
+            }
         }
     }
 
@@ -640,11 +652,6 @@ public abstract class HippyEngineManagerImpl extends HippyEngineManager implemen
         } else {
             destroyModule(rootView.getId(), callback);
         }
-    }
-
-    @Deprecated
-    public HippyEngineContextImpl getCurrentEngineContext() {
-        return getEngineContext();
     }
 
     public HippyEngineContextImpl getEngineContext() {
@@ -1237,6 +1244,17 @@ public abstract class HippyEngineManagerImpl extends HippyEngineManager implemen
         @Override
         public int getEngineId() {
             return HippyEngineManagerImpl.this.getEngineId();
+        }
+
+        @Override
+        public int getGroupId() {
+            return HippyEngineManagerImpl.this.getGroupId();
+        }
+
+        @Override
+        public boolean isEngineGroupEmpty() {
+            ArrayList<Integer> engineList = mEngineGroup.get(mGroupId);
+            return engineList == null || engineList.isEmpty();
         }
 
         @Override

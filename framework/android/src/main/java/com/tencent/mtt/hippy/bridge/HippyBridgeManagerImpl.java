@@ -53,6 +53,7 @@ import com.tencent.mtt.hippy.utils.TimeMonitor;
 
 import java.lang.ref.WeakReference;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 import org.json.JSONObject;
 
 import java.nio.ByteBuffer;
@@ -103,12 +104,10 @@ public class HippyBridgeManagerImpl implements HippyBridgeManager, HippyBridge.B
     private long mInitStartTime = 0;
     private final HippyThirdPartyAdapter mThirdPartyAdapter;
     private StringBuilder mStringBuilder;
-    private SafeHeapWriter safeHeapWriter;
-    private SafeDirectWriter safeDirectWriter;
-    private Serializer compatibleSerializer;
-    private com.tencent.mtt.hippy.serialization.recommend.Serializer recommendSerializer;
     private TurboModuleManager mTurboModuleManager;
     private NativeCallback mCallFunctionCallback;
+    private BridgeSerializerComponent mSerializerComponent;
+    private static final ConcurrentHashMap<Integer, BridgeSerializerComponent> mBridgeSerializerGroup = new ConcurrentHashMap<>();
 
     public HippyBridgeManagerImpl(HippyEngineContext context, HippyBundleLoader coreBundleLoader,
             int bridgeType, boolean enableV8Serialization, boolean isDevModule,
@@ -122,15 +121,25 @@ public class HippyBridgeManagerImpl implements HippyBridgeManager, HippyBridge.B
         mEnableV8Serialization = enableV8Serialization;
         mHippyBridge = new HippyBridgeImpl(context, this, bridgeType == BRIDGE_TYPE_SINGLE_THREAD,
                 enableV8Serialization, isDevModule, debugServerHost, v8InitParams, jsDriver);
-        if (enableV8Serialization) {
-            compatibleSerializer = new Serializer();
-            recommendSerializer = new com.tencent.mtt.hippy.serialization.recommend.Serializer();
+        initSerializerComponent();
+    }
+
+    private void initSerializerComponent() {
+        Integer groupId = mContext.getGroupId();
+        if (groupId == -1) {
+            mSerializerComponent = new BridgeSerializerComponent();
         } else {
-            mStringBuilder = new StringBuilder(1024);
+            BridgeSerializerComponent dc = mBridgeSerializerGroup.get(groupId);
+            if (dc == null) {
+                mSerializerComponent = new BridgeSerializerComponent();
+                mBridgeSerializerGroup.put(groupId, mSerializerComponent);
+            } else {
+                mSerializerComponent = dc;
+            }
         }
     }
 
-    private void handleCallFunction(Message msg) {
+    private void initCallFunctionCallback() {
         if (mCallFunctionCallback == null) {
             mCallFunctionCallback = new NativeCallback(mHandler) {
                 @Override
@@ -143,48 +152,67 @@ public class HippyBridgeManagerImpl implements HippyBridgeManager, HippyBridge.B
                 }
             };
         }
+    }
+
+    private void handleCallFunction(Message msg) {
+        initCallFunctionCallback();
         int functionId = msg.arg2;
-        PrimitiveValueSerializer serializer = (msg.obj instanceof JSValue) ?
-                recommendSerializer : compatibleSerializer;
+        PrimitiveValueSerializer serializer;
+        if (msg.obj instanceof JSValue) {
+            if (mSerializerComponent.recommendSerializer == null) {
+                mSerializerComponent.recommendSerializer = new com.tencent.mtt.hippy.serialization.recommend.Serializer();
+            }
+            serializer = mSerializerComponent.recommendSerializer;
+        } else {
+            if (mSerializerComponent.compatibleSerializer == null) {
+                mSerializerComponent.compatibleSerializer = new Serializer(); ;
+            }
+            serializer = mSerializerComponent.compatibleSerializer;
+        }
         if (msg.arg1 == BridgeTransferType.BRIDGE_TRANSFER_TYPE_NIO.value()) {
             ByteBuffer buffer;
             if (mEnableV8Serialization) {
-                if (safeDirectWriter == null) {
-                    safeDirectWriter = new SafeDirectWriter(SafeDirectWriter.INITIAL_CAPACITY, 0);
+                if (mSerializerComponent.safeDirectWriter == null) {
+                    mSerializerComponent.safeDirectWriter = new SafeDirectWriter(SafeDirectWriter.INITIAL_CAPACITY, 0);
                 } else {
-                    safeDirectWriter.reset();
+                    mSerializerComponent.safeDirectWriter.reset();
                 }
-                serializer.setWriter(safeDirectWriter);
+                serializer.setWriter(mSerializerComponent.safeDirectWriter);
                 serializer.reset();
                 serializer.writeHeader();
                 serializer.writeValue(msg.obj);
-                buffer = safeDirectWriter.chunked();
+                buffer = mSerializerComponent.safeDirectWriter.chunked();
             } else {
+                if (mStringBuilder == null) {
+                    mStringBuilder = new StringBuilder(1024);
+                }
                 mStringBuilder.setLength(0);
                 byte[] bytes = ArgumentUtils.objectToJsonOpt(msg.obj, mStringBuilder).getBytes(
                         StandardCharsets.UTF_16LE);
                 buffer = ByteBuffer.allocateDirect(bytes.length);
                 buffer.put(bytes);
             }
-
             mHippyBridge.callFunction(functionId, mCallFunctionCallback, buffer);
         } else {
             if (mEnableV8Serialization) {
-                if (safeHeapWriter == null) {
-                    safeHeapWriter = new SafeHeapWriter();
+                if (mSerializerComponent.safeHeapWriter == null) {
+                    mSerializerComponent.safeHeapWriter = new SafeHeapWriter();
                 } else {
-                    safeHeapWriter.reset();
+                    mSerializerComponent.safeHeapWriter.reset();
                 }
-                serializer.setWriter(safeHeapWriter);
+                serializer.setWriter(mSerializerComponent.safeHeapWriter);
                 serializer.reset();
                 serializer.writeHeader();
                 serializer.writeValue(msg.obj);
-                ByteBuffer buffer = safeHeapWriter.chunked();
+                ByteBuffer buffer = mSerializerComponent.safeHeapWriter.chunked();
                 int offset = buffer.arrayOffset() + buffer.position();
                 int length = buffer.limit() - buffer.position();
                 mHippyBridge.callFunction(functionId, mCallFunctionCallback, buffer.array(), offset,
                         length);
             } else {
+                if (mStringBuilder == null) {
+                    mStringBuilder = new StringBuilder(1024);
+                }
                 mStringBuilder.setLength(0);
                 byte[] bytes = ArgumentUtils.objectToJsonOpt(msg.obj, mStringBuilder).getBytes(
                         StandardCharsets.UTF_16LE);
@@ -235,7 +263,8 @@ public class HippyBridgeManagerImpl implements HippyBridgeManager, HippyBridge.B
         try {
             switch (msg.what) {
                 case MSG_CODE_INIT_BRIDGE: {
-                    @SuppressWarnings("unchecked") final com.tencent.mtt.hippy.common.Callback<Boolean> callback = (com.tencent.mtt.hippy.common.Callback<Boolean>) msg.obj;
+                    @SuppressWarnings("unchecked") final com.tencent.mtt.hippy.common.Callback<Boolean> callback =
+                            (com.tencent.mtt.hippy.common.Callback<Boolean>) msg.obj;
                     final int code = msg.arg1;
                     try {
                         mHippyBridge.initJSBridge(getGlobalConfigs(), new NativeCallback(mHandler) {
@@ -260,7 +289,8 @@ public class HippyBridgeManagerImpl implements HippyBridgeManager, HippyBridge.B
                                 if (mThirdPartyAdapter != null) {
                                     mThirdPartyAdapter.onRuntimeInit(runtimeId);
                                 }
-                                mContext.getJsDriver().recordNativeInitEndTime(mInitStartTime, System.currentTimeMillis());
+                                mContext.getJsDriver()
+                                        .recordNativeInitEndTime(mInitStartTime, System.currentTimeMillis());
                                 if (mCoreBundleLoader != null) {
                                     timeMonitor.addPoint(TimeMonitor.MONITOR_GROUP_INIT_ENGINE,
                                             TimeMonitor.MONITOR_POINT_LOAD_VENDOR_JS);
@@ -340,7 +370,8 @@ public class HippyBridgeManagerImpl implements HippyBridgeManager, HippyBridge.B
                                 }
                                 timeMonitor.endGroup(TimeMonitor.MONITOR_GROUP_RUN_BUNDLE);
                                 timeMonitor.beginGroup(TimeMonitor.MONITOR_GROUP_PAINT);
-                                timeMonitor.addPoint(TimeMonitor.MONITOR_GROUP_PAINT, TimeMonitor.MONITOR_POINT_FIRST_PAINT);
+                                timeMonitor.addPoint(TimeMonitor.MONITOR_GROUP_PAINT,
+                                        TimeMonitor.MONITOR_POINT_FIRST_PAINT);
                             }
                         });
                     } else {
@@ -479,6 +510,10 @@ public class HippyBridgeManagerImpl implements HippyBridgeManager, HippyBridge.B
     @Override
     public void destroy() {
         mBridgeState = BridgeState.DESTROYED;
+        if (mContext.isEngineGroupEmpty()) {
+            Integer groupId = mContext.getGroupId();
+            mBridgeSerializerGroup.remove(groupId);
+        }
         if (mHandler != null) {
             mHandler.removeMessages(MSG_CODE_INIT_BRIDGE);
             mHandler.removeMessages(MSG_CODE_RUN_BUNDLE);
@@ -635,5 +670,13 @@ public class HippyBridgeManagerImpl implements HippyBridgeManager, HippyBridge.B
 
     private boolean enableTurbo() {
         return mContext.getGlobalConfigs() != null && mContext.getGlobalConfigs().enableTurbo();
+    }
+
+    private static class BridgeSerializerComponent {
+
+        public SafeHeapWriter safeHeapWriter;
+        public SafeDirectWriter safeDirectWriter;
+        public Serializer compatibleSerializer;
+        public com.tencent.mtt.hippy.serialization.recommend.Serializer recommendSerializer;
     }
 }

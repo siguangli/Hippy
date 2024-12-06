@@ -41,8 +41,8 @@ class HippyEngineWrapper(
 ) {
     val hippyEngine: HippyEngine
     private var engineAttachInfos: HashMap<Int, EngineAttachInfo> = HashMap()
-    var devButton: View? = null
-    var destroyed: Boolean = false
+    private var devButton: View? = null
+    var hasNoRootInstanceExist: Boolean = false
 
     init {
         hippyEngine = createEngine(driverMode, isDebug, debugServerHost)
@@ -81,27 +81,24 @@ class HippyEngineWrapper(
     }
 
     fun onPause(context: Context, rootView: ViewGroup?) {
-      hippyEngine.onEnginePause();
-      rootView?.let {
-        devButton = (hippyEngine as HippyEngineManagerImpl).getDevButton(it.id)
-        if (devButton != null) {
-          val parent: ViewParent? = devButton?.parent
-          if (parent == null) {
-            val decorView = (context as Activity).window.decorView as ViewGroup
-            decorView.removeView(devButton)
-          }
+        hippyEngine.onEnginePause();
+        rootView?.let {
+            devButton = (hippyEngine as HippyEngineManagerImpl).getDevButton(it.id)
+            if (devButton != null) {
+                val parent: ViewParent? = devButton?.parent
+                if (parent == null) {
+                    val decorView = (context as Activity).window.decorView as ViewGroup
+                    decorView.removeView(devButton)
+                }
+            }
         }
-      }
     }
 
     fun destroyInstance(rootId: Int) {
         engineAttachInfos.remove(rootId)
-        val doEngineDestroy = engineAttachInfos.isEmpty()
-        if (doEngineDestroy) {
-            destroyed = true
-        }
+        hasNoRootInstanceExist = engineAttachInfos.isEmpty()
         hippyEngine.destroyModule(rootId) { result, e ->
-            if (doEngineDestroy) {
+            if (hasNoRootInstanceExist) {
                 hippyEngine.destroyEngine()
             }
         }
@@ -185,16 +182,19 @@ class HippyEngineWrapper(
         loadParams.context = context
         loadParams.componentName = componentName
         loadParams.codeCacheTag = componentName
-        when(driverMode) {
+        when (driverMode) {
             PageConfiguration.DriverMode.JS_REACT -> {
                 loadParams.jsAssetsPath = "react/index.android.js"
             }
+
             PageConfiguration.DriverMode.JS_VUE_2 -> {
                 loadParams.jsAssetsPath = "vue2/index.android.js"
             }
+
             PageConfiguration.DriverMode.JS_VUE_3 -> {
                 loadParams.jsAssetsPath = "vue3/index.android.js"
             }
+
             PageConfiguration.DriverMode.VL -> {
                 //TODO: Coming soon
             }
@@ -208,10 +208,12 @@ class HippyEngineWrapper(
         return loadParams
     }
 
-    private fun buildAndRunCallbackTask(rootView: ViewGroup,
-                                        driverMode: PageConfiguration.DriverMode,
-                                        useSnapshot: Boolean,
-                                        callback: HippyEngineLoadCallback) {
+    private fun buildAndRunCallbackTask(
+        rootView: ViewGroup,
+        driverMode: PageConfiguration.DriverMode,
+        useSnapshot: Boolean,
+        callback: HippyEngineLoadCallback
+    ) {
         val loadCallbackTask = Runnable {
             val engineAttachInfo = EngineAttachInfo(rootView, driverMode, useSnapshot, this@HippyEngineWrapper)
             engineAttachInfos[rootView.id] = engineAttachInfo;
@@ -229,12 +231,13 @@ class HippyEngineWrapper(
         }
     }
 
-    fun loadInstance(context: Context,
-                     driverMode: PageConfiguration.DriverMode,
-                     isDebug: Boolean,
-                     useSnapshot: Boolean,
-                     componentName: String,
-                     callback: HippyEngineLoadCallback
+    fun loadInstance(
+        context: Context,
+        driverMode: PageConfiguration.DriverMode,
+        isDebug: Boolean,
+        useSnapshot: Boolean,
+        componentName: String,
+        callback: HippyEngineLoadCallback
     ) {
         val loadParams = buildModuleLoadParams(context, driverMode, componentName)
         val rootView = hippyEngine.loadInstance(loadParams, object : ModuleListener {
@@ -258,12 +261,13 @@ class HippyEngineWrapper(
         buildAndRunCallbackTask(rootView, driverMode, useSnapshot, callback)
     }
 
-    fun loadModule(context: Context,
-                   driverMode: PageConfiguration.DriverMode,
-                   isDebug: Boolean,
-                   useSnapshot: Boolean,
-                   componentName: String,
-                   callback: HippyEngineLoadCallback
+    fun loadModule(
+        context: Context,
+        driverMode: PageConfiguration.DriverMode,
+        isDebug: Boolean,
+        useSnapshot: Boolean,
+        componentName: String,
+        callback: HippyEngineLoadCallback
     ) {
         val loadParams = buildModuleLoadParams(context, driverMode, componentName)
         val rootView = hippyEngine.loadModule(loadParams, object : ModuleListener {
@@ -299,16 +303,19 @@ class HippyEngineWrapper(
         initParams.enableLog = true
         initParams.logAdapter = DefaultLogAdapter()
         initParams.groupId = 1
-        when(driverMode) {
+        when (driverMode) {
             PageConfiguration.DriverMode.JS_REACT -> {
                 initParams.coreJSAssetsPath = "react/vendor.android.js"
             }
+
             PageConfiguration.DriverMode.JS_VUE_2 -> {
                 initParams.coreJSAssetsPath = "vue2/vendor.android.js"
             }
+
             PageConfiguration.DriverMode.JS_VUE_3 -> {
                 initParams.coreJSAssetsPath = "vue3/vendor.android.js"
             }
+
             PageConfiguration.DriverMode.VL -> {
                 //TODO: Coming soon
             }
@@ -318,9 +325,11 @@ class HippyEngineWrapper(
             override fun handleJsException(e: HippyJsException) {
                 LogUtils.e("hippy", e.message)
             }
+
             override fun handleNativeException(e: Exception, haveCaught: Boolean) {
                 LogUtils.e("hippy", e.message)
             }
+
             override fun handleBackgroundTracing(details: String) {
                 LogUtils.e("hippy", details)
             }
@@ -332,12 +341,14 @@ class HippyEngineWrapper(
         return create(initParams)
     }
 
-    fun initEngine(context: Context,
-                   driverMode: PageConfiguration.DriverMode,
-                   isDebug: Boolean,
-                   useSnapshot: Boolean,
-                   componentName: String,
-                   callback: HippyEngineLoadCallback) {
+    fun initEngine(
+        context: Context,
+        driverMode: PageConfiguration.DriverMode,
+        isDebug: Boolean,
+        useSnapshot: Boolean,
+        componentName: String,
+        callback: HippyEngineLoadCallback
+    ) {
         hippyEngine.initEngine { statusCode, msg ->
             callback.onInitEngineCompleted(statusCode, msg)
             if (statusCode == EngineInitStatus.STATUS_OK) {
@@ -360,7 +371,8 @@ class HippyEngineWrapper(
         var engineAttachInfo = engineAttachInfos[rootId]
         if (engineAttachInfo != null) {
             try {
-                hippyEngine.getScreenshotBitmapForView(context, engineAttachInfo.rootView as View
+                hippyEngine.getScreenshotBitmapForView(
+                    context, engineAttachInfo.rootView as View
                 ) { bitmap, result ->
                     run {
                         if (result == 0) {

@@ -17,7 +17,6 @@
 package com.tencent.mtt.hippy;
 
 import android.view.View;
-import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -76,6 +75,10 @@ public interface HippyEngineContext extends BaseEngineContext {
     int getVfsId();
 
     int getDevtoolsId();
+
+    int getGroupId();
+
+    boolean isEngineGroupEmpty();
 
     void onRootViewsRemoved(JSDenseArray roots);
 

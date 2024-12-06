@@ -54,9 +54,7 @@ public abstract class HippyEngineManager extends HippyEngine {
   public EngineState getCurrentEngineState() {
     return mCurrentState;
   }
-
-  public abstract HippyEngineContext getCurrentEngineContext();
-
+  
   public void putExtendData(String key, Object value) {
     //noinspection unchecked
     mExtendDatas.put(key, value);

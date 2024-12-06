@@ -35,7 +35,6 @@ import androidx.annotation.MainThread;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.tencent.mtt.hippy.common.BaseEngineContext;
 import com.tencent.mtt.hippy.common.Callback;
 import com.tencent.mtt.hippy.common.LogAdapter;
 import com.tencent.mtt.hippy.serialization.nio.reader.BinaryReader;
@@ -293,13 +292,6 @@ public class NativeRenderer extends Renderer implements NativeRender, NativeRend
         if (logAdapter != null) {
             logAdapter.onReceiveLogMessage(level, tag, msg);
         }
-    }
-
-    @Override
-    @Nullable
-    public BaseEngineContext getEngineContext() {
-        FrameworkProxy frameworkProxy = getFrameworkProxy();
-        return (frameworkProxy != null) ? frameworkProxy.getEngineContext() : null;
     }
 
     @Override

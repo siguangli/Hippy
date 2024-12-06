@@ -18,7 +18,6 @@ package com.tencent.renderer;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import com.tencent.mtt.hippy.common.BaseEngineContext;
 import com.tencent.mtt.hippy.common.LogAdapter;
 import com.tencent.renderer.component.image.ImageDecoderAdapter;
 import com.tencent.renderer.component.text.FontAdapter;
@@ -47,9 +46,6 @@ public interface FrameworkProxy {
 
     @Nullable
     String getBundlePath(int rootId);
-
-    @NonNull
-    BaseEngineContext getEngineContext();
 
     int getEngineId();
 

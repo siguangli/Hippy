@@ -59,15 +59,13 @@ import com.tencent.mtt.hippy.utils.ContextHolder;
 import com.tencent.mtt.hippy.utils.LogUtils;
 import com.tencent.mtt.hippy.utils.UIThreadUtils;
 import com.tencent.mtt.hippy.adapter.thirdparty.HippyThirdPartyAdapter;
-import com.tencent.renderer.NativeRenderException;
 import com.tencent.renderer.component.image.ImageDecoderAdapter;
-import com.tencent.renderer.serialization.Serializer;
 import com.tencent.vfs.Processor;
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -75,7 +73,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 public abstract class HippyEngine {
 
     private static final AtomicInteger ID_COUNTER = new AtomicInteger();
-    private final int engineId = ID_COUNTER.getAndIncrement();
+    private final int mEngineId = ID_COUNTER.getAndIncrement();
+    protected final static ConcurrentHashMap<Integer, ArrayList<Integer>> mEngineGroup = new ConcurrentHashMap<>();
 
     @SuppressWarnings("unchecked")
     final CopyOnWriteArrayList<EngineListener> mEventListeners = new CopyOnWriteArrayList();
@@ -106,8 +105,16 @@ public abstract class HippyEngine {
             hippyEngine = new HippyNormalEngineManager(params, null);
         } else {
             hippyEngine = new HippySingleThreadEngineManager(params, null);
+            Integer engineId = hippyEngine.getEngineId();
+            ArrayList<Integer> engineList = mEngineGroup.get(params.groupId);
+            if (engineList == null) {
+                engineList = new ArrayList<>();
+                engineList.add(engineId);
+                mEngineGroup.put(params.groupId, engineList);
+            } else if (!engineList.contains(engineId)) {
+                engineList.add(engineId);
+            }
         }
-
         return hippyEngine;
     }
 
@@ -161,7 +168,7 @@ public abstract class HippyEngine {
      * get engine id
      */
     public int getEngineId() {
-        return engineId;
+        return mEngineId;
     }
 
     public abstract void initEngine(EngineListener listener);

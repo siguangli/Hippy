@@ -241,7 +241,7 @@
                     </androidx.constraintlayout.widget.ConstraintLayout>
                 </androidx.constraintlayout.widget.ConstraintLayout>
 
-                <androidx.constraintlayout.widget.ConstraintLayout
+                <!--androidx.constraintlayout.widget.ConstraintLayout
                   android:id="@+id/page_configuration_snapshot"
                   android:layout_width="match_parent"
                   android:layout_height="58dp"
@@ -289,7 +289,7 @@
                       app:layout_constraintRight_toRightOf="parent"
                       app:layout_constraintTop_toTopOf="parent"
                       app:layout_constraintBottom_toBottomOf="parent" />
-                </androidx.constraintlayout.widget.ConstraintLayout>
+                </androidx.constraintlayout.widget.ConstraintLayout-->
 
                 <androidx.constraintlayout.widget.ConstraintLayout
                     android:id="@+id/page_configuration_multi_root"
@@ -302,7 +302,7 @@
                     android:clickable="false"
                     app:layout_constraintRight_toRightOf="parent"
                     app:layout_constraintLeft_toLeftOf="parent"
-                    app:layout_constraintTop_toBottomOf="@id/page_configuration_snapshot" >
+                    app:layout_constraintTop_toBottomOf="@id/page_configuration_renderer" >
                     <ImageView
                         android:id="@+id/page_configuration_multi_root_image"
                         android:layout_width="24dp"

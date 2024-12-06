@@ -119,17 +119,17 @@ class PageConfiguration : AppCompatActivity(), View.OnClickListener {
     }
 
     override fun onPause() {
-      val currentEngineWrapper: HippyEngineWrapper? = findCurrentEngineWrapper()
-      val rootView: ViewGroup? = currentEngineWrapper?.getRootView(currentRootId)
-      if (currentEngineWrapper != null && rootView != null) {
-        (pageConfigurationTitle as TextView).text =
-          resources.getText(R.string.page_configuration_navigation_title_demo)
-        currentEngineWrapper.let {
-          (pageConfigurationContainer as ViewGroup).removeView(rootView)
-          it.onPause(this, rootView)
+        val currentEngineWrapper: HippyEngineWrapper? = findCurrentEngineWrapper()
+        val rootView: ViewGroup? = currentEngineWrapper?.getRootView(currentRootId)
+        if (currentEngineWrapper != null && rootView != null) {
+            (pageConfigurationTitle as TextView).text =
+                resources.getText(R.string.page_configuration_navigation_title_demo)
+            currentEngineWrapper.let {
+                (pageConfigurationContainer as ViewGroup).removeView(rootView)
+                it.onPause(this, rootView)
+            }
         }
-      }
-      super.onPause()
+        super.onPause()
     }
 
     override fun onBackPressed() {
@@ -207,21 +207,21 @@ class PageConfiguration : AppCompatActivity(), View.OnClickListener {
                 debugMode = true
             }
         }
-        val snapshotButton =
-            pageConfigurationRoot.findViewById<View>(R.id.page_configuration_snapshot_setting_image)
-        snapshotButton.setOnClickListener {
-            snapshotMode = if (snapshotMode) {
-                (snapshotButton as ImageView).setImageResource(R.drawable.page_config_debug_off_2x)
-                false
-            } else {
-                (snapshotButton as ImageView).setImageResource(R.drawable.page_config_debug_on_2x)
-                true
-            }
-        }
+//        val snapshotButton =
+//            pageConfigurationRoot.findViewById<View>(R.id.page_configuration_snapshot_setting_image)
+//        snapshotButton.setOnClickListener {
+//            snapshotMode = if (snapshotMode) {
+//                (snapshotButton as ImageView).setImageResource(R.drawable.page_config_debug_off_2x)
+//                false
+//            } else {
+//                (snapshotButton as ImageView).setImageResource(R.drawable.page_config_debug_on_2x)
+//                true
+//            }
+//        }
         val multiRootButton =
             pageConfigurationRoot.findViewById<View>(R.id.page_configuration_multi_root_setting_image)
         val componentNameParent =
-          pageConfigurationRoot.findViewById<View>(R.id.page_configuration_component_name)
+            pageConfigurationRoot.findViewById<View>(R.id.page_configuration_component_name)
         multiRootButton.setOnClickListener {
             if (multiRootMode) {
                 (multiRootButton as ImageView).setImageResource(R.drawable.page_config_debug_off_2x)
@@ -242,9 +242,9 @@ class PageConfiguration : AppCompatActivity(), View.OnClickListener {
                 debugServerHost = it.text.toString()
             }
             val componentNameInput =
-            pageConfigurationRoot.findViewById<View>(R.id.page_configuration_component_name_input)
+                pageConfigurationRoot.findViewById<View>(R.id.page_configuration_component_name_input)
             (componentNameInput as AppCompatEditText).let {
-              componentName = it.text.toString()
+                componentName = it.text.toString()
             }
             onCreateClick()
         }
@@ -360,7 +360,7 @@ class PageConfiguration : AppCompatActivity(), View.OnClickListener {
             resources.getText(R.string.page_configuration_navigation_title_demo)
         (pageConfigurationContainer as ViewGroup).removeAllViews()
         pageConfigurationContainer.post {
-            if (reuseEngineWrapper?.destroyed == true) {
+            if (reuseEngineWrapper?.hasNoRootInstanceExist == true) {
                 reuseEngineWrapper = null
             }
             if (multiRootMode && reuseEngineWrapper != null) {
