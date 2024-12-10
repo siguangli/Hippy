@@ -136,6 +136,7 @@ public abstract class HippyEngineManagerImpl extends HippyEngineManager implemen
     @Nullable
     private HashMap<Integer, Callback<Boolean>> mDestroyModuleListeners;
     private final ConcurrentHashMap<Integer, HippyInstanceInfo> mInstanceInfoMap = new ConcurrentHashMap<>();
+    private static final ConcurrentHashMap<Integer, HippyGlobalConfigs> mGlobalConfigsGroup = new ConcurrentHashMap<>();
 
     HippyEngineManagerImpl(EngineInitParams params, HippyBundleLoader preloadBundleLoader) {
         // create core bundle loader
@@ -145,7 +146,16 @@ public abstract class HippyEngineManagerImpl extends HippyEngineManager implemen
         } else if (!TextUtils.isEmpty(params.coreJSFilePath)) {
             coreBundleLoader = new HippyFileBundleLoader(params.coreJSFilePath, params.codeCacheTag);
         }
-        mGlobalConfigs = new HippyGlobalConfigs(params);
+        if (params.groupId == -1) {
+            mGlobalConfigs = new HippyGlobalConfigs(params);
+        } else {
+            HippyGlobalConfigs globalConfigs = mGlobalConfigsGroup.get(params.groupId);
+            if (globalConfigs == null) {
+                globalConfigs = new HippyGlobalConfigs(params);
+                mGlobalConfigsGroup.put(params.groupId, globalConfigs);
+            }
+            mGlobalConfigs = globalConfigs;
+        }
         mCoreBundleLoader = coreBundleLoader;
         mPreloadBundleLoader = preloadBundleLoader;
         mProviders = params.providers;
@@ -227,7 +237,9 @@ public abstract class HippyEngineManagerImpl extends HippyEngineManager implemen
 
     protected void onDestroyEngine() {
         mCurrentState = EngineState.DESTROYED;
+        boolean isEngineGroupEmpty = true;
         if (mEngineContext != null) {
+            isEngineGroupEmpty = mEngineContext.isEngineGroupEmpty();
             mEngineContext.destroy(false);
         }
         for (HippyInstanceInfo instanceInfo : mInstanceInfoMap.values()) {
@@ -244,7 +256,10 @@ public abstract class HippyEngineManagerImpl extends HippyEngineManager implemen
         if (mProcessors != null) {
             mProcessors.clear();
         }
-        mGlobalConfigs.destroyIfNeed();
+        if (isEngineGroupEmpty) {
+            mGlobalConfigs.destroyIfNeed();
+            mGlobalConfigsGroup.remove(mGroupId);
+        }
         mExtendDatas.clear();
         mEventListeners.clear();
     }
@@ -991,7 +1006,7 @@ public abstract class HippyEngineManagerImpl extends HippyEngineManager implemen
             mRenderer = createRenderer(RenderConnector.NATIVE_RENDERER);
             mDomManager.attachToRenderer(mRenderer);
             mRenderer.attachToDom(mDomManager);
-            mRenderer.setFrameworkProxy(HippyEngineManagerImpl.this);
+            mRenderer.setFrameworkProxy(HippyEngineManagerImpl.this, mGroupId);
             List<Class<?>> controllers = null;
             for (HippyAPIProvider provider : mProviders) {
                 if (provider != null && provider.getControllers() != null) {
@@ -1326,7 +1341,11 @@ public abstract class HippyEngineManagerImpl extends HippyEngineManager implemen
             if (mDevtoolsManager != null) {
                 mDevtoolsManager.destroy(isReload);
             }
-            mRenderer.destroy();
+            if (mRenderer instanceof NativeRenderConnector) {
+                ((NativeRenderConnector) mRenderer).destroy(isEngineGroupEmpty());
+            } else {
+                mRenderer.destroy();
+            }
             if (!isReload) {
                 mDomManager.destroy();
             }

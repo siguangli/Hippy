@@ -67,6 +67,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @SuppressWarnings({"deprecation", "unused", "rawtypes"})
@@ -334,25 +335,21 @@ public abstract class HippyEngine {
         public V8InitParams v8InitParams;
         public boolean enableTurbo;
 
-        protected void check() {
-            if (context == null) {
-                throw new IllegalArgumentException(
-                        EngineInitParams.class.getName() + " context must not be null!");
-            }
+        protected void initAdapter() {
             if (sharedPreferencesAdapter == null) {
                 sharedPreferencesAdapter = new DefaultSharedPreferencesAdapter(context);
             }
             if (exceptionHandler == null) {
                 exceptionHandler = new DefaultExceptionHandler();
             }
-            if (httpAdapter == null) {
-                httpAdapter = new DefaultHttpAdapter();
-            }
             if (executorSupplier == null) {
                 executorSupplier = new DefaultExecutorSupplierAdapter();
             }
             if (storageAdapter == null) {
                 storageAdapter = new DefaultStorageAdapter(context, executorSupplier.getDBExecutor());
+            }
+            if (httpAdapter == null) {
+                httpAdapter = new DefaultHttpAdapter(executorSupplier.getDBExecutor());
             }
             if (engineMonitor == null) {
                 engineMonitor = new DefaultEngineMonitorAdapter();
@@ -368,6 +365,13 @@ public abstract class HippyEngine {
             }
             if (logAdapter == null) {
                 logAdapter = new DefaultLogAdapter();
+            }
+        }
+
+        protected void check() {
+            if (context == null) {
+                throw new IllegalArgumentException(
+                        EngineInitParams.class.getName() + " context must not be null!");
             }
             if (providers == null) {
                 providers = new ArrayList<>();

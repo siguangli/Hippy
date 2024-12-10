@@ -34,6 +34,7 @@ import java.lang.ref.WeakReference;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Implementation of render provider, communicate with native (C++) render manager, deserialize and
@@ -44,21 +45,21 @@ import java.util.List;
 public class NativeRenderProvider {
 
     @NonNull
-    private final Deserializer mDeserializer;
-    @NonNull
-    private final Serializer mSerializer;
-    @NonNull
     private final WeakReference<NativeRenderDelegate> mRenderDelegateRef;
-    @Nullable
-    private BinaryReader mSafeHeapReader;
-    @Nullable
-    private SafeHeapWriter mSafeHeapWriter;
     private int mInstanceId;
+    private int mGroupId = -1;
+    private RendererCodecComponent mRendererCodecComponent;
+    private static final ConcurrentHashMap<Integer, RendererCodecComponent> mRendererCodecGroup = new ConcurrentHashMap<>();
+
+    private static class RendererCodecComponent {
+        public BinaryReader safeHeapReader;
+        public SafeHeapWriter safeHeapWriter;
+        public Deserializer deserializer;
+        public Serializer serializer;
+    }
 
     public NativeRenderProvider(@NonNull NativeRenderDelegate renderDelegate) {
         mRenderDelegateRef = new WeakReference<>(renderDelegate);
-        mSerializer = new Serializer();
-        mDeserializer = new Deserializer(null, new InternalizedStringTable());
     }
 
     public void setInstanceId(int instanceId) {
@@ -69,12 +70,30 @@ public class NativeRenderProvider {
         mInstanceId = instanceId;
     }
 
+    public void setGroupId(int groupId) {
+        mGroupId = groupId;
+        if (groupId == -1) {
+            mRendererCodecComponent = new RendererCodecComponent();
+        } else {
+            RendererCodecComponent dc = mRendererCodecGroup.get(groupId);
+            if (dc == null) {
+                mRendererCodecComponent = new RendererCodecComponent();
+                mRendererCodecGroup.put(groupId, mRendererCodecComponent);
+            } else {
+                mRendererCodecComponent = dc;
+            }
+        }
+    }
+
     public int getInstanceId() {
         return mInstanceId;
     }
 
-    public void destroy() {
-        mDeserializer.getStringTable().release();
+    public void destroy(boolean isEngineGroupEmpty) {
+        if (isEngineGroupEmpty) {
+            mRendererCodecComponent.deserializer.getStringTable().release();
+            mRendererCodecGroup.remove(mGroupId);
+        }
     }
 
     /**
@@ -87,16 +106,20 @@ public class NativeRenderProvider {
     @SuppressWarnings({"rawtypes", "unchecked"})
     @NonNull
     List<Object> bytesToArgument(ByteBuffer buffer) {
-        final BinaryReader binaryReader;
-        if (mSafeHeapReader == null) {
-            mSafeHeapReader = new SafeHeapReader();
+        assert mRendererCodecComponent != null;
+        if (mRendererCodecComponent.deserializer == null) {
+            mRendererCodecComponent.deserializer = new Deserializer(null, new InternalizedStringTable());
         }
-        binaryReader = mSafeHeapReader;
+        if (mRendererCodecComponent.safeHeapReader == null) {
+            mRendererCodecComponent.safeHeapReader = new SafeHeapReader();
+        }
+        final BinaryReader binaryReader = mRendererCodecComponent.safeHeapReader;
+        final Deserializer deserializer = mRendererCodecComponent.deserializer;
         binaryReader.reset(buffer);
-        mDeserializer.setReader(binaryReader);
-        mDeserializer.reset();
-        mDeserializer.readHeader();
-        Object paramsObj = mDeserializer.readValue();
+        deserializer.setReader(binaryReader);
+        deserializer.reset();
+        deserializer.readHeader();
+        Object paramsObj = deserializer.readValue();
         return (paramsObj instanceof ArrayList) ? (ArrayList) paramsObj : new ArrayList<>();
     }
 
@@ -110,16 +133,22 @@ public class NativeRenderProvider {
      */
     @NonNull
     private ByteBuffer argumentToBytes(@NonNull Object params) throws NativeRenderException {
-        if (mSafeHeapWriter == null) {
-            mSafeHeapWriter = new SafeHeapWriter();
-        } else {
-            mSafeHeapWriter.reset();
+        assert mRendererCodecComponent != null;
+        if (mRendererCodecComponent.serializer == null) {
+            mRendererCodecComponent.serializer = new Serializer();
         }
-        mSerializer.setWriter(mSafeHeapWriter);
-        mSerializer.reset();
-        mSerializer.writeHeader();
-        mSerializer.writeValue(params);
-        return mSafeHeapWriter.chunked();
+        if (mRendererCodecComponent.safeHeapWriter == null) {
+            mRendererCodecComponent.safeHeapWriter = new SafeHeapWriter();
+        } else {
+            mRendererCodecComponent.safeHeapWriter.reset();
+        }
+        final Serializer serializer = mRendererCodecComponent.serializer;
+        final SafeHeapWriter safeHeapWriter = mRendererCodecComponent.safeHeapWriter;
+        serializer.setWriter(safeHeapWriter);
+        serializer.reset();
+        serializer.writeHeader();
+        serializer.writeValue(params);
+        return safeHeapWriter.chunked();
     }
 
     /**

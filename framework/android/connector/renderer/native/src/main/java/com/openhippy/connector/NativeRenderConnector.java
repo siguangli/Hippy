@@ -26,4 +26,6 @@ public interface NativeRenderConnector extends RenderConnector {
 
     @Nullable
     View findViewById(int rootId, int nodeId);
+
+    void destroy(boolean isEngineGroupEmpty);
 }

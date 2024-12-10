@@ -44,8 +44,9 @@ public interface RenderProxy {
      * Set framework proxy to renderer
      *
      * @param proxy {@link FrameworkProxy} interface
+     * @param groupId the group id of share engine
      */
-    void setFrameworkProxy(@NonNull FrameworkProxy proxy);
+    void setFrameworkProxy(@NonNull FrameworkProxy proxy, int groupId);
 
     /**
      * Create root view by renderer
@@ -105,6 +106,8 @@ public interface RenderProxy {
      * Notify renderer the root view instance delete by framework.
      */
     void destroyRoot(int rootId);
+
+    void destroy(boolean isEngineGroupEmpty);
 
     /**
      * Notify renderer the js bridger has been initialized.

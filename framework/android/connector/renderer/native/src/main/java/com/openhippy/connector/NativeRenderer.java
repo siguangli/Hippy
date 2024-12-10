@@ -50,6 +50,11 @@ public class NativeRenderer implements NativeRenderConnector {
     }
 
     @Override
+    public void destroy(boolean isEngineGroupEmpty) {
+
+    }
+
+    @Override
     public void onRuntimeInitialized(int rootId) {
         if (mRenderer != null) {
             mRenderer.onRuntimeInitialized(rootId);
@@ -81,9 +86,9 @@ public class NativeRenderer implements NativeRenderConnector {
     }
 
     @Override
-    public void setFrameworkProxy(@NonNull Object proxy) {
+    public void setFrameworkProxy(@NonNull Object proxy, int groupId) {
         if (mRenderer != null && proxy instanceof FrameworkProxy) {
-            mRenderer.setFrameworkProxy((FrameworkProxy) proxy);
+            mRenderer.setFrameworkProxy((FrameworkProxy) proxy, groupId);
         }
     }
 

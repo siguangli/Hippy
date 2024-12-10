@@ -97,7 +97,8 @@ public class HippyGlobalConfigs {
     private boolean mEnableTurbo;
 
     public HippyGlobalConfigs(HippyEngine.EngineInitParams params) {
-        mContext = params.context;
+        params.initAdapter();
+        mContext = params.context.getApplicationContext();
         mSharedPreferencesAdapter = params.sharedPreferencesAdapter;
         mExceptionHandler = params.exceptionHandler;
         mHttpAdapter = params.httpAdapter;
@@ -321,15 +322,15 @@ public class HippyGlobalConfigs {
             if (mExceptionHandler == null) {
                 mExceptionHandler = new DefaultExceptionHandler();
             }
-            if (mHttpAdapter == null) {
-                mHttpAdapter = new DefaultHttpAdapter();
-            }
             if (mExecutorSupplierAdapter == null) {
                 mExecutorSupplierAdapter = new DefaultExecutorSupplierAdapter();
             }
             if (mStorageAdapter == null) {
                 mStorageAdapter = new DefaultStorageAdapter(mContext,
                         mExecutorSupplierAdapter.getDBExecutor());
+            }
+            if (mHttpAdapter == null) {
+                mHttpAdapter = new DefaultHttpAdapter(mExecutorSupplierAdapter.getDBExecutor());
             }
             if (mEngineMonitorAdapter == null) {
                 mEngineMonitorAdapter = new DefaultEngineMonitorAdapter();

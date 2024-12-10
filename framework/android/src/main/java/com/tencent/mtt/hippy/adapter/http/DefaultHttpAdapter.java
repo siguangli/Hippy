@@ -44,6 +44,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.zip.GZIPInputStream;
@@ -51,13 +52,23 @@ import java.util.zip.GZIPInputStream;
 public class DefaultHttpAdapter implements HippyHttpAdapter {
 
     private static final String TAG = "DefaultHttpAdapter";
+    private Executor mExecutor;
     private ExecutorService mExecutorService;
 
+    public DefaultHttpAdapter(Executor executor) {
+        mExecutor = executor;
+    }
+
     protected void execute(Runnable runnable) {
-        if (mExecutorService == null) {
-            mExecutorService = Executors.newFixedThreadPool(4);
+        if (mExecutor == null) {
+            if (mExecutorService == null) {
+                mExecutorService = Executors.newFixedThreadPool(4);
+            }
+            mExecutor = mExecutorService;
         }
-        mExecutorService.execute(runnable);
+        if (runnable != null) {
+            mExecutor.execute(runnable);
+        }
     }
 
     public void fetch(@NonNull final ResourceDataHolder holder,
@@ -109,30 +120,27 @@ public class DefaultHttpAdapter implements HippyHttpAdapter {
     @Override
     public void sendRequest(@NonNull final HippyHttpRequest request,
             @NonNull final HttpTaskCallback callback) {
-        execute(new Runnable() {
-            @Override
-            public void run() {
-                HippyHttpResponse response = null;
-                HttpURLConnection connection = null;
-                try {
-                    connection = createConnection(request);
-                    fillHeader(connection, request);
-                    fillPostBody(connection, request);
-                    if (connection.getResponseCode() == 302) {
-                        handleRedirectRequest(request, callback, connection);
-                    } else {
-                        response = createResponse(connection);
-                        callback.onTaskSuccess(request, response);
-                    }
-                } catch (Throwable e) {
-                    callback.onTaskFailed(request, e);
-                } finally {
-                    if (response != null) {
-                        response.close();
-                    }
-                    if (connection != null) {
-                        connection.disconnect();
-                    }
+        execute(() -> {
+            HippyHttpResponse response = null;
+            HttpURLConnection connection = null;
+            try {
+                connection = createConnection(request);
+                fillHeader(connection, request);
+                fillPostBody(connection, request);
+                if (connection.getResponseCode() == 302) {
+                    handleRedirectRequest(request, callback, connection);
+                } else {
+                    response = createResponse(connection);
+                    callback.onTaskSuccess(request, response);
+                }
+            } catch (Throwable e) {
+                callback.onTaskFailed(request, e);
+            } finally {
+                if (response != null) {
+                    response.close();
+                }
+                if (connection != null) {
+                    connection.disconnect();
                 }
             }
         });

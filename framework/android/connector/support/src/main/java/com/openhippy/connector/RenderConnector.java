@@ -41,7 +41,7 @@ public interface RenderConnector extends Connector {
 
     void removeSnapshotView();
 
-    void setFrameworkProxy(@NonNull Object proxy);
+    void setFrameworkProxy(@NonNull Object proxy, int groupId);
 
     View createRootView(@NonNull Context context);
 

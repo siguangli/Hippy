@@ -301,19 +301,20 @@ public class NativeRenderer extends Renderer implements NativeRender, NativeRend
     }
 
     @Override
-    public void setFrameworkProxy(@NonNull FrameworkProxy proxy) {
+    public void setFrameworkProxy(@NonNull FrameworkProxy proxy, int groupId) {
         mFrameworkProxyWeakRef = new WeakReference<>(proxy);
+        mRenderProvider.setGroupId(groupId);
     }
 
     @Override
-    public void destroy() {
+    public void destroy(boolean isEngineGroupEmpty) {
         if (mBackgroundExecutor != null) {
             if (!mBackgroundExecutor.isShutdown()) {
                 mBackgroundExecutor.shutdown();
             }
             mBackgroundExecutor = null;
         }
-        mRenderProvider.destroy();
+        mRenderProvider.destroy(isEngineGroupEmpty);
         mRenderManager.destroy();
         if (mInstanceLifecycleEventListeners != null) {
             mInstanceLifecycleEventListeners.clear();
@@ -322,6 +323,11 @@ public class NativeRenderer extends Renderer implements NativeRender, NativeRend
             mImageLoader.destroy();
         }
         NativeRendererManager.removeNativeRendererInstance(mRenderProvider.getInstanceId());
+    }
+
+    @Override
+    public void destroy() {
+        destroy(true);
     }
 
     @Override
