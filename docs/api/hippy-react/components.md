@@ -171,6 +171,87 @@ import icon from './qb_icon_new.png';
 
 ---
 
+# ListPager
+
+[[ListPager 范例]](//github.com/Tencent/Hippy/tree/master/examples/hippy-react-demo/src/components/ListPagerView)
+
+按页滚动的可复用垂直列表功能，适用于类似无限滚动的视频流场景。
+
+> 该组件在 `3.4.0` 及以后的版本可用
+
+## 参数
+
+| 参数                  | 描述                                                         | 类型                                                        | 支持平台 |
+| --------------------- | ------------------------------------------------------------ | ----------------------------------------------------------- | -------- |
+| getRowKey             | 指定一个函数，在其中返回对应条目的 Key 值，详见 [React 官文](//reactjs.org/docs/lists-and-keys.html) | `(index: number) => any` | `Android、iOS` |
+| getRowStyle           | 设置 `ListViewItem` 容器的样式。当设置了 `horizontal=true` 启用横向 `ListPager` 时，需显式设置 `ListViewItem` 宽度              | `(index: number) => styleObject`  | `Android、iOS` |
+| getHeaderStyle           | 设置 `PullHeader` 容器的样式。当设置了 `horizontal=true` 启用横向 `ListPager` 时，需显式设置 `PullHeader` 宽度。 | `() => styleObject`                                    | `Android、iOS` |
+| getFooterStyle           | 设置 `PullFooter` 容器的样式。当设置了 `horizontal=true` 启用横向 `ListPager` 时，需显式设置 `PullFooter` 宽度。 | `() => styleObject`                                    | `Android、iOS` |
+| getRowType            | 指定一个函数，在其中返回对应条目的类型（返回Number类型的自然数，默认是0），List 将对同类型条目进行复用，所以合理的类型拆分，可以很好地提升 List 性能。`注意：同一 type 的 item 组件由于复用可能不会走完整组件创建生命周期` | `(index: number) => number`                                    | `Android、iOS、hippy-react-web` |
+| initialContentOffset  | 初始位移值。在列表初始化时即可指定滚动距离，避免初始化后再通过 scrollTo 系列方法产生的闪动。| `number` | `Android、iOS`    |
+| initialContentIndex  | 初始位移值。在列表初始化时滚动到指定index得item，避免初始化后再通过 scrollTo 系列方法产生的闪动。| `number` | `Android、iOS`    |
+| preCreateRowsNumber  | 预创建并会挂载到view tree上的item数量。| `number` | `Android、iOS`    |
+| autoPageScrollDuration  | 自动翻页动画的时长(ms)。 | `number` | `Android` |
+| pageUpDownOffsetRatio  | 当手指慢速拖动时，触发翻页的滑动距离占ListPager高度的比例(拖动距离 >= ListPagerHeight * ratio时触发翻页)。 | `number` | `Android` |
+| pageUpDownTouchDuration  | 当手指快速滑动时，手指离屏的时间戳减去手指按下的时间戳小于等于该时长参数设置时触发翻页(touchUpTimer - touchDownTimer <= touchDuration触发翻页) 。 | `number` | `Android` |
+| onAppear     | 当有`ListViewItem`滑动进入屏幕时（曝光）触发，入参返回曝光的`ListViewItem`对应索引值。 | `(index) => void` | `Android、iOS` |
+| onDisappear     | 当有`ListViewItem`滑动离开屏幕时触发，入参返回离开的`ListViewItem`对应索引值。 | `(index) => void` | `Android、iOS` |
+| onWillAppear     | 当有`ListViewItem`至少一个像素进入屏幕时（曝光）触发，入参返回曝光的`ListViewItem`对应索引值。 | `(index) => void` | `Android、iOS` |
+| onWillDisappear     | 当有`ListViewItem`至少一个像素滑动离开屏幕时触发，入参返回离开的`ListViewItem`对应索引值。 | `(index) => void` | `Android、iOS` |
+| onEndReached          | 当所有的数据都已经渲染过，并且列表被滚动到最后一条时，将触发 `onEndReached` 回调。 | `Function` | `Android、iOS` |
+| onScroll              | 在 `ListPager` 滑动时回调。调用频率可能较高，可使用 `scrollEventThrottle` 进行频率控制。 注意：ListView 在滚动时会进行组件回收，不要在滚动时对 renderRow() 生成的 ListItemView 做任何 ref 节点级的操作（例如：所有 callUIFunction 和 measureInAppWindow 方法），回收后的节点将无法再进行操作而报错。| `(obj: { contentOffset: { x: number, y: number } }) => any` | `Android、iOS` |
+| onScrollBeginDrag     | 当用户开始拖拽 `ListPager` 时调用。                         | `(obj: { contentOffset: { x: number, y: number } }) => any`     | `Android、iOS`    |
+| onScrollEndDrag       | 当用户停止拖拽 `ListPager` 或者放手让 `ListPager` 开始滑动时调用 | `(obj: { contentOffset: { x: number, y: number } }) => any`    | `Android、iOS`    |
+| preloadItemNumber     | 指定当列表滚动至倒数第几行时触发 `onEndReached` 回调。 | `number` | `Android、iOS` |
+| renderRow             | 这里的入参是当前行的索引 index，需返回一个用于构造 `ListViewItem` 内容的 Node 节点。在这里可以凭借 index 获取到具体这一行单元格的数据，从而决定如何渲染这个单元格。 | `(index: number) => Node` | `Android、iOS` |
+| scrollEventThrottle   | 指定滑动事件的回调频率，传入数值指定了多少毫秒(ms)组件会调用一次 `onScroll` 事件 | `number`  | `Android、iOS` |
+| scrollEnabled    | 滑动是否开启。`default: true` | `boolean` | `Android、iOS` |
+| showScrollIndicator   | 是否显示滚动条。`default: true` | `boolean`  | `iOS` |
+| renderPullHeader   | 设置列表下拉头部（刷新条），配合`onHeaderReleased`、`onHeaderPulling` 和 `collapsePullHeader`使用, 参考 [DEMO](//github.com/Tencent/Hippy/tree/master/examples/hippy-react-demo/src/components/PullHeaderFooter/index.jsx)。 | `() => View` | `Android、iOS` |
+| onHeaderPulling   | 下拉过程中触发, 事件会通过 contentOffset 参数返回拖拽高度，可以根据下拉偏移量做相应的逻辑。 | `(obj: { contentOffset: number }) => any` | `Android、iOS` |
+| onHeaderReleased   | 下拉超过内容高度，松手后触发。 | `() => any` | `Android、iOS` |
+| renderPullFooter   | 设置列表底部上拉刷新条，配合 `onFooterReleased`、`onFooterPulling` 和 `collapsePullFooter` 使用, 参考 [DEMO](//github.com/Tencent/Hippy/tree/master/examples/hippy-react-demo/src/components/PullHeaderFooter/index.jsx)。 | `() => View` | `Android、iOS` |
+| onFooterPulling   | 上拉过程中触发, 事件会通过 contentOffset 参数返回拖拽高度，可以根据上拉偏移量做相应的逻辑。 | `(obj: { contentOffset: number }) => any` | `Android、iOS` |
+| onFooterReleased   |  上拉超出一定距离，松手后触发。 | `() => any`  | `Android、iOS` |
+
+## 方法
+
+### scrollToContentOffset
+
+`(xOffset: number, yOffset: number, animated: boolean) => void` 通知 ListPager 滑动到某个具体坐标偏移值(offset)的位置。
+
+> * `xOffset`: number - 滑动到 X 方向的 offset
+> * `yOffset`: number - 滑动到 Y 方向的 offset
+> * `animated`: boolean - 滑动过程是否使用动画
+
+### scrollToIndex
+
+`(xIndex: number, yIndex: number, animated: boolean) => void` 通知 ListPager 滑动到第几个 item。
+
+> * `xIndex`: number - 滑动到 X 方向的第 xIndex 个 item
+> * `yIndex`: number - 滑动到 Y 方向的 yIndex 个 item
+> * `animated`: boolean - 滑动过程是否使用动画
+
+### scrollToTop
+
+`() => void` 滚动到ListPager的顶部。
+
+### collapsePullHeader
+
+`(otions: { time: number }) => void` 收起刷新条 PullHeader。当设置了`renderPullHeader`后，每当下拉刷新结束需要主动调用该方法收回 PullHeader。
+
+>* time: number: 可指定延迟多久后收起 PullHeader，单位ms
+
+### expandPullHeader
+
+`() => void` 展开顶部下拉刷新条 PullHeader。当设置了`renderPullHeader`后，可以通过该方法来主动触发下拉刷新的效果。
+
+### collapsePullFooter
+
+`() => void` 收起底部上拉刷新条 PullFooter。当设置了`renderPullFooter`后，每当上拉刷新结束需要主动调用该方法收回 PullFooter。
+
+---
+
 # Modal
 
 [[Modal 范例]](//github.com/Tencent/Hippy/tree/master/examples/hippy-react-demo/src/components/Modal)
