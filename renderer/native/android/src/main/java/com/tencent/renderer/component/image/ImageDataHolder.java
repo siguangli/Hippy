@@ -245,11 +245,7 @@ public class ImageDataHolder extends ImageRecycleObject implements ImageDataSupp
                 mGifMovie = Movie.decodeByteArray(data, 0, data.length);
             } else if (ImageDataUtils.isJpeg(mOptions) || ImageDataUtils.isPng(mOptions)
                     || ImageDataUtils.isWebp(mOptions)) {
-                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P) {
-                    decodeImageForTarget28(data);
-                } else {
-                    decodeImage(data);
-                }
+                decodeImage(data);
             } else {
                 throw new RuntimeException("Unsupported picture type!");
             }
