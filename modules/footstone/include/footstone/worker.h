@@ -136,6 +136,8 @@ class Worker {
   bool is_schedulable_;
   uint32_t group_id_;
   std::unique_ptr<Driver> driver_;
+
+  bool is_in_terminate_ = false;
 };
 
 }  // namespace runner

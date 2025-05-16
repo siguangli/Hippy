@@ -104,9 +104,18 @@ void Worker::BalanceNoLock() {
 }
 
 bool Worker::RunTask() {
+  if (is_in_terminate_) {
+    FOOTSTONE_LOG(WARNING) << "hippy check anr, worker run task begin";
+  }
   auto task = GetNextTask();
   if (!task) {
+    if (is_in_terminate_) {
+      FOOTSTONE_LOG(WARNING) << "hippy check anr, worker run task end false";
+    }
     return false;
+  }
+  if (is_in_terminate_) {
+    FOOTSTONE_LOG(WARNING) << "hippy check anr, worker run task to run";
   }
   TimePoint begin = TimePoint::Now();
   is_task_running = true;
@@ -114,6 +123,9 @@ bool Worker::RunTask() {
   is_task_running = false;
   for (auto &it : curr_group) {
     it->AddTime(TimePoint::Now() - begin);
+  }
+  if (is_in_terminate_) {
+    FOOTSTONE_LOG(WARNING) << "hippy check anr, worker run task end true";
   }
   return true;
 }
@@ -156,10 +168,16 @@ void Worker::Notify() {
 }
 
 void Worker::Terminate() {
+  FOOTSTONE_LOG(WARNING) << "hippy check anr, worker terminate begin";
+  is_in_terminate_ = true;
   driver_->Terminate();
+  FOOTSTONE_LOG(WARNING) << "hippy check anr, worker to joinable";
   if (thread_.joinable()) {
+    FOOTSTONE_LOG(WARNING) << "hippy check anr, worker to join";
     thread_.join();
   }
+  is_in_terminate_ = false;
+  FOOTSTONE_LOG(WARNING) << "hippy check anr, worker terminate end";
 }
 
 void Worker::BindGroup(uint32_t father_id, const std::shared_ptr<TaskRunner> &child) {
