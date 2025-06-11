@@ -16,19 +16,24 @@
 package com.openhippy.example
 
 import android.content.Context
-import android.content.Intent
+import android.graphics.Color
 import android.os.Bundle
-import android.view.MotionEvent
+import android.util.Log
 import android.view.View
-import android.widget.ImageView
+import android.view.ViewGroup
+import android.widget.FrameLayout
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.WindowInsetsControllerCompat
+import com.openhippy.example.PageConfiguration.Companion.currentEngineId
+import com.tencent.mtt.hippy.HippyEngine
+import com.tencent.mtt.hippy.utils.LogUtils
 
 var appContext: Context? = null
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var activityMainRoot: View
+    private var mStartButton: View? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -36,7 +41,50 @@ class MainActivity : AppCompatActivity() {
         setAppContext(this.applicationContext)
         WindowInsetsControllerCompat(window, window.decorView).isAppearanceLightStatusBars = true
         activityMainRoot = layoutInflater.inflate(R.layout.activity_main, null)
-        intPageMain()
+        val rootContainer = activityMainRoot.findViewById<FrameLayout>(R.id.root_container)
+        mStartButton = View(this)
+        val subLayoutParams = FrameLayout.LayoutParams(500, 500)
+        mStartButton?.layoutParams = subLayoutParams
+        mStartButton?.isClickable = true
+        mStartButton?.setBackgroundColor(Color.RED)
+        mStartButton?.setOnClickListener(View.OnClickListener {
+            rootContainer.removeAllViews()
+            rootContainer.post {
+                val engineWrapper = HippyEngineHelper.createHippyEngine(
+                    PageConfiguration.DriverMode.JS_REACT,
+                    PageConfiguration.RenderMode.NATIVE, false, false, "localhost:38989"
+                )
+                engineWrapper?.let {
+                    currentEngineId = it.engineId
+                }
+                engineWrapper?.load(this, object : HippyEngineWrapper.HippyEngineLoadCallback {
+                    override fun onInitEngineCompleted(
+                        statusCode: HippyEngine.EngineInitStatus,
+                        msg: String?
+                    ) {
+                        LogUtils.e("hippy", "onInitEngineCompleted: statusCode $statusCode, msg $msg")
+                    }
+
+                    override fun onCreateRootView(hippyRootView: ViewGroup?) {
+                        hippyRootView?.let {
+                            rootContainer.addView(it)
+                        }
+                    }
+
+                    override fun onReplaySnapshotViewCompleted(snapshotView: ViewGroup) {
+
+                    }
+
+                    override fun onLoadModuleCompleted(
+                        statusCode: HippyEngine.ModuleLoadStatus,
+                        msg: String?
+                    ) {
+                        LogUtils.e("hippy", "onLoadModuleCompleted: statusCode $statusCode, msg $msg")
+                    }
+                })
+            }
+        })
+        rootContainer.addView(mStartButton)
         setContentView(activityMainRoot)
     }
 
@@ -45,43 +93,4 @@ class MainActivity : AppCompatActivity() {
         HippyEngineHelper.clearAbandonHippyEngine()
     }
 
-    private fun intPageMain() {
-        val pageManagementButton = activityMainRoot.findViewById<View>(R.id.page_management_button)
-        val pageManagementImage =
-            pageManagementButton.findViewById<ImageView>(R.id.page_management_image)
-        val settingButton = activityMainRoot.findViewById<View>(R.id.setting_button)
-        val settingImage = settingButton.findViewById<ImageView>(R.id.setting_image)
-        pageManagementButton.setOnClickListener { v ->
-            val intent = Intent(this, PageManagement::class.java)
-            startActivity(intent)
-        }
-        settingButton.setOnClickListener { v ->
-            val intent = Intent(this, PageSetting::class.java)
-            startActivity(intent)
-        }
-        pageManagementButton.setOnTouchListener { v, event ->
-            when (event.action) {
-                MotionEvent.ACTION_DOWN -> {
-                    pageManagementImage.setImageResource(R.drawable.page_management_pressed_2x)
-                }
-                MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
-                    pageManagementImage.setImageResource(R.drawable.page_management_2x)
-                }
-            }
-            return@setOnTouchListener false
-
-        }
-        settingButton.setOnTouchListener { v, event ->
-            when (event.action) {
-                MotionEvent.ACTION_DOWN -> {
-                    settingImage.setImageResource(R.drawable.setting_pressed_2x)
-                }
-                MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
-                    settingImage.setImageResource(R.drawable.setting_2x)
-                }
-            }
-            return@setOnTouchListener false
-
-        }
-    }
 }

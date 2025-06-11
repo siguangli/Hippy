@@ -6,7 +6,7 @@ plugins {
 Properties gradleProperties = new Properties()
 def propFileDir = "$projectDir.absolutePath/../../android/gradle.properties"
 def propFile = new File(propFileDir)
-def verifyReleaseAar = false
+def verifyReleaseAar = true
 def include_abi_armeabi_v7a = true
 def include_abi_arm64_v8a = true
 def include_abi_x86 = true
@@ -79,9 +79,9 @@ dependencies {
         // api 'com.tencent.hippy:hippy-debug:2.11.2'
         api fileTree(dir: 'libs', include: ['*.aar'])
     } else {
-        api project(path: ':hippy-framework')
-        compileOnly project(path: ':hippy-support')
-        compileOnly project(path: ':renderer-native')
+//        api project(path: ':hippy-framework')
+//        compileOnly project(path: ':hippy-support')
+//        compileOnly project(path: ':renderer-native')
     }
     implementation deps.annotation
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
